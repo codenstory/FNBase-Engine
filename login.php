@@ -1,7 +1,7 @@
 <?php
 $isNot = TRUE;
-require_once '../setting.php';
-require '../func.php';
+require_once './setting.php';
+require './func.php';
 
 if($_SESSION['fnUserId']){
     session_unset();
@@ -88,5 +88,5 @@ $ip = get_client_ip();
             die('<script>location.href = history.go(-1)</script>');
         }
 
-        die('<script>location.href = "/w/"</script>');
+        die('<script>location.href = "/main"</script>');
 ?>
