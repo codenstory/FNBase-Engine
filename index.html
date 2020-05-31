@@ -1,0 +1,60 @@
+<!-- FNBase Engine 2 -->
+<!DOCTYPE html>
+<html lang="ko-KR">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex">
+    <meta name="author" content="FNBase Team">
+    <meta name="theme-color" content="#5998d6">
+    <meta name="classification" content="html">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- 정보 -->
+    <title>FNBase - OFF</title>
+    <meta name="description" content="FNBase - 전원 꺼짐">
+
+    <style>
+        article {
+            text-align: center;
+        }
+    </style>
+    <link rel="stylesheet" href="../default.css">
+    <link rel="stylesheet" href="../picnic.css">
+      </head>
+  <body>
+    <a id="pgUp"></a>
+    <!-- 상단바 -->
+    <header style="height:5em">
+        <nav class="nav" style="position:static;background: #5998d6">
+            <a class="brand" href="../main">
+                <span style="color:#fff">FNBase</span>
+            </a>
+            <a class="brand" class="brand" style="float:right;color:#fff">전원 꺼짐</a>
+    </header>
+    <!-- 페이지 로드 -->
+    <article style="border-bottom: 1px solid gray;">
+        <hr>
+        <h3>사이트 꺼짐</h3>
+        <hr>
+        <p>전원이 꺼져있어, 연결할 수 없습니다.<br>
+        높은 확률로 관리 공백 시간 대처를 위함이며,<br>
+        낮은 확률로 사이트 점검 또는 공격 방어 목적입니다.</p>
+        <a href="https://stop.fnbase.xyz">FNBase 공지 페이지</a>
+    </article>
+    <article>
+      <form method="post" action="../login.php">
+        <section class="content">
+            <br>
+            <label><input type="id" name="id" placeholder="아이디" required></label><br>
+            <label><input type="password" name="pw" placeholder="비밀번호" required></label>
+            <input type="hidden" name="from" value="/2/">
+        </section>
+        <footer>
+            <button class="button success full" type="submit">로그인</button>
+            <span class="subInfo">사이트 켜기 : 로그인 후 <a href="../php/modifyCon.php?mode=ON">여기</a>로 이동.</span>
+        </footer>
+      </form>
+    </article>
+  </body>
+</html>
