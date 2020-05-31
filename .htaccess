@@ -1,0 +1,75 @@
+ErrorDocument 404 /error/404.html
+ErrorDocument 403 /error/403.html
+ErrorDocument 500 /error/500.html
+
+RewriteEngine On
+
+RewriteRule ^main$ ./index.php [L]
+
+RewriteRule ^b>([a-zA-Z0-9\s]+)$ ./index.php?b=$1 [L]
+RewriteRule ^b>([a-zA-Z0-9\s]+)-([1-9][0-9]*)$ ./index.php?b=$1&p=$2 [L]
+RewriteRule ^b>([a-zA-Z0-9\s]+)>([1-9][0-9]*)$ ./index.php?b=$1&n=$2 [L]
+RewriteRule ^b>([a-zA-Z0-9\s]+)>([1-9][0-9]*)-([1-9][0-9]*)$ ./index.php?b=$1&n=$2&p=$3 [L]
+
+RewriteRule ^b&gt;([a-zA-Z0-9\s]+)$ ./index.php?b=$1 [L]
+RewriteRule ^b&gt;([a-zA-Z0-9\s]+)-([1-9][0-9]*)$ ./index.php?b=$1&p=$2 [L]
+RewriteRule ^b&gt;([a-zA-Z0-9\s]+)&gt;([1-9][0-9]*)$ ./index.php?b=$1&n=$2 [L]
+RewriteRule ^b&gt;([a-zA-Z0-9\s]+)&gt;([1-9][0-9]*)-([1-9][0-9]*)$ ./index.php?b=$1&n=$2&p=$3 [L]
+
+RewriteRule ^b>([a-zA-Z0-9\s]+)>([1-9][0-9]*)_([1-9][0-9]*)$ ./index.php?b=$1&n=$2&ment=$3 [L]
+RewriteRule ^b>([a-zA-Z0-9\s]+)>([1-9][0-9]*)-([1-9][0-9]*)_([1-9][0-9]*)$ ./index.php?b=$1&n=$2&p=$3&ment=$4 [L]
+
+RewriteRule ^b>([a-zA-Z0-9\s]+)>maint$ ./index.php?board=$1&mode=maint [L]
+RewriteRule ^b>([a-zA-Z0-9\s]+)>write$ ./index.php?board=$1&mode=write [L]
+RewriteRule ^b>([a-zA-Z0-9\s]+)>([a-zA-Z]+)$ ./index.php?mode=misc&miscmode=tags&tagsmode=$2&miscboard=$1 [L]
+RewriteRule ^b>([a-zA-Z0-9\s]+)>([a-zA-Z]+)-([1-9][0-9]*)$ ./index.php?mode=misc&miscmode=tags&tagsmode=$2&miscboard=$1&tagspage=$3 [L]
+RewriteRule ^b>([a-zA-Z0-9\s]+)>([a-zA-Z]+)_([ㄱ-ㅎ가-힣a-zA-Z0-9]+)$ ./index.php?mode=misc&miscmode=tags&tagsmode=$2&miscboard=$1&tagsname=$3 [L]
+RewriteRule ^b>([a-zA-Z0-9\s]+)>([a-zA-Z]+)_([ㄱ-ㅎ가-힣a-zA-Z0-9]+)-([1-9][0-9]*)$ ./index.php?mode=misc&miscmode=tags&tagsmode=$2&miscboard=$1&tagsname=$3&tagspage=$4 [L]
+
+RewriteRule ^u>([a-zA-Z0-9\s]+)$ ./index.php?mode=userInfo&u=$1 [L]
+RewriteRule ^u>([a-zA-Z0-9\s]+)_([a-zA-Z0-9\s]+)$ ./index.php?mode=userInfo&u=$1&board=$2 [L]
+RewriteRule ^u_name>([a-zA-Z0-9ㄱ-ㅎ가-힣\s]+)$ ./index.php?mode=userInfo&u_name=$1 [L]
+RewriteRule ^u_name>([a-zA-Z0-9ㄱ-ㅎ가-힣\s]+)_([a-zA-Z0-9\s]+)$ ./index.php?mode=userInfo&u_name=$1&board=$2 [L]
+
+RewriteRule ^register$ ./index.php?mode=register [L]
+RewriteRule ^signin$ ./index.php?mode=signin [L]
+RewriteRule ^login$ ./index.php?mode=login [L]
+RewriteRule ^nofi$ ./index.php?mode=nofi [L]
+RewriteRule ^adv$ ./index.php?mode=adv [L]
+RewriteRule ^sublist$ ./index.php?mode=subList [L]
+RewriteRule ^mkBoard$ ./index.php?mode=mkBoard [L]
+RewriteRule ^board$ ./index.php?mode=boardList [L]
+RewriteRule ^feed$ ./index.php?mode=subFeed [L]
+RewriteRule ^emoticon$ ./index.php?mode=emoji [L]
+RewriteRule ^quit$ ./index.php?mode=userDelete [L]
+RewriteRule ^forgot_password$ ./index.php?mode=password [L]
+
+RewriteRule ^misc$ ./index.php?mode=misc [L]
+RewriteRule ^misc>([a-zA-Z_]+)$ ./index.php?mode=misc&miscmode=$1 [L]
+RewriteRule ^misc>([a-zA-Z_]+)>(.+)$ ./index.php?mode=misc&miscmode=$1&miscplus=$2 [L]
+
+RewriteRule ^mailAuth_([a-zA-Z0-9]+)_([a-zA-Z0-9@._-]+)$ ./index.php?mode=mailAuth&code=$1&mail=$2 [L]
+RewriteRule ^comment_([1-9][0-9]*)$ ./index.php?&mode=comment&m=listing&n=$1 [L]
+RewriteRule ^emoticon>([a-zA-Z0-9_]+)$ ./index.php?&mode=emoji&folder=$1 [L]
+
+RewriteRule ^wiki$ ./wiki.php?redi=no [L]
+RewriteRule ^wiki/$ ./wiki.php?redi=no [L]
+RewriteRule ^wiki/(.*)$ ./wiki.php?title=$1&redi=no [L]
+
+RewriteRule ^w$ ./wiki.php [L]
+RewriteRule ^w/$ ./wiki.php [L]
+RewriteRule ^w/(.*)$ ./wiki.php?title=$1 [L]
+
+RewriteRule ^d$ ./wiki.php?on=discuss [L]
+RewriteRule ^d/$ ./wiki.php?on=discuss [L]
+RewriteRule ^d/(.*)$ ./wiki.php?on=discuss&title=$1 [L]
+RewriteRule ^discuss/([1-9][0-9]*)$ ./wiki.php?on=discussPage&d_num=$1 [L]
+RewriteRule ^discuss/([1-9][0-9]*)_([1-9][0-9]*)$ ./wiki.php?on=discussPage&d_num=$1&ment=$2 [L]
+
+RewriteRule ^e$ ./wiki.php?on=edit&redi=no [L]
+RewriteRule ^e/$ ./wiki.php?on=edit&redi=no [L]
+RewriteRule ^e/(.*)$ ./wiki.php?on=edit&title=$1&redi=no [L]
+
+RewriteRule ^h$ ./wiki.php?on=history [L]
+RewriteRule ^h/$ ./wiki.php?on=history [L]
+RewriteRule ^h/(.*)$ ./wiki.php?on=history&title=$1 [L]
