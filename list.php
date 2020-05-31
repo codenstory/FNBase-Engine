@@ -646,7 +646,7 @@
                             }
 
                             echo '<tr>';
-                            echo '<td class="hidMob black"'.$lsAGp.'><a href="b%3E'.$row['board'].'">'.$row['boardName'].'</a></td>';
+                            echo '<td class="hidMob black"><a href="b%3E'.$row['board'].'">'.$row['boardName'].'</a></td>';
                             if($row['rate'] == 'R'){
                                 echo '<td><a class="subInfo" href="./b%3Erecent%3E'.$row['num'].'-'.$lsPg.'">15세 관람가 게시물입니다.</a>
                                 <green class="little">['.$row['commentCount'].']</green>';

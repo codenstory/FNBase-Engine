@@ -86,9 +86,12 @@
                         die('첨부한 끼워넣기가 너무 많습니다!');
                     }
                 }
-                $doc = preg_replace('/\[noinclude\](.|\n)*\[\/noinclude\]/mu', '', $doc);
-            }else{
+            }
+            
+            if($fnwTitle == $incT){
                 $doc = preg_replace('/\[includeonly\](.|\n)*\[\/includeonly\]/mu', '', $doc);
+            }else{
+                $doc = preg_replace('/\[noinclude\](.|\n)*\[\/noinclude\]/mu', '', $doc);
             }
 
             $doc = str_ireplace('[includeonly]', '', $doc);
@@ -132,25 +135,25 @@
             $doc = preg_replace('/\(\(\(-([1-5]) ([^}]+)\)\)\)/mu', '<span class="size_m_$1">$2</span>', $doc);
             $doc = preg_replace('/\(\(\(([^#+]+)\)\)\)/mu', '<pre>$1</pre>', $doc);
 
-            $doc = preg_replace("/\[\[((http:\/\/|https:\/\/)[^\n\|]+\.[^\n\|]+)\|(.+)\]\]/mu", '<a class="ext-link" target="_blank" href="$1"><i class="icofont-external-link"></i>  $3</a>', $doc);
-            $doc = preg_replace("/\[\[((http:\/\/|https:\/\/)[^\n\|]+\.[^\n\|]+)\]\]/mu", '<a class="ext-link" target="_blank" href="$1"><i class="icofont-external-link"></i> $1</a>', $doc);
+            $doc = preg_replace("/\[\[(외부|밖|바깥):([^\[]+)(\||\[or\])([^\[]+)\]\]/mu", '<a class="ext-link" target="_blank" href="$2"><i class="icofont-external-link"></i> $4</a>', $doc);
+            $doc = preg_replace("/\[\[(외부|밖|바깥):([^\[]+)\]\]/mu", '<a class="ext-link" target="_blank" href="$2"><i class="icofont-external-link"></i> $2</a>', $doc);
 
-            $doc = preg_replace("/\[\[(백|위키백과|위백):([^\[]+)\|([^\[]+)\]\]/mu", '<a class="ext-link" target="_blank" href="https://ko.wikipedia.org/wiki/$2"><i class="icofont-link"></i> $3</a>', $doc);
+            $doc = preg_replace("/\[\[(백|위키백과|위백):([^\[]+)(\||\[or\])([^\[]+)\]\]/mu", '<a class="ext-link" target="_blank" href="https://ko.wikipedia.org/wiki/$2"><i class="icofont-link"></i> $4</a>', $doc);
             $doc = preg_replace("/\[\[(백|위키백과|위백):([^\[]+)\]\]/mu", '<a class="ext-link" target="_blank" href="https://ko.wikipedia.org/wiki/$2"><i class="icofont-link"></i> 위키백과:$2</a>', $doc);
 
-            $doc = preg_replace("/\[\[(영|위키피디아|영위백):([^\[]+)\|([^\[]+)\]\]/mu", '<a class="ext-link" target="_blank" href="https://en.wikipedia.org/wiki/$2"><i class="icofont-link"></i> $3</a>', $doc);
+            $doc = preg_replace("/\[\[(영|위키피디아|영위백):([^\[]+)(\||\[or\])([^\[]+)\]\]/mu", '<a class="ext-link" target="_blank" href="https://en.wikipedia.org/wiki/$2"><i class="icofont-link"></i> $4</a>', $doc);
             $doc = preg_replace("/\[\[(영|위키피디아|영위백):([^\[]+)\]\]/mu", '<a class="ext-link" target="_blank" href="https://en.wikipedia.org/wiki/$2"><i class="icofont-link"></i> 위키피디아:$2</a>', $doc);
 
-            $doc = preg_replace("/\[\[(리|리브레|리브레위키):([^\[]+)\|([^\[]+)\]\]/mu", '<a class="ext-link" target="_blank" href="https://librewiki.net/wiki/$2"><i class="icofont-link"></i> $3</a>', $doc);
+            $doc = preg_replace("/\[\[(리|리브레|리브레위키):([^\[]+)(\||\[or\])([^\[]+)\]\]/mu", '<a class="ext-link" target="_blank" href="https://librewiki.net/wiki/$2"><i class="icofont-link"></i> $4</a>', $doc);
             $doc = preg_replace("/\[\[(리|리브레|리브레위키):([^\[]+)\]\]/mu", '<a class="ext-link" target="_blank" href="https://librewiki.net/wiki/$2"><i class="icofont-link"></i> 리브레:$2</a>', $doc);
 
-            $doc = preg_replace("/\[\[(남|나무|남간|나무위키):([^\[]+)\|([^\[]+)\]\]/mu", '<a class="ext-link" target="_blank" href="https://namu.wiki/w/$2"><i class="icofont-link"></i> $3</a>', $doc);
+            $doc = preg_replace("/\[\[(남|나무|남간|나무위키):([^\[]+)(\||\[or\])([^\[]+)\]\]/mu", '<a class="ext-link" target="_blank" href="https://namu.wiki/w/$2"><i class="icofont-link"></i> $4</a>', $doc);
             $doc = preg_replace("/\[\[(남|나무|남간|나무위키):([^\[]+)\]\]/mu", '<a class="ext-link" target="_blank" href="https://namu.wiki/w/$2"><i class="icofont-link"></i> 나무:$2</a>', $doc);
             
-            $doc = preg_replace("/\[\[(픈|픈비|fnb|FNBase):([^\[]+)\|([^\[]+)\]\]/mu", '<a class="ext-link" target="_blank" href="https://fnbase.xyz/$2"><i class="icofont-link"></i> $3</a>', $doc);
-            $doc = preg_replace("/\[\[(픈|픈비|fnb|FNBase):([^\[]+)\]\]/mu", '<a class="ext-link" target="_blank" href="https://fnbase.xyz/$2"><i class="icofont-link"></i> 나무:$2</a>', $doc);
+            $doc = preg_replace("/\[\[(픈|픈비|fnb|FNBase):([^\[]+)(\||\[or\])([^\[]+)\]\]/mu", '<a class="ext-link" target="_blank" href="https://fnbase.xyz/$2"><i class="icofont-link"></i> $4</a>', $doc);
+            $doc = preg_replace("/\[\[(픈|픈비|fnb|FNBase):([^\[]+)\]\]/mu", '<a class="ext-link" target="_blank" href="https://fnbase.xyz/$2"><i class="icofont-link"></i> FNBase:$2</a>', $doc);
 
-            if(preg_match_all('/\[\[([^\|\[]+)(\||\[or\])*([^\|\[]*?)\]\]/mu', $doc, $link)) {
+            if(preg_match_all('/\[\[([^\|\[]+)(\||\[or\])?([^\|\[]*?)\]\]/mu', $doc, $link)) {
                 for($i = 0; $i < count($link[0]); $i++) {
                     unset($link_arr, $isAnchor);
                     $linkA = $link[0][$i];
@@ -199,7 +202,7 @@
             $doc = preg_replace("/,, *(.+?) *,,/mu", '<sub>$1</sub>', $doc);
             $doc = preg_replace("/__ *(.+?) *__/mu", '<u>$1</u>', $doc);
 
-            $doc = preg_replace('/(\n|^)\{\|( class=".+")?/mu', '<table$2><tr>', $doc);
+            $doc = preg_replace('/(\n|^)\{\|( class=".+")?( style=".+")?/mu', '<table$2$3><tr>', $doc);
             $doc = preg_replace('/(\n|^)\|\-( style="[^"]+")?( class="[^"]+")?/mu', '</tr><tr$2$3>', $doc);
             $doc = preg_replace('/(\n|^)\|( style="[^"]+")?( class="[^"]+")?( rowspan="[1-9]+")?( colspan="[1-9]+")?([^\|\{\}\-\n]+)/mu', '<td$2$3$4$5>$6</td>', $doc);
             $doc = preg_replace('/(\n|^)\!( style="[^"]+")?( class="[^"]+")?( rowspan="[1-9]+")?( colspan="[1-9]+")?([^\|\{\}\-\n]+)/mu', '<th$2$3$4$5>$6</th>', $doc);

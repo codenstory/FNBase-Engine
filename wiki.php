@@ -100,7 +100,7 @@
             $row = mysqli_fetch_assoc($result);
             if($row['namespace'] == '프로젝트'){
                 $tnLabel = '프로젝트';
-                $tnPath = '/w/'.$row['title'];
+                $tnHref = '/w/'.$row['title'];
                 $tnText = $row['title'].' '.$tnLabel;
             }
             break;
@@ -351,7 +351,11 @@
                     <?php
                         $parStr = documentRender('___PARENT___', TRUE);
                         if(strlen($parStr) > 0){
-                            echo '상위 문서 : <a href="/w/'.$parStr.'">'.$parStr.'</a><hr>';
+                            if($parStr == '틀'){
+                                echo '<a href="/w/틀">틀</a> 문서입니다.<hr>';
+                            }else{
+                                echo '상위 문서 : <a href="/w/'.$parStr.'">'.$parStr.'</a><hr>';
+                            }
                         }
                         $content = nl2br(documentRender($document['content']));
                         echo preg_replace('/<br( \/)*>\n<hr>/m', '<hr>', preg_replace('/(src="|<hr>)(.*)<br( \/)*>/m', '$1$2', preg_replace('/<\/h(\d)><br \/>/m', '</h$1>', $content)));
@@ -532,7 +536,7 @@
 
                                     echo '<tr><td colspan="2" style="background:'.$fnPColor.'"><strong>서버 환경</strong></td></tr>';
                                     echo '<tr><td>PHP 버전</td><td>'.phpversion().'</td></tr>';
-                                    echo '<tr><td>FNBE 버전</td><td><a href="/w/버전별 변경점#'.$fnVersion.'">'.$fnVersion.'</a></td></tr>';
+                                    echo '<tr><td><a href="https://github.com/FNBase/FNBase-Engine">FNBE</a> 버전</td><td><a href="/w/버전별 변경점#'.$fnVersion.'">'.$fnVersion.'</a></td></tr>';
 
                                     echo '<tr><td colspan="2" style="background:'.$fnPColor.'"><strong>오픈소스 정보</strong></td></tr>';
                                     echo '<tr><td><a href="https://picnicss.com">Picnic CSS</a></td><td>MIT - Francisco Presencia</td></tr>';

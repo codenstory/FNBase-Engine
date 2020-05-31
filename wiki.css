@@ -115,14 +115,14 @@ blockquote {
 }
 
 table tr {
-	background: inherit;
 	max-width: 100%;
 } table td {
 	border: 1px solid #e6eaed;
-	border-top-left-radius: 30px;
+	background: white;
 } table th {
 	border: 1px solid #e6eaed;
 	background: #f5f8fa;
 	font-weight: 700;
 	color: black;
+	text-align: center;
 }
