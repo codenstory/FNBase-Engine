@@ -73,6 +73,30 @@
             $row = mysqli_fetch_assoc($result);
             $origin = $row['num'];
 
+                        //호출 처리
+                        preg_match_all('/@[^\s\n<>]+/', $content, $out_arr);
+                        $i = 0;
+                        foreach( $out_arr['0'] as $value ){
+                            $mnt_name = str_replace('@', '', $value);
+                            $sql = "SELECT `id` from `_account` WHERE `name` = '$mnt_name'";
+                            $result = mysqli_query($conn, $sql);
+                            $mnt_id = mysqli_fetch_assoc($result);
+                            if(mysqli_num_rows($result) == 1){
+                                $content = preg_replace('/'.$value.'/', '<a href="/u/'.$mnt_id['id'].'">'.$value.'</a>', $content); #내용에서 변경
+                                $mid = $mnt_id['id'];
+                                if($id !== $mid){ #호출 반영
+                                    $sql = "INSERT INTO `_ment` (`id`, `name`, `type`, `value`, `target`, `cmt_id`, `reason`, `ip`, `isSuccess`)
+                                    VALUES ('$id', '$name', 'WIKI_MENTN', 'discuss/$num', '$mid', '', '$fnwTitle', '$ip', '0')";
+                                    $result = mysqli_query($conn, $sql);
+                                }
+    
+                                $i++;
+                                if($i > 20){ #안전장치
+                                    break;
+                                }
+                            }
+                        }
+
             $sql = "INSERT INTO `_discussThread` (`origin`, `id`, `name`, `content`, `status`) VALUES ('$origin', '$id', '$name', '$content', 'ACTIVE')";
             $result = mysqli_query($conn, $sql);
         }
@@ -107,7 +131,7 @@
                         $result = mysqli_query($conn, $sql);
                         $mnt_id = mysqli_fetch_assoc($result);
                         if(mysqli_num_rows($result) == 1){
-                            $content = preg_replace('/'.$value.'/', '<a href="./u>'.$mnt_id['id'].'">'.$value.'</a>', $content); #내용에서 변경
+                            $content = preg_replace('/'.$value.'/', '<a href="/u/'.$mnt_id['id'].'">'.$value.'</a>', $content); #내용에서 변경
                             $mid = $mnt_id['id'];
                             if($id !== $mid){ #호출 반영
                                 $sql = "INSERT INTO `_ment` (`id`, `name`, `type`, `value`, `target`, `cmt_id`, `reason`, `ip`, `isSuccess`)

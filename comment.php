@@ -48,6 +48,14 @@ if(preg_match('/(discord\.gg|open\.kakao\.com)/m', $c)){
 
 switch($mode){
     case '': #댓글 작성
+        
+        //없는 글 댓글 방지
+        $sql = "SELECT `num` FROM `_content` WHERE `num` = '$n'";
+        $result = mysqli_query($conn, $sql);
+        if(mysqli_num_rows($result) == 0){
+            die('해당 게시글이 존재하지 않습니다.');
+        }
+
         if($c == ''){
             die('<script>alert("내용이 비어있습니다.");history.back()</script>');
         }elseif(strlen($c) > 1000){
@@ -221,6 +229,13 @@ switch($mode){
             die('<script>alert("내용이 비어있습니다.");history.back()</script>');
         }elseif(strlen($r) > 1000){
             die('<script>alert("내용이 1000자를 초과했습니다.");history.back()</script>');
+        }
+
+        //없는 글 댓글 방지
+        $sql = "SELECT `num` FROM `_content` WHERE `num` = '$n'";
+        $result = mysqli_query($conn, $sql);
+        if(mysqli_num_rows($result) == 0){
+            die('해당 게시글이 존재하지 않습니다.');
         }
 
         $sql = "SELECT Count(*) as `cnt` FROM `_comment` WHERE `id` = '$id' and `at` > DATE_SUB(NOW(), INTERVAL 2 SECOND)";

@@ -795,8 +795,9 @@
         </footer>
             <a id="bottom"></a>
         <script type="text/javascript" src="/wiki.js"></script>
+        <?php $pageTitle = str_ireplace('&apos;', "\'", str_ireplace('&quot;', '\"', $fnwTitle)); ?>
         <script>
-            document.title = "<?=$fnwTitle.' - '.$fnTitle?>"
+            document.title = "<?=$pageTitle.' - '.$fnTitle?>"
             wikiTitle = "<?=$fnwTitle?>"</script>
         <?php
             if($_GET['on'] == 'discuss'){

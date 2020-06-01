@@ -26,6 +26,7 @@ RewriteRule ^b>([a-zA-Z0-9\s]+)>([a-zA-Z]+)-([1-9][0-9]*)$ ./index.php?mode=misc
 RewriteRule ^b>([a-zA-Z0-9\s]+)>([a-zA-Z]+)_([ㄱ-ㅎ가-힣a-zA-Z0-9]+)$ ./index.php?mode=misc&miscmode=tags&tagsmode=$2&miscboard=$1&tagsname=$3 [L]
 RewriteRule ^b>([a-zA-Z0-9\s]+)>([a-zA-Z]+)_([ㄱ-ㅎ가-힣a-zA-Z0-9]+)-([1-9][0-9]*)$ ./index.php?mode=misc&miscmode=tags&tagsmode=$2&miscboard=$1&tagsname=$3&tagspage=$4 [L]
 
+RewriteRule ^u/([a-zA-Z0-9\s]+)$ ./index.php?mode=userInfo&u=$1 [L]
 RewriteRule ^u>([a-zA-Z0-9\s]+)$ ./index.php?mode=userInfo&u=$1 [L]
 RewriteRule ^u>([a-zA-Z0-9\s]+)_([a-zA-Z0-9\s]+)$ ./index.php?mode=userInfo&u=$1&board=$2 [L]
 RewriteRule ^u_name>([a-zA-Z0-9ㄱ-ㅎ가-힣\s]+)$ ./index.php?mode=userInfo&u_name=$1 [L]
