@@ -1,10 +1,13 @@
 <?php
     include '../setting.php';
-    if(empty($_SESSION['fnUserId'])){
+    if(empty($_SESSION['fnUserId']) or $_SESSION['fnUserId'] == '0'){
         die('LOGIN REQUIRED');
     }
     $t = htmlspecialchars($_POST['t']);
-    $v = htmlspecialchars($_POST['v']);
+    $v = preg_replace('/[^0-9]/', '', $_POST['v']);
+    if($v < 300){
+        exit;
+    }
     $i = $_SESSION['fnUserId'];
     $n = $_SESSION['fnUserName'];
     $ip = get_client_ip();

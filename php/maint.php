@@ -23,6 +23,7 @@
     $k = filt($_POST['k'], 'oth'); #보조 관리인
     $e = filt($_POST['e'], 'oth'); #이모티콘
     $ty = filt($_POST['ty'], 'oth'); #게시판 타입
+    $rct = filt($_POST['rct'], 'oth'); #노출 여부
 
     $sql = "SELECT `id`, `num`, `slug` FROM `_board` WHERE `title` = $t";
     $result = mysqli_query($conn, $sql);
@@ -30,9 +31,12 @@
     $nm = $row['num'];
     if($_SESSION['fnUserId'] == $row['id']){
         $sql = "UPDATE `_board` SET `nickTitle` = $n, `boardIntro` = $i, `related` = $r
-       , `notice` = $nt, `keeper` = $k, `icon` = $e, `type` = $ty WHERE `num` = '$nm'";
+       , `notice` = $nt, `keeper` = $k, `icon` = $e, `type` = $ty, `rct` = $rct WHERE `num` = '$nm'";
         $result = mysqli_query($conn, $sql);
         if($result){
+            $sql = "INSERT INTO `_othFunc` (`id`, `name`, `type`, `at`, `value`, `target`, `reason`, `ip`, `isSuccess`)
+            VALUES ('$id', '$name', 'AUDIT_LOG', CURRENT_TIMESTAMP(), 'maint', '$t', '별명: $n | 설명: $i<br> 연관 게시판: $r<br> 상단 공지: $nt<br>보조 관리인: $k | 타입: $ty', '$ip', '1')";
+            $result = mysqli_query($conn, $sql);
             die('<script>window.location.href = "../b>'.$row['slug'].'"</script>');
         }
     }

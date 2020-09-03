@@ -1,7 +1,7 @@
 <?php
-    if(!empty($_POST['slug'])){
+    if(!empty($_POST['slug']) or $_POST['slug'] == '0'){
         include '../setting.php';
-        if(!empty($_SESSION['fnUserId'])){
+        if(!empty($_SESSION['fnUserId']) or $_SESSION['fnUserId'] == '0'){
             require_once '../editor/htmlpurifier/library/HTMLPurifier.auto.php';
             function filt($arg){
                 $purifier = new HTMLPurifier();
@@ -37,7 +37,7 @@
         }else{
             die('로그인 후 이용 바랍니다.');
         }
-    }elseif(!empty($_POST['tsfSlug'])){ #게시판 소유주 조정
+    }elseif(!empty($_POST['tsfSlug']) or $_POST['tsfSlug'] == '0'){ #게시판 소유주 조정
         include '../setting.php';
         $sql = "SELECT `isAdmin` FROM `_account` WHERE `id` = \"".$_SESSION['fnUserId'].'"';
         $result = mysqli_query($conn, $sql);

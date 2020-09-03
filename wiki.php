@@ -1,22 +1,30 @@
 <?php
     $fnMultiNum = 2;
-    require_once './setting.php';
-    require_once './func.php';
+    require_once 'setting.php';
+    require_once 'func.php';
 
-    if(!empty($id)){
+    if(!empty($id) or $id == '0'){
         $sql = "SELECT `siteBan` FROM `_account` WHERE `id` = '$id'";
         $result = mysqli_query($conn, $sql);
-        $sB = mysqli_fetch_assoc($result);
-        if($sB['siteBan'] >= 1){
+        $row = mysqli_fetch_assoc($result);
+        if($row['siteBan'] >= 1){
             if($_GET['miscmode'] !== 'vindicate'){
                 die('<script>location.href = \'/banned.php\'</script>');
             }
         }
+        $sql = "SELECT `wikiColor` FROM `_userSet` WHERE `id` = '$id'";
+        $result = mysqli_query($conn, $sql);
+        $row = mysqli_fetch_assoc($result);
+        if($row['wikiColor'] !== NULL){
+            $tc = explode(',', $row['wikiColor']);
+            $fnPColor = '#'.$tc[0];
+            $fnSColor = '#'.$tc[1];
+        }
     }
 
     $fnwTitle = filt($_GET['title'], 'htm');
-    require_once './wiki_p.php';
-    if(empty($fnwTitle)){
+    require_once 'wiki_p.php';
+    if(empty($fnwTitle) or $fnwTitle == '0'){
         $fnwTitle = '대문';
     }
 
@@ -47,11 +55,11 @@
         $iA = mysqli_fetch_assoc($result);
         $iA = $iA['isAdmin'];
 
-        if($document['ACL'] === NULL){
+        if($document['ACL'] === 'all'){
             $canEdit = TRUE;
         }elseif($document['ACL'] == 'none'){
             $canEdit = FALSE;
-        }elseif($document['ACL'] == 'user'){
+        }elseif($document['ACL'] == 'user' || $document['ACL'] == NULL){
             if($id){
                 $canEdit = TRUE;
             }else{
@@ -68,69 +76,17 @@
             $canManage = TRUE;
         }
 
-    $yn = mt_rand(0,10);
-    switch ($yn) {
-        case 1:
-        case 2:
-        case 3:
-            $sql = "SELECT COUNT(*) as `cnt` FROM `_ad` WHERE `at` > DATE_SUB(NOW(), INTERVAL 3 DAY) and `type` = 'USER_ADVER'";
-            $res = mysqli_query($conn, $sql);
-            $res = mysqli_fetch_assoc($res);
-            $cnt = $res['cnt'] - 1;
-            $n = mt_rand(0, $cnt);
-            $tnLabel = '광고';
-    
-            if($cnt < 0){
-                $isEmpty = TRUE;
-            }else{
-                $sql = "SELECT `ad`, `link` FROM `_ad` WHERE `at` > DATE_SUB(NOW(), INTERVAL 3 DAY) and `type` = 'USER_ADVER' and `ad` IS NOT NULL ORDER BY `at` DESC LIMIT $n, 1";
-                $res = mysqli_query($conn, $sql);
-                $res = mysqli_fetch_assoc($res);
-    
-                    $tnHref = $res['link'];
-                    $tnText = $res['ad'];
-            }
-            break;
-        case 10:
-            $isEmpty = TRUE;
-            break;
-        default:
-            $sql = "SELECT `title`, `namespace` FROM `_article` WHERE `namespace` IN ('프로젝트') ORDER BY `lastEdit` DESC LIMIT 1";
-            $result = mysqli_query($conn, $sql);
-            $row = mysqli_fetch_assoc($result);
-            if($row['namespace'] == '프로젝트'){
-                $tnLabel = '프로젝트';
-                $tnHref = '/w/'.$row['title'];
-                $tnText = $row['title'].' '.$tnLabel;
-            }
-            break;
-    }
-    if($isEmpty){
-        $sql = "SELECT COUNT(*) as `cnt` FROM `_ad` WHERE `at` > DATE_SUB(NOW(), INTERVAL 30 DAY) and `type` = 'PUB_S_ADVT'";
-        $res = mysqli_query($conn, $sql);
-        $res = mysqli_fetch_assoc($res);
-        $cnt = $res['cnt'] - 1;
-        $n = mt_rand(0, $cnt);
-        $tnLabel = '광고';
-
-        if($cnt < 0){
-            $isEmpty = TRUE;
-        }else{
-            $sql = "SELECT `ad`, `link` FROM `_ad` WHERE `at` > DATE_SUB(NOW(), INTERVAL 30 DAY) and `type` = 'PUB_S_ADVT' and `ad` IS NOT NULL ORDER BY `at` DESC LIMIT $n, 1";
-            $res = mysqli_query($conn, $sql);
-            $res = mysqli_fetch_assoc($res);
-    
-                $tnHref = $res['link'];
-                $tnText = $res['ad'];
-        }
-    }
+        $sql = "SELECT `title` FROM `_article` WHERE `type` = 'COMMON' and `title` not like '%/%' ORDER BY rand() LIMIT 1";
+        $result = mysqli_query($conn, $sql);
+        $row = mysqli_fetch_assoc($result);
+        $fnwSuggest = $row['title'];
 ?>
 
 <!DOCTYPE html>
 <html lang="<?=$fnLang?>">
     <head>
         <meta charset="UTF-8">
-        <meta name="robots" content="noindex">
+        <meta name="robots" content="noarchive">
         <meta name="author" content="FNBase Team">
         <meta name="theme-color" content="<?=$fnPColor?>">
         <meta name="classification" content="html">
@@ -164,17 +120,19 @@
                 }
             }
             html { overflow-y:scroll; word-break: break-word }
+            ul,ol {
+                margin: 0;
+            }
         </style>
+        <link rel="stylesheet" as="font" crossorigin="crossorigin" type="text/css" href="https://fnbase.xyz/icofont2/icofont.min.css">
         <link rel="stylesheet" href="https://fnbase.xyz/wiki.css">
         <link rel="stylesheet" href="https://fnbase.xyz/default.css">
         <link rel="stylesheet" href="https://fnbase.xyz/picnic.css">
-        <link rel="stylesheet" type="text/css" href="https://fnbase.xyz/icofont2/icofont.min.css">
         <link rel="shortcut icon" href="https://fnbase.xyz/wiki.png">
         <?=$fnPHead.$lsHead?>
     </head>
     <body style="background:<?=$fnBColor?>">
         <a id="top"></a>
-        <!-- 상단바 #6149ad -->
         <header>
             <nav class="nav" style="position:static;background: <?=$fnPColor?>">
                 <a href="/w/" class="brand">
@@ -200,17 +158,17 @@
                         $isLogged = TRUE;
                     }else{
                         echo '<div class="menu">
-                            <a href="/w/로그인" class="button"><h-m><i class="icofont-login"></i> 로그인</h-m><h-d><i class="icofont-invisible"></i></h-d></a>
+                            <a href="/w/로그인" class="button success"><h-m><i class="icofont-login"></i> 로그인</h-m><h-d><i class="icofont-invisible"></i></h-d></a>
                         </div>';
                         $isLogged = FALSE;
                     }
                 ?>
             </nav>
-            <span style="color:white">
-                <div id="topNoticeLine" style="background:<?=$fnSColor?>">
-                    <a href="<?=$tnHref?>" style="color:white"><span class="label success"><?=$tnLabel?></span> <?=$tnText?></a>
+            <form action="javascript:void(0)" onsubmit="if(!document.querySelector('#search-top').value){document.querySelector('#search-top').value = document.querySelector('#search-top').placeholder;};location.href = '/w/'+document.getElementById('search-top').value.replace('?', '%3F')">
+                <div id="topNoticeLine" style="background:<?=$fnSColor?>;text-overflow:unset;color:white">
+                    <a href="/w/임의 문서로" class="label success">검색</a><input id="search-top" style="background:transparent;border:none;height:1.2em" placeholder="<?=$fnwSuggest?>">
                 </div>
-            </span>
+            </form>
         </header>
         <!-- 페이지 로드 -->
         <article class="flex">
@@ -242,7 +200,7 @@
                     $d_title = $row['discussName'];
                     echo '<div class="card" class="wikiDiscussCard">
                             <header style="background:#f3f3f3;border-bottom:1px solid #e6e6e6">
-                                <h4 class="black noGray"><a href="/d/'.$row['title'].'"><i class="icofont-page"></i> '.$row['title'].'</a></h4>
+                                <h4 class="black noGray"><a href="/w/'.$row['title'].'"><i class="icofont-page"></i> '.$row['title'].'</a></h4>
                             </header>
                             <section>';
                             if($row['status'] == 'ACTIVE'){
@@ -278,19 +236,18 @@
                                     $name = $wE;
                         
                                     $icon = 'invisible';
-                                    $href = 'javascript:void(0);" data-tooltip="가입하지 않은 사용자입니다." class="tooltip-bottom';
+                                    $href = 'https://fnbase.xyz/misc%3EmanageCenter%3E'.$wE;
                                 }else{
                                     $name = mysqli_fetch_assoc($resultn);
                                     $name = $name['name'];
                         
                                     $icon = 'user-alt-7';
-                                    $href = '/u>'.$wE;
+                                    $href = '/u/'.$wE;
                                 }
 
-                                $content = nl2br(documentRender($row['content']));
+                                $content = nl2br(documentRender($row['content'], 'discuss'));
                                 $content = filt(preg_replace('/<\/h(\d)><br \/>/m', '</h$1>', $content), 'oth');
-
-                                echo '<div class="card" class="wikiDiscussCard">
+                                echo '<div class="card" class="wikiDiscussCard" id="discuss_'.$d.'">
                                     <header class="black noGray" style="background:#f6f6f6;border-bottom:1px solid #e6e6e6">
                                         <b>#'.$d.'</b> <span class="muted"><i class="icofont-'.$icon.'"></i> <a href="'.$href.'">'.$name.'</a></span><span class="subInfo"><h-d><br></h-d><h-m>
                                         </h-m>('.$row['at'].')</span>
@@ -312,7 +269,7 @@
                                         if($canEdit || $id){
                                         echo '<br><a id="discussBtm"></a><div class="card" class="wikiDiscussCard">
                                             <header class="black noGray" style="background:#f6f6f6;border-bottom:1px solid #e6e6e6">
-                                                <b><i class="icofont-mic"></i> 발언하기</b><span class="muted"> <i class="icofont-'.$icon.'"></i> '.$name.'<span>
+                                                <b><i class="icofont-mic"></i> 발언하기</b><span class="subInfo"> <i class="icofont-'.$icon.'"></i> '.$name.'<span>
                                             </header>
                                             <section style="padding-bottom:.45em">
                                             <form action="/wiki_d.php?mode=speak&title='.$fnwTitle.'" method="post">
@@ -346,19 +303,32 @@
                 <div id="mainTitle">
                     <h2 id="wikiTitleText" class="black noGray"><a href="/w/<?=$url?>"><?=$title?><span id="wikiModeText" class="muted"></span></a></h2>
                     <hr><span id="wikiTitleRaw" style="display:none"><?=$fnwTitle?></span>
+                    <script>
+                        if(document.URL.includes('?from=')){
+                            rediFrom = document.URL.split('?from=')
+                            document.querySelector('#wikiTitleRaw').style.display = ''
+                            document.querySelector('#wikiTitleRaw').innerHTML = '<a href="https://fnbase.xyz/wiki/'+rediFrom[1]+'">'+decodeURI(rediFrom[1])+'</a> 에서 넘어옴<hr>'
+                        }
+                    </script>
                 </div>
                 <div id="mainContent">
                     <?php
                         $parStr = documentRender('___PARENT___', TRUE);
                         if(strlen($parStr) > 0){
                             if($parStr == '틀'){
-                                echo '<a href="/w/틀">틀</a> 문서입니다.<hr>';
+                                echo '<a href="/w/틀">틀</a> 문서입니다.<hr style="margin-top:4px">';
+                            }elseif($parStr == '분류'){
+                                echo '<a href="/w/분류">분류</a> 문서입니다.<hr style="margin-top:4px">';
+                                $catTitle = explode('/', $fnwTitle, 2);
+                                $catTitle = $catTitle[1];
+                                $document['execute'] = 'category';
                             }else{
-                                echo '상위 문서 : <a href="/w/'.$parStr.'">'.$parStr.'</a><hr>';
+                                echo '상위 문서 : <a href="/w/'.$parStr.'">'.$parStr.'</a><hr style="margin-top:4px">';
                             }
                         }
                         $content = nl2br(documentRender($document['content']));
                         echo preg_replace('/<br( \/)*>\n<hr>/m', '<hr>', preg_replace('/(src="|<hr>)(.*)<br( \/)*>/m', '$1$2', preg_replace('/<\/h(\d)><br \/>/m', '</h$1>', $content)));
+                        echo '</table>';
                         if($document['execute']){
                             switch ($document['execute']) {
                                 case 'list':
@@ -404,16 +374,16 @@
                                             $name = $wE;
                                 
                                             $icon = 'invisible';
-                                            $href = 'javascript:void(0);" data-tooltip="가입하지 않은 사용자입니다." class="tooltip-bottom';
+                                            $href = 'https://fnbase.xyz/misc%3EmanageCenter%3E'.$wE;
                                             if($isAdmin){
-                                                $href = '../misc>manageCenter>'.$name;
+                                                $href = '/misc>manageCenter>'.$name;
                                             }
                                         }else{
                                             $name = mysqli_fetch_assoc($resultn);
                                             $name = $name['name'];
                                 
                                             $icon = 'user-alt-7';
-                                            $href = '/u>'.$wE;
+                                            $href = '/u/'.$wE;
                                         }
                                         echo '<tr><td class="black"><a href="/w/'.$row['title'].'"><i class="icofont-page"></i> '.$row['title'].'<br>
                                         <span class="subInfo"><i class="icofont-eraser"></i> '.get_timeFlies($row['lastEdit']).'
@@ -423,7 +393,7 @@
                                     break;
                                 case 'discussRecent':
                                     echo '<br><table class="full"><tbody>';
-                                    $sql = "SELECT * FROM `_discuss` WHERE `status` IN ('ACTIVE', 'PAUSE') ORDER BY `lastEdit` DESC LIMIT 30";
+                                    $sql = "SELECT * FROM `_discuss` WHERE `status` IN ('ACTIVE') ORDER BY `lastEdit` DESC LIMIT 30";
                                     $result = mysqli_query($conn, $sql);
                                     while($row = mysqli_fetch_assoc($result)){
 
@@ -434,18 +404,14 @@
                                     echo '</tbody></table>';
                                     break;
                                 case 'random':
-                                    $sql = "SELECT count(*) as `cnt` FROM `_article`";
-                                    $result = mysqli_query($conn, $sql);
-                                    $row = mysqli_fetch_assoc($result);
-                                    $rand = mt_rand('1', $row['cnt']);
-                                    $sql = "SELECT `title` FROM `_article` WHERE `num` = '$rand'";
+                                    $sql = "SELECT `title` FROM `_article` WHERE `type` = 'COMMON' ORDER BY rand() LIMIT 1";
                                     $result = mysqli_query($conn, $sql);
                                     $row = mysqli_fetch_assoc($result);
                                     echo '<script>location.href = "/w/'.$row['title'].'"</script>';
                                     break;
                                 case 'search':
                                     echo '<br><hr><h3>검색 결과</h3><b>제목 일치</b><table class="full"><tbody>';
-                                    $sql = "SELECT * FROM `_article` WHERE `title` like '%$fnwTitle%' ORDER BY `lastEdit` DESC LIMIT 30";
+                                    $sql = "SELECT * FROM `_article` WHERE `title` like '%$fnwTitle%' ORDER BY `lastEdit` DESC LIMIT 50";
                                     $result = mysqli_query($conn, $sql);
                                     if(mysqli_num_rows($result) > 0){
                                         while($row = mysqli_fetch_assoc($result)){
@@ -457,13 +423,13 @@
                                                 $name = $wE;
                                     
                                                 $icon = 'invisible';
-                                                $href = 'javascript:void(0);" data-tooltip="가입하지 않은 사용자입니다." class="tooltip-bottom';
+                                                $href = 'https://fnbase.xyz/misc%3EmanageCenter%3E'.$wE;
                                             }else{
                                                 $name = mysqli_fetch_assoc($resultn);
                                                 $name = $name['name'];
                                     
                                                 $icon = 'user-alt-7';
-                                                $href = '/u>'.$wE;
+                                                $href = '/u/'.$wE;
                                             }
                                             echo '<tr><td class="black noGray"><a href="/w/'.$row['title'].'"><i class="icofont-page"></i> '.$row['title'].'<br>
                                             <span class="subInfo"><i class="icofont-eraser"></i> '.get_timeFlies($row['lastEdit']).'
@@ -489,16 +455,16 @@
                                                 $name = $wE;
                                     
                                                 $icon = 'invisible';
-                                                $href = 'javascript:void(0);" data-tooltip="가입하지 않은 사용자입니다." class="tooltip-bottom';
+                                                $href = 'https://fnbase.xyz/misc%3EmanageCenter%3E'.$wE;
                                             }else{
                                                 $name = mysqli_fetch_assoc($resultn);
                                                 $name = $name['name'];
                                     
                                                 $icon = 'user-alt-7';
-                                                $href = '/u>'.$wE;
+                                                $href = '/u/'.$wE;
                                             }
                                             echo '<tr><td class="black noGray"><a href="/w/'.$row['title'].'"><i class="icofont-page"></i> '.$row['title'].'<br>
-                                            <blockquote>..'.$stxt[0].'..</blockquote>
+                                            <blockquote>..'.preg_replace('/&lt;(\/){0,1}mark&gt;/', '<$1mark>', htmlspecialchars($stxt[0])).'..</blockquote>
                                             <span class="subInfo"><i class="icofont-eraser"></i> '.get_timeFlies($row['lastEdit']).'
                                             <i class="icofont-'.$icon.'"></i> <a class="subInfo" href="'.$href.'">'.$name.'</a></span><br></td></tr>';
                                         }
@@ -517,11 +483,327 @@
                                     <button style="background-image:linear-gradient(to right, #00a495 30%, #13ad65);color:white;border:green solid 2px;float:right"
                                     onclick="location.href=\'https://namu.wiki/w/'.$fnwTitle.'\'">나무위키<h-m>에서 보기</h-m></button>';
                                     break;
+                                case 'articles':
+                                    $qP = filt($_GET['ap'], '123');
+
+                                    if(empty($qP) or $qP == '0'){
+                                        $qP = 1;
+                                    }
+                                    $l = $qP * 50;
+                                    $lc = $l - 50;
+                                    $l = $lc.', 50';
+                                    $sql_ = "SELECT `num` FROM `_article` WHERE `type` = 'COMMON' ORDER BY `lastEdit` ASC";
+                                    $sql = "SELECT `title`, `viewCount`, `lastEdit` FROM `_article` WHERE `type` = 'COMMON' ORDER BY `lastEdit` ASC LIMIT $l";
+                                    $result = mysqli_query($conn, $sql_);
+                                    $qC = mysqli_num_rows($result);
+                                    $result = mysqli_query($conn, $sql);
+
+                                    echo '<br><table class="full"><tbody>';
+                                    while($row = mysqli_fetch_assoc($result)){
+                                        echo '<tr><td class="black"><a href="/wiki/'.$row['title'].'"><i class="icofont-page"></i> '.$row['title'].'<br>
+                                        <span class="subInfo"><i class="icofont-eraser"></i> '.get_timeFlies($row['lastEdit']).' /</span> <green class="little">'.$row['viewCount'].'</green></td></tr>';
+                                    }
+                                    echo '</tbody></table>';
+
+                                    echo '<!-- 페이지 이동 --><br>
+                                        <div class="center">
+                                            <div class="pagination">
+                                                <a href="/w_1_ap/'.$fnwTitle.'">&laquo;</a>';
+
+                                                $cac = $qC / 50;
+                                                $qlast = ceil($cac);
+
+                                                $cal = $qC % 50;
+                                                if($cal == 0){
+                                                    $qlast = $qlast - 1;
+                                                }
+
+                                                $cac2 = $qP - 2;
+                                                if($cac2 <= 0){
+                                                    $qPg = 1;
+                                                }else{
+                                                    $qPg = $cac2;
+                                                }
+
+                                                $i = 1;
+                                                while (1) {
+                                                    if($qPg == $qP){
+                                                        echo '<a class="active" href="/w_'.$qPg.'_ap/'.$fnwTitle.'">'.$qPg.'</a>';
+                                                    }else{
+                                                        echo '<a href="/w_'.$qPg.'_ap/'.$fnwTitle.'">'.$qPg.'</a>';
+                                                    }
+                                                    if($i == 5){
+                                                    break;
+                                                    }
+                                                    if($qPg == $qlast){
+                                                    break;
+                                                    }
+                                                    $qPg++;
+                                                    $i++;
+                                                }
+
+                                                echo '<a href="/w_'.$qlast.'_ap/'.$fnwTitle.'">&raquo;</a>';
+                                            echo '</div>
+                                        </div>';
+                                    break;
+                                case 'insolvent':
+                                    $qP = filt($_GET['ip'], '123');
+
+                                    if(empty($qP) or $qP == '0'){
+                                        $qP = 1;
+                                    }
+                                    $l = $qP * 50;
+                                    $lc = $l - 50;
+                                    $l = $lc.', 50';
+                                    $sql_ = "SELECT `num` FROM `_article` WHERE `type` = 'COMMON' and `title` not like '틀/%' and `title` not like '분류/%' and `content` not like '\#넘겨주기 %' and `content` not like '\#redirect %' ORDER BY CHAR_LENGTH(`content`) ASC";
+                                    $sql = "SELECT `title`, `viewCount`, `lastEdit`, CHAR_LENGTH(`content`) as `length` FROM `_article`
+                                    WHERE `type` = 'COMMON' and `title` not like '틀/%' and `title` not like '분류/%' and `content` not like '\#넘겨주기%' and `content` not like '\#redirect%' ORDER BY CHAR_LENGTH(`content`) ASC LIMIT $l";
+                                    $result = mysqli_query($conn, $sql_);
+                                    $qC = mysqli_num_rows($result);
+                                    $result = mysqli_query($conn, $sql);
+
+                                    echo '<br><table class="full"><tbody>';
+                                    while($row = mysqli_fetch_assoc($result)){
+                                        echo '<tr><td class="black"><a href="/wiki/'.$row['title'].'"><i class="icofont-page"></i> '.$row['title'].'<br>
+                                        <span class="subInfo"><b>'.$row['length'].' 글자</b> <i class="icofont-eraser"></i> '.get_timeFlies($row['lastEdit']).' /</span> <green class="little">'.$row['viewCount'].'</green></td></tr>';
+                                    }
+                                    echo '</tbody></table>';
+
+                                    echo '<!-- 페이지 이동 --><br>
+                                        <div class="center">
+                                            <div class="pagination">
+                                                <a href="/w_1_ip/'.$fnwTitle.'">&laquo;</a>';
+
+                                                $cac = $qC / 50;
+                                                $qlast = ceil($cac);
+
+                                                $cal = $qC % 50;
+                                                if($cal == 0){
+                                                    $qlast = $qlast - 1;
+                                                }
+
+                                                $cac2 = $qP - 2;
+                                                if($cac2 <= 0){
+                                                    $qPg = 1;
+                                                }else{
+                                                    $qPg = $cac2;
+                                                }
+
+                                                $i = 1;
+                                                while (1) {
+                                                    if($qPg == $qP){
+                                                        echo '<a class="active" href="/w_'.$qPg.'_ip/'.$fnwTitle.'">'.$qPg.'</a>';
+                                                    }else{
+                                                        echo '<a href="/w_'.$qPg.'_ip/'.$fnwTitle.'">'.$qPg.'</a>';
+                                                    }
+                                                    if($i == 5){
+                                                    break;
+                                                    }
+                                                    if($qPg == $qlast){
+                                                    break;
+                                                    }
+                                                    $qPg++;
+                                                    $i++;
+                                                }
+
+                                                echo '<a href="/w_'.$qlast.'_ip/'.$fnwTitle.'">&raquo;</a>';
+                                            echo '</div>
+                                        </div>';
+                                    break;
+                                case 'unctgrzd':
+                                    $qP = filt($_GET['gp'], '123');
+
+                                    if(empty($qP) or $qP == '0'){
+                                        $qP = 1;
+                                    }
+                                    $l = $qP * 50;
+                                    $lc = $l - 50;
+                                    $l = $lc.', 50';
+                                    $sql_ = "SELECT `num` FROM `_article` WHERE `type` = 'COMMON' and `content` not like '\#넘겨주기%' and `content` not like '\#redirect%' ORDER BY `lastEdit` ASC";
+                                    $sql = "SELECT `title`, `viewCount`, `lastEdit` FROM `_article` WHERE `type` = 'COMMON' and `content` not like '\#넘겨주기%' and `content` not like '\#redirect%' ORDER BY `lastEdit` ASC LIMIT $l";
+                                    $result = mysqli_query($conn, $sql_);
+                                    $qC = mysqli_num_rows($result);
+                                    $result = mysqli_query($conn, $sql);
+
+                                    echo '<br><table class="full"><tbody>';
+                                    while($row = mysqli_fetch_assoc($result)){
+                                        echo '<tr><td class="black"><a href="/wiki/'.$row['title'].'"><i class="icofont-page"></i> '.$row['title'].'<br>
+                                        <span class="subInfo"><i class="icofont-eraser"></i> '.get_timeFlies($row['lastEdit']).' /</span> <green class="little">'.$row['viewCount'].'</green></td></tr>';
+                                    }
+                                    echo '</tbody></table>';
+
+                                    echo '<!-- 페이지 이동 --><br>
+                                        <div class="center">
+                                            <div class="pagination">
+                                                <a href="/w_1_gp/'.$fnwTitle.'">&laquo;</a>';
+
+                                                $cac = $qC / 50;
+                                                $qlast = ceil($cac);
+
+                                                $cal = $qC % 50;
+                                                if($cal == 0){
+                                                    $qlast = $qlast - 1;
+                                                }
+
+                                                $cac2 = $qP - 2;
+                                                if($cac2 <= 0){
+                                                    $qPg = 1;
+                                                }else{
+                                                    $qPg = $cac2;
+                                                }
+
+                                                $i = 1;
+                                                while (1) {
+                                                    if($qPg == $qP){
+                                                        echo '<a class="active" href="/w_'.$qPg.'_gp/'.$fnwTitle.'">'.$qPg.'</a>';
+                                                    }else{
+                                                        echo '<a href="/w_'.$qPg.'_gp/'.$fnwTitle.'">'.$qPg.'</a>';
+                                                    }
+                                                    if($i == 5){
+                                                    break;
+                                                    }
+                                                    if($qPg == $qlast){
+                                                    break;
+                                                    }
+                                                    $qPg++;
+                                                    $i++;
+                                                }
+
+                                                echo '<a href="/w_'.$qlast.'_gp/'.$fnwTitle.'">&raquo;</a>';
+                                            echo '</div>
+                                        </div>';
+                                    break;
+                                case 'abcasc':
+                                    $qP = filt($_GET['bp'], '123');
+
+                                    if(empty($qP) or $qP == '0'){
+                                        $qP = 1;
+                                    }
+                                    $l = $qP * 50;
+                                    $lc = $l - 50;
+                                    $l = $lc.', 50';
+                                    $sql_ = "SELECT `num` FROM `_article` WHERE `type` = 'COMMON' ORDER BY `title` ASC";
+                                    $sql = "SELECT `title`, `viewCount`, `lastEdit` FROM `_article` WHERE `type` = 'COMMON' ORDER BY `title` ASC LIMIT $l";
+                                    $result = mysqli_query($conn, $sql_);
+                                    $qC = mysqli_num_rows($result);
+                                    $result = mysqli_query($conn, $sql);
+
+                                    echo '<br><table class="full"><tbody>';
+                                    while($row = mysqli_fetch_assoc($result)){
+                                        echo '<tr><td class="black"><a href="/wiki/'.$row['title'].'"><i class="icofont-page"></i> '.$row['title'].'<br>
+                                        <span class="subInfo"><i class="icofont-eraser"></i> '.get_timeFlies($row['lastEdit']).' /</span> <green class="little">'.$row['viewCount'].'</green></td></tr>';
+                                    }
+                                    echo '</tbody></table>';
+
+                                    echo '<!-- 페이지 이동 --><br>
+                                        <div class="center">
+                                            <div class="pagination">
+                                                <a href="/w_1_bp/'.$fnwTitle.'">&laquo;</a>';
+
+                                                $cac = $qC / 50;
+                                                $qlast = ceil($cac);
+
+                                                $cal = $qC % 50;
+                                                if($cal == 0){
+                                                    $qlast = $qlast - 1;
+                                                }
+
+                                                $cac2 = $qP - 2;
+                                                if($cac2 <= 0){
+                                                    $qPg = 1;
+                                                }else{
+                                                    $qPg = $cac2;
+                                                }
+
+                                                $i = 1;
+                                                while (1) {
+                                                    if($qPg == $qP){
+                                                        echo '<a class="active" href="/w_'.$qPg.'_bp/'.$fnwTitle.'">'.$qPg.'</a>';
+                                                    }else{
+                                                        echo '<a href="/w_'.$qPg.'_bp/'.$fnwTitle.'">'.$qPg.'</a>';
+                                                    }
+                                                    if($i == 5){
+                                                    break;
+                                                    }
+                                                    if($qPg == $qlast){
+                                                    break;
+                                                    }
+                                                    $qPg++;
+                                                    $i++;
+                                                }
+
+                                                echo '<a href="/w_'.$qlast.'_bp/'.$fnwTitle.'">&raquo;</a>';
+                                            echo '</div>
+                                        </div>';
+                                    break;
+                                case 'category':
+                                    $qP = filt($_GET['cp'], '123');
+
+                                    if(empty($qP) or $qP == '0'){
+                                        $qP = 1;
+                                    }
+                                    $l = $qP * 50;
+                                    $lc = $l - 50;
+                                    $l = $lc.', 50';
+                                    $sql_ = "SELECT `num` FROM `_article` WHERE `type` = 'COMMON' and `content` like '%[[분류/$catTitle]]%' ORDER BY `lastEdit` ASC";
+                                    $sql = "SELECT `title`, `viewCount`, `lastEdit` FROM `_article` WHERE `type` = 'COMMON' and `content` like '%[[분류/$catTitle]]%' ORDER BY `lastEdit` ASC LIMIT $l";
+                                    $result = mysqli_query($conn, $sql_);
+                                    $qC = mysqli_num_rows($result);
+                                    $result = mysqli_query($conn, $sql);
+
+                                    echo '<br><br><table class="full"><tbody>';
+                                    while($row = mysqli_fetch_assoc($result)){
+                                        echo '<tr><td class="black"><a href="/wiki/'.$row['title'].'"><i class="icofont-page"></i> '.$row['title'].'<br>
+                                        <span class="subInfo"><i class="icofont-eraser"></i> '.get_timeFlies($row['lastEdit']).' /</span> <green class="little">'.$row['viewCount'].'</green></td></tr>';
+                                    }
+                                    echo '</tbody></table><br>';
+
+                                    echo '<!-- 페이지 이동 -->
+                                        <div class="center">
+                                            <div class="pagination">
+                                                <a href="/w_1_cp/'.$fnwTitle.'">&laquo;</a>';
+
+                                                $cac = $qC / 50;
+                                                $qlast = ceil($cac);
+
+                                                $cal = $qC % 50;
+                                                if($cal == 0){
+                                                    $qlast = $qlast - 1;
+                                                }
+
+                                                $cac2 = $qP - 2;
+                                                if($cac2 <= 0){
+                                                    $qPg = 1;
+                                                }else{
+                                                    $qPg = $cac2;
+                                                }
+
+                                                $i = 1;
+                                                while (1) {
+                                                    if($qPg == $qP){
+                                                        echo '<a class="active" href="/w_'.$qPg.'_cp/'.$fnwTitle.'">'.$qPg.'</a>';
+                                                    }else{
+                                                        echo '<a href="/w_'.$qPg.'_cp/'.$fnwTitle.'">'.$qPg.'</a>';
+                                                    }
+                                                    if($i == 5){
+                                                    break;
+                                                    }
+                                                    if($qPg == $qlast){
+                                                    break;
+                                                    }
+                                                    $qPg++;
+                                                    $i++;
+                                                }
+
+                                                echo '<a href="/w_'.$qlast.'_cp/'.$fnwTitle.'">&raquo;</a>';
+                                            echo '</div>
+                                        </div>';
+                                    break;
                                 
                                 default:
                                     echo '<br><table class="full">';
-
                                     echo '<tbody>';
+
                                     echo '<tr><td colspan="2" style="background:'.$fnPColor.'"><strong>사이트 정보</strong></td></tr>';
                                     echo '<tr><td>사이트 이름</td><td>'.$fnTitle.'</td></tr>';
                                     echo '<tr><td>사이트 설명</td><td>'.$fnDesc.'</td></tr>';
@@ -544,7 +826,22 @@
                                     echo '<tr><td><a href="https://htmlpurifier.org">HTML Purifier</a></td><td>LGPL - HTML Purifier</td></tr>';
                                     echo '</tbody>';
 
-                                    echo '</table>';
+                                    echo '</table><br><br>';
+
+
+                                    echo '<br><table class="full">';
+                                    echo '<tbody>';
+
+                                    $sql = "SELECT count(`num`) as `PageCount`, sum(`viewCount`) as `ViewCount`, max(`lastEdit`) as `RCTEdit` FROM `_article` ";
+                                    $result = mysqli_query($conn, $sql);
+                                    $fnWA = mysqli_fetch_assoc($result);
+                                    echo '<tr><td colspan="2" style="background:'.$fnPColor.'"><strong>위키 통계</strong></td></tr>';
+                                    echo '<tr><td>위키 유형</td><td>Open</td></tr>';
+                                    echo '<tr><td>문서 수 합</td><td>'.$fnWA['PageCount'].'</td></tr>';
+                                    echo '<tr><td>조회 수 합</td><td>'.$fnWA['ViewCount'].'</td></tr>';
+                                    echo '<tr><td>최근 편집</td><td>'.$fnWA['RCTEdit'].' ('.get_timeFlies($fnWA['RCTEdit']).')</td></tr>';
+
+                                    echo '</table><br><br>';
                                     break;
                             }
                         }
@@ -553,13 +850,16 @@
                 <div id="editPlace" style="display:none">
                     <div id="editPlaceText"></div>
                 </div>
-                <div id="contentFooter" class="subInfo" style="text-align: right">
+                <div id="contentFooter" class="subInfo" style="text-align:right;min-width:100%">
                     <hr>
-                    <p>모든 문서는 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.ko">CC-BY-SA 4.0</a>으로 배포되며,
-                    <h-d><br></h-d>기여자는 기여 부분에 대한 저작권을 갖습니다.&nbsp;<br>
-                    문서에 첨부된 사진, 동영상 등의 경우, 개별적인 라이선스를 따릅니다.&nbsp;</p>
-                    <p>OpenFNB는 정보만을 중시하지 않으며, 정확성을 보장하지 않습니다.&nbsp;<br>
-                    자유롭게 이용 가능하나 내부 규칙 및 대한민국 법률을 위반하지 마세요.&nbsp;</p>
+                    <?php
+                        $sql = "SELECT * FROM `_article` WHERE `title` = '_Footer'";
+                        $footer = mysqli_query($conn, $sql);
+                        if($footer){
+                            $footer = mysqli_fetch_assoc($footer);
+                            echo nl2br(documentRender($footer['content']));
+                        }
+                    ?>
                 </div>
                     <?php } ?>
             </section>
@@ -589,6 +889,16 @@
                     </section>
             </aside>
         </article>
+        <script>
+            //임시 기능
+            var re = /plusAll\(([0-9+\-\*\/\.]+)\)/;
+            if(document.body.querySelector('#mainArticle').innerHTML.match(re)){
+                while(document.body.querySelector('#mainArticle').innerHTML.match(re)){
+                    var val = document.body.querySelector('#mainArticle').innerHTML.match(re)
+                    document.body.querySelector('#mainArticle').innerHTML = document.body.querySelector('#mainArticle').innerHTML.replace(val[0], eval(val[1]))
+                }
+            }
+        </script>
         <hr>
         <!-- 로그인 모달 호출 -->
             <?php
@@ -603,12 +913,12 @@
                             <h3>메뉴</h3>
                             <label for="userModal" class="close">&times;</label>
                             </header>
-                            <form method="post" action="login.php">
+                            <form method="post" action="/login.php">
                                 <section class="content">
                                     회원 전용 기능입니다. 사용해보세요!
                                 </section>
                                 <footer class="lilMob">
-                                    <a class="button" href="/u>'.$_SESSION['fnUserId'].'">내 정보</a>
+                                    <a class="button" href="/u/'.$_SESSION['fnUserId'].'">내 정보</a>
                                     <span class="right">
                                     <a class="button dangerous" href="/wiki/로그인">로그아웃</a>
                                     </span>
@@ -628,26 +938,27 @@
                     <h3><i class="icofont-plus-square"></i> 표시 설정</h3>
                     <label for="wikiOption" class="close">&times;</label>
                     </header>
-                    <form method="post" action="login.php">
+                    <form method="post" action="/sub/wikiOpt.php">
                         <section class="content">
-                            <label><input type="id" name="id" placeholder="상단바 색상 (hex)" class="pcwidth" value="<?=$fnPColor?>" required></label><hr>
-                            <label>
-                                <input type="checkbox">
-                                <span class="checkable">상단 알림줄 끄기</span>
+                            <label><input name="topColor" placeholder="상단바 색상 (hex)" class="pcwidth" value="#49ad78" required></label><br>
+                            <label><input name="seaColor" placeholder="검색창 색상 (hex)" class="pcwidth" value="#59d697" required></label><hr>
+                            <!--<label>
+                                <input type="checkbox" name="disrespect"<--?=$disRedi?>>
+                                <span class="checkable">준비중</span>
                             </label><h-d><br></h-d>
                             <label>
-                                <input type="checkbox">
-                                <span class="checkable">야간 모드 활성화</span>
+                                <input type="checkbox" name="blindingLights"<--?=$bldLits?>>
+                                <span class="checkable">색 반전 모드</span>
                             </label><h-d><br></h-d>
                             <label>
-                                <input type="checkbox">
+                                <input type="checkbox" name="forGrandpa"<--?=$forG?>>
                                 <span class="checkable">글씨 크게</span>
-                            </label>
+                            </label>-->
+                        
+                            <button class="button full" type="submit">설정 저장</button>
                         </section>
-                        <footer>
-                            <button class="button success full" type="submit">설정 저장</button>
-                        </footer>
                     </form>
+                    <span class="subInfo">추후 더 많은 기능이 추가될 예정입니다.</span>
                 </article>
             </div>
             <div class="modal">
@@ -679,12 +990,15 @@
                 <label for="wikiSearch" class="overlay"></label>
                 <article>
                     <header>
-                    <h3><i class="icofont-search-document"></i> 문서 검색</h3>
+                    <h3><i class="icofont-search-document"></i> 문서 도구</h3>
                     <label for="wikiSearch" class="close">&times;</label>
                     </header>
                     <footer class="pcwidth">
-                    <form action="javascript:void(0)" onsubmit="location.href = '/w/'+document.getElementById('search-query').value">
-                        <input type="text" id="search-query" placeholder="검색..">
+                    <div id="tocDiv" style="display:block">
+                        <span class="lager">목차</span><hr>
+                    </div>
+                    <form action="javascript:void(0)" onsubmit="location.href = '/w/'+document.getElementById('search-query-modal').value">
+                        <input type="text" id="search-query-modal" placeholder="검색..">
                         <button type="submit" class="success full"><i class="icofont-search-folder"></i> 검색하기</button>
                         <a class="button full" href="/w/임의 문서로"><i class="icofont-random"></i> 임의 문서로</a>
                     </form>
@@ -721,13 +1035,26 @@
                     </footer>
                 </article>
             </div>
+            <div class="modal">
+                <input id="wikiNotes" type="checkbox" />
+                <label for="wikiNotes" id="wPreNote" class="overlay"></label>
+                <article>
+                    <header>
+                    <h3><i class="icofont-search-document"></i> 각주 표시</h3>
+                    <label for="wikiNotes" class="close">&times;</label>
+                    </header>
+                    <footer class="pcwidth" id="wPreNoteTxt">
+                        표시 대기중...
+                    </footer>
+                </article>
+            </div>
             <!-- 알림창 -->
             <?php
             if($isLogged){
                 $sql = "SELECT `type` FROM `_ment` WHERE `target` = '$id' and `isSuccess` = 0";
                 $result = mysqli_query($conn, $sql);
                 if(mysqli_num_rows($result) > 0){
-                    echo '<a id="nofiBox" href="./nofi">
+                    echo '<a id="nofiBox" href="/nofi">
                         <span style="color:yellow">[알림] 새 알림이 있습니다!</span>';
                     $cmC = 0;
                     $mtC = 0;
@@ -741,7 +1068,7 @@
                     }
                     echo '<br><span class="nofiText">(호출 '.$mtC.'건, 댓글 '.$cmC.'건)</span><br>';
                 }elseif($board == 'recent'){
-                    echo '<a id="nofiBox" href="./nofi" style="opacity: 0.7">
+                    echo '<a id="nofiBox" href="/nofi" style="opacity: 0.7">
                         <span class="nofiText">[알림] 새 알림이 없습니다.</span><br>';
                 }
             }
@@ -798,7 +1125,46 @@
         <?php $pageTitle = str_ireplace('&apos;', "\'", str_ireplace('&quot;', '\"', $fnwTitle)); ?>
         <script>
             document.title = "<?=$pageTitle.' - '.$fnTitle?>"
-            wikiTitle = "<?=$fnwTitle?>"</script>
+            wikiTitle = "<?=$fnwTitle?>"
+            window.onload = function () {
+                if(document.getElementById("mainContent")){
+                    //목차
+                    var toc = "";
+                    var level = 0;
+
+                    document.getElementById("mainContent").innerHTML =
+                        document.getElementById("mainContent").innerHTML.replace(
+                            /<h([2-5])>([^<]+)<\/h([2-5])>/gi,
+                            function (str, openLevel, titleText, closeLevel) {
+                                if (openLevel != closeLevel) {
+                                    return str;
+                                }
+                                if (openLevel > level) {
+                                    toc += (new Array(openLevel - level + 1)).join("<ol>");
+                                } else if (openLevel < level) {
+                                    toc += (new Array(level - openLevel + 1)).join("</ol>");
+                                }
+                                level = parseInt(openLevel);
+                                var anchor = titleText.trim();
+                                toc += "<li><a class=\"black\" href=\"#" + anchor + "\">" + titleText
+                                    + "</a></li>";
+                                return "<h" + openLevel + "><a class=\"black\" name=\"" + anchor + "\">"
+                                    + titleText + "</a></h" + closeLevel + ">";
+                            }
+                        );
+
+                    if (level) {
+                        toc += (new Array(level + 1)).join("</ol>");
+                    }
+
+                    if (!toc){
+                        document.querySelector('#tocDiv').style.display = 'none';
+                    } else {
+                        document.getElementById("tocDiv").innerHTML += toc+'\n<hr>';
+                    }
+                }
+            };
+            </script>
         <?php
             if($_GET['on'] == 'discuss'){
                 echo '<script>wikiDiscuss(\''.$fnwTitle.'\');</script>';

@@ -1,0 +1,17 @@
+{
+  "short_name": "FNBase",
+  "name": "FNBase - 마음 편한 커뮤니티",
+  "description": "커뮤니티 사이트 FNBase의 프로그레시브 웹 앱입니다.",
+  "icons": [
+    {
+      "src": "https://fnbase.xyz/icon.png",
+      "type": "image/png",
+      "sizes": "100x100"
+    }
+  ],
+  "start_url": "/?source=pwa",
+  "background_color": "#999999",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#2363ad"
+}

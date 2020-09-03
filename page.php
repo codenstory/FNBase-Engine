@@ -1,12 +1,12 @@
 <?php
     $pgNum = filt($_GET['n'], '123');
     $pgPage = filt($_GET['p'], '123');
-    if(empty($pgPage)){
+    if(empty($pgPage) or $pgPage == '0'){
         $pgPage = 1;
     }
     $pgBoard = $board;
 
-    if($pgBoard == 'recent'){ #게시글 표시
+    if(in_array($pgBoard, array('recent', 'whole', 'HOF'))){ #게시글 표시
         $sql = "SELECT * FROM `_content` WHERE `num` = '$pgNum' and `type` IN ('COMMON', 'ANON_WRITE')";
         $isRCT = TRUE;
     }else{
@@ -24,7 +24,7 @@
         $isWrong = TRUE;
         $idAlert = 'wrongContent';
     }
-    if($pgContent['id'] == $_SESSION['fnUserId']){
+    if(strtolower($pgContent['id']) == strtolower($_SESSION['fnUserId'])){
         $isMe = TRUE;
     }
     $so = $pgContent['staffOnly'];
@@ -35,8 +35,8 @@
             echo '</section><aside></aside>';
             die('<script>alert("글을 열람할 권한이 없습니다.");window.location.href = document.referrer;</script>');
         }
-        if(!preg_match('/(^|,)'.$name.'($|,)/', $so)){
-            if($id !== $pgContent['id']){
+        if(!preg_match('/(^|,)'.$name.'($|,)/i', $so)){
+            if(strtolower($id) !== strtolower($pgContent['id'])){
                 if(!$isAdmin){
                     if(!$isStaff){
                         echo '</section><aside></aside>';
@@ -68,18 +68,18 @@
             $onS = '이 글에 달린 댓글 알림을 받지 않습니다.';
         }
         $cac = $uv - $dv;
-        if($cac == 0){
-            $em = '중립적';
-        }elseif($cac > 0){
+        if($cac < -1){
+            $em = '<red>반대함</red>';
+        }elseif($cac > 1){
             $em = '<green>동의함</green>';
         }elseif($cac > 10){
             $em = '<blue>적극 동의</blue>';
         }else{
-            $em = '<red>반대함</red>';
+            $em = '중립적';
         }
 
         if($pgContent['type'] == 'COMMON'){
-            $pgUser = '<i class="icofont-user-alt-7"></i> <a class="muted" href="./u%3E'.$pgContent['id'].'_'.$board.'">'.$pgContent['name'].'</a>';
+            $pgUser = '<i class="icofont-user-alt-7"></i> <a class="muted" href="/u/'.$pgContent['id'].'_'.$board.'">'.$pgContent['name'].'</a>';
         }else{
             $ip_s = preg_replace('/([0-9]+\.[0-9]+)\.[0-9]+\.[0-9]+/i', '$1', $pgContent['ip']);
             $pgUser = '<a class="muted tooltip-bottom" data-tooltip="가입하지 않은 사용자입니다."><i class="icofont-invisible"></i>
@@ -94,9 +94,9 @@
                         <span class="subInfo"><?=$pgUser?>
                         <i class="icofont-clock-time"></i> <?=get_timeFlies($pgContent['at'])?>
                         <?php if($pgContent['category'] == NULL){$pgContent['category'] = '기본';}
-                        if($isRCT){echo '<a class="muted" href="./b%3E'.$pgContent['board'].'"><i class="icofont-folder"></i> '.$pgContent['boardName'].'</a>';}
-                        else{echo '<i class="icofont-tag"></i> <a class="muted" href="./b%3E'.$pgContent['board'].'%3Etags_'.$pgContent['category'].'">'.$pgContent['category'].'</a>';} ?>
-                        | 반응 : <?=$em?> | 조회수 <green id="count"><?=$vc?></green>
+                        if($isRCT){echo '<a class="muted" href="/b/'.$pgContent['board'].'"><i class="icofont-folder"></i> '.$pgContent['boardName'].'</a>';}
+                        else{echo '<i class="icofont-tag"></i> <a class="muted" href="/b/'.$pgContent['board'].'/tags_'.$pgContent['category'].'">'.$pgContent['category'].'</a>';} ?>
+                        | 반응 : <?=$em?> | <a href="#comment">댓글 <green id="commnt"><?=$cc?></a></green>
                         </span>
                     </header>
                     <article class="mainCon" id="mainCon">
@@ -114,11 +114,12 @@
                         ?></p>
                     </article>
                     <footer style="font-size:0.75em;">
-                        <form method="post" action="index.php?mode=edit&board=<?=$board?>">
+                        <form method="post" action="/index.php?mode=edit&board=<?=$board?>">
                         <?php
                         echo '<label for="infoModal" class="button" style="background:#6633FF"><i class="icofont-info-square"></i><h-m> 글 정보</h-m></label>';
                         if($isRCT){
-                            echo ' <a class="button" href="./b%3E'.$pgContent['board'].'%3E'.$pgContent['num'].'"><i class="icofont-archive"></i><h-m> 원글보기</h-m></a>';
+                            echo ' <a class="button" href="/b/'.$pgContent['board'].'/'.$pgContent['num'].'"><i class="icofont-archive"></i><h-m> 원글보기</h-m></a>';
+                            echo ' <a class="button" style="background:green" href="/b/'.$pgContent['board'].'>write"><i class="icofont-edit"></i><h-m> 글쓰기</h-m></a>';
                         }elseif($isMe){
                             echo ' <button style="background:#a8a8a8" type="submit"><i class="icofont-eraser"></i><h-m> 수정</h-m></button>';
                         }
@@ -127,22 +128,40 @@
                         <?php
                     if($isMe && !$isRCT){
                             if($pgContent['commentCount'] > 0){
-                                echo '<a class="button tooltip-top" style="background:'.$onC.';" href="./php/mute.php?n='.$pgNum.'&o='.$pgContent['offNotify'].'"
+                                echo '<a class="button tooltip-top" style="background:'.$onC.';" href="/php/mute.php?n='.$pgNum.'&o='.$pgContent['offNotify'].'"
                                 data-tooltip="'.$onS.'"><i class="icofont-volume-mute"></i><h-m> 알림 '.$onT.'</h-m></a>';
                             }else{
-                                echo '<button class="error tooltip-top" formaction="index.php?mode=delete&board='.$board.'"
+                                echo '<button class="error tooltip-top" formaction="/index.php?mode=delete&board='.$board.'"
                                 type="submit"><i class="icofont-bin"></i><h-m> 삭제</h-m></button>';
                             }
-                    }else{
-                        echo '<button class="error" type="submit" formaction="./php/blame.php"><i class="icofont-exclamation-circle"></i><h-m> 신고</h-m></button>';
-                    }
+                    }/*else{
+                        echo '<a class="button error" href="/b/maint>write"><i class="icofont-exclamation-circle"></i><h-m> 신고</h-m></a>';
+                    }*/
                         ?>
-                        <button class="warning" formaction="./php/push.php?mode=un"><i class="icofont-thumbs-down"></i> 반대</button> 
-                        <button class="success" formaction="./php/push.php"><i class="icofont-thumbs-up"></i> 동의</button>
+                        <button class="warning" formaction="/php/push.php?mode=un"><i class="icofont-thumbs-down"></i> 반대</button> 
+                        <button class="success" formaction="/php/push.php"><i class="icofont-thumbs-up"></i> 동의</button>
                         </span>
                         <input type="hidden" name="t" value="<?=$pgContent['title']?>">
                         <input type="hidden" name="n" value="<?=$pgNum?>">
                         </form>
+                        <?php
+                            if($board == 'quiz'){
+                                $sql = "SELECT `isSuccess`, `value`, `target`, `reason` FROM `_othFunc` WHERE `type` = 'QUIZ_QUEST' and `target` LIKE '$pgNum'";
+                                $result = mysqli_query($conn, $sql);
+                                if(mysqli_num_rows($result) == 1){
+                                    $row = mysqli_fetch_assoc($result);
+                                    if($row['isSuccess'] or $isMe){
+                                        if($row['isSuccess']){
+                                            $row['reason'] = '<strike style="muted">'.$row['reason'].'</strike>';
+                                        }else{
+                                            $row['reason'] = '<span>'.$row['reason'].'</span>';
+                                        }
+                                        $val = '<br>정답: '.$row['value'];
+                                    }
+                                    echo '<hr>상금: '.$row['reason'].'ⓟ'.$val;
+                                }
+                            }
+                        ?>
                     </footer>
                 </div>
             <?php
@@ -163,16 +182,16 @@
                 }
 echo '<!-- 글 관리 -->
                 <section class="modifyCon">
-                  <form method="post" action="./php/modifyCon.php">
-                    <button class="outline-'.$rtC.'" formaction="./php/modifyCon.php?mode=R"><i class="icofont-'.$rtI.'"></i> '.$rtT.'<h-m> 부여</h-m></button>
+                  <form method="post" action="/php/modifyCon.php">
+                    <button class="outline-'.$rtC.'" formaction="/php/modifyCon.php?mode=R"><i class="icofont-'.$rtI.'"></i> '.$rtT.'<h-m> 부여</h-m></button>
                     <button class="outline-blue"><i class="icofont-megaphone"></i> <h-m>공지 </h-m>'.$ntc.'</button>
-                    <button class="outline right" formaction="./php/modifyCon.php?mode=B"><i class="icofont-close-squared-alt"></i> 블라인드</button>';
+                    <button class="outline right" formaction="/php/modifyCon.php?mode=B"><i class="icofont-close-squared-alt"></i> 블라인드</button>';
                     $sql = "SELECT `isAdmin` FROM `_account` WHERE `id` = \"".$_SESSION['fnUserId'].'"';
                     $result = mysqli_query($conn, $sql);
                     $iA = mysqli_fetch_assoc($result);
                     if($iA['isAdmin']){
                         echo '<h-d><br></h-d><input type="text" name="m" style="display:inline;width:6em" placeholder="slug">
-                        <input type="submit" formaction="./php/modifyCon.php?mode=M" style="display:inline" value="이동">';
+                        <input type="submit" formaction="/php/modifyCon.php?mode=M" style="display:inline" value="이동">';
                         if($board == 'trash'){
                             echo ' <span class="muted">'.$pgContent['boardName'].'</span>';
                         }
@@ -180,18 +199,18 @@ echo '<!-- 글 관리 -->
                             $sqls = "SELECT * FROM `_ipban` WHERE `ip` = '".$pgContent['ip']."'";
                             $results = mysqli_query($conn, $sqls);
                             if(mysqli_num_rows($results) > 0){
-                                echo ' <a class="button error" href="./sub/ipban.php?ip='.$pgContent['ip'].'">차단됨</a>';
+                                echo ' <a class="button error" href="/sub/ipban.php?ip='.$pgContent['ip'].'">차단됨</a>';
                             }else{
-                                echo ' <a class="button error" href="./sub/ipban.php?ip='.$pgContent['ip'].'">ip 차단</a>';
+                                echo ' <a class="button error" href="/sub/ipban.php?ip='.$pgContent['ip'].'">ip 차단</a>';
                             }
                         }
                     }
                     if(!$isMe){
                         if(mb_strpos($kcd, $pgContent['id']) === FALSE){
-                            echo '<span class="right">&nbsp;<button class="outline-danger" formaction="./php/modifyCon.php?mode=K"><i class="icofont-ban"></i> 차단</button><h-m>&nbsp;</h-m></span>
+                            echo '<span class="right">&nbsp;<button class="outline-danger" formaction="/php/modifyCon.php?mode=K"><i class="icofont-ban"></i> 차단</button><h-m>&nbsp;</h-m></span>
                             <input type="hidden" name="i" value="'.$pgContent['id'].'">';
                         }else{
-                            echo '<span class="right">&nbsp;<button class="outline-green" formaction="./php/modifyCon.php?mode=K"><i class="icofont-gavel"></i> 차단 해제</button><h-m>&nbsp;</h-m></span>
+                            echo '<span class="right">&nbsp;<button class="outline-green" formaction="/php/modifyCon.php?mode=K"><i class="icofont-gavel"></i> 차단 해제</button><h-m>&nbsp;</h-m></span>
                             <input type="hidden" name="i" value="'.$pgContent['id'].'">';
                         }
                     }
@@ -225,9 +244,9 @@ echo '<!-- 글 관리 -->
                 $cmtResult = mysqli_query($conn, $sql);
                 $sql = "SELECT * FROM `_comment` WHERE `from` = '$pgNum'";
                 $cmtfResult = mysqli_query($conn, $sql);
-            if(empty($_SESSION['fnUserId'])){
+            if(empty($_SESSION['fnUserId']) or $_SESSION['fnUserId'] == '0'){
                 echo '<section class="muted" style="font-size:0.9em;padding:5px;border-bottom:1px solid #f5f5f5">
-                    댓글 작성을 위해서는 <a href="./login"><i class="icofont-sign-in"></i> 로그인</a>이 필요합니다.
+                    댓글 작성을 위해서는 <a href="/login"><i class="icofont-sign-in"></i> 로그인</a>이 필요합니다.
                 </section>';
                 while($cmtRow = mysqli_fetch_assoc($cmtResult)){
                     //비로그인 댓글 로딩
@@ -240,7 +259,7 @@ echo '<!-- 글 관리 -->
                             <header>
                                 <span class="subInfo">
                                     &nbsp;<i class="icofont-user-alt-7"></i>
-                                    <a class="muted" href="./u%3E'.$cmtRow['id'].'">'.$cmtRow['name'].'</a><h-d><br></h-d>&nbsp;';
+                                    <a class="muted" href="/u/'.$cmtRow['id'].'">'.$cmtRow['name'].'</a><h-d><br></h-d>&nbsp;';
                                     echo '<i class="icofont-clock-time"></i> '.get_timeFlies($cmtRow['at']);
                                 if($cmtRow['isEdited']){
                                     echo ' <span data-tooltip="'.$cmtRow['isEdited'].' / '.$cmtRow['whoEdited'].'"
@@ -250,7 +269,7 @@ echo '<!-- 글 관리 -->
                             </header>
                             <section class="conText '.$cacc.'">';
                                 if($cmtRow['type'] == 'FNBCON_CMT'){
-                                    echo '<img height="120" onclick="viewFNBCON(\''.$cmtRow['content'].'\')" src="./fnbcon/'.$cmtRow['content'].'">';
+                                    echo '<img height="160" onclick="viewFNBCON(\''.$cmtRow['content'].'\')" src="/fnbcon/'.$cmtRow['content'].'">';
                                 }else{
                                     echo textAlter(nl2br($cmtRow['content']));
                                 }
@@ -271,7 +290,7 @@ echo '<!-- 글 관리 -->
                                             <header>
                                                 <span class="subInfo">
                                                     &nbsp;<i class="icofont-user-alt-7"></i>
-                                                    <a class="muted" href="./u%3E'.$rpRow['id'].'">'.$rpRow['name'].'</a><h-d><br></h-d>&nbsp;';
+                                                    <a class="muted" href="/u/'.$rpRow['id'].'">'.$rpRow['name'].'</a><h-d><br></h-d>&nbsp;';
                                                     echo '<i class="icofont-clock-time"></i> '.get_timeFlies($rpRow['at']);
                                                 if($rpRow['isEdited']){
                                                     echo ' <span data-tooltip="'.$rpRow['isEdited'].' / '.$rpRow['whoEdited'].'"
@@ -281,7 +300,7 @@ echo '<!-- 글 관리 -->
                                             </header>
                                             <section class="conText '.$cacc.'">';
                                                 if($rpRow['type'] == 'FNBCON_REP'){
-                                                    echo '<img height="120" onclick="viewFNBCON(\''.$rpRow['content'].'\')" src="./fnbcon/'.$rpRow['content'].'">';
+                                                    echo '<img height="160" onclick="viewFNBCON(\''.$rpRow['content'].'\')" src="/fnbcon/'.$rpRow['content'].'">';
                                                 }else{
                                                     echo textAlter(nl2br($rpRow['content']));
                                                 }
@@ -302,7 +321,7 @@ echo '<!-- 글 관리 -->
                                                             <header>
                                                                 <span class="subInfo">
                                                                     &nbsp;<i class="icofont-user-alt-7"></i>
-                                                                    <a class="muted" href="./u%3E'.$rplRow['id'].'">'.$rplRow['name'].'</a><h-d><br></h-d>&nbsp;';
+                                                                    <a class="muted" href="/u/'.$rplRow['id'].'">'.$rplRow['name'].'</a><h-d><br></h-d>&nbsp;';
                                                                     echo '<i class="icofont-clock-time"></i> '.get_timeFlies($rplRow['at']);
                                                                 if($rplRow['isEdited']){
                                                                     echo ' <span data-tooltip="'.$rplRow['isEdited'].' / '.$rplRow['whoEdited'].'"
@@ -312,7 +331,7 @@ echo '<!-- 글 관리 -->
                                                             </header>
                                                             <section class="conText '.$cacc.'">';
                                                                 if($rplRow['type'] == 'FNBCON_REP'){
-                                                                    echo '<img height="120" onclick="viewFNBCON(\''.$rplRow['content'].'\')" src="./fnbcon/'.$rplRow['content'].'">';
+                                                                    echo '<img height="160" onclick="viewFNBCON(\''.$rplRow['content'].'\')" src="/fnbcon/'.$rplRow['content'].'">';
                                                                 }else{
                                                                     echo textAlter(nl2br($rplRow['content']));
                                                                 }
@@ -334,7 +353,7 @@ echo '<!-- 글 관리 -->
                     echo '
                     <section class="muted">
                     댓글이 200개 이상입니다.<br>
-                    <a href="./comment_'.$pgNum.'"><i class="icofont-page"></i> 댓글 전체 목록</a> 보기<br>
+                    <a href="/comment_'.$pgNum.'"><i class="icofont-page"></i> 댓글 전체 목록</a> 보기<br>
                     <span class="subInfo">브라우저가 정지하거나 기기에 문제를 일으킬 수 있습니다.</span>
                     </section><hr>
                     ';
@@ -365,7 +384,7 @@ echo '<!-- 글 관리 -->
                             <header>
                                 <span class="subInfo">
                                     &nbsp;<i class="icofont-user-alt-7"></i>
-                                    <a class="muted" href="./u%3E'.$cmtRow['id'].'">'.$cmtRow['name'].'</a><h-d><br></h-d>&nbsp;';
+                                    <a class="muted" href="/u/'.$cmtRow['id'].'">'.$cmtRow['name'].'</a><h-d><br></h-d>&nbsp;';
                                     echo '<i class="icofont-clock-time"></i> '.get_timeFlies($cmtRow['at']);
                                 if($cmtRow['isEdited']){
                                     echo ' <span data-tooltip="'.$cmtRow['isEdited'].' / '.$cmtRow['whoEdited'].'"
@@ -375,26 +394,26 @@ echo '<!-- 글 관리 -->
                             </header>
                             <section class="conText '.$cacc.'">';
                                 if($cmtRow['type'] == 'FNBCON_CMT'){
-                                    echo '<img height="120" onclick="viewFNBCON(\''.$cmtRow['content'].'\')" src="./fnbcon/'.$cmtRow['content'].'">';
+                                    echo '<img height="160" onclick="viewFNBCON(\''.$cmtRow['content'].'\')" src="/fnbcon/'.$cmtRow['content'].'">';
                                 }else{
                                     echo textAlter(nl2br($cmtRow['content']));
                                 }
                             echo '</section>
-                            <footer><form method="post" action="./comment.php?m=edit">';
+                            <footer><form method="post" action="/comment.php?m=edit">';
                             if($isMe){
                                 if($cmtRow['type'] == 'FNBCON_CMT'){
-                                    echo '<button onclick="location.href = \'./comment.php?m=delete&n='.$cmtRow['num'].'&parentNum='.$pgNum.'\'"
+                                    echo '<button onclick="location.href = \'/comment.php?m=delete&n='.$cmtRow['num'].'&parentNum='.$pgNum.'\'"
                                     style="background:red" type="button"><i class="icofont-bin"></i><h-m> 삭제</h-m></button> ';
                                 }else{
                                     echo '<button onclick="editC('.$cmtRow['num'].')" id="ediB'.$cmtRow['num'].'"
                                     style="background:#a8a8a8" type="button"><i class="icofont-eraser"></i><h-m> 수정</h-m></button> ';
                                 }
-                            }else{
-                                echo '<button class="error" type="submit" formaction="./php/blame.php"><i class="icofont-exclamation-circle"></i> '.$cmtRow['blameCount'].'</button> ';
-                                echo '<input type="hidden" name="blameNum" value="'.$cmtRow['num'].'"><input type="hidden" name="blamePageNum" value="'.$pgNum.'">';
+                            }elseif($isStaff){
+                                echo '<button class="error" type="submit" formaction="/php/blame.php"><i class="icofont-ban"></i> 차단</button> ';
+                                echo '<input type="hidden" name="board" value="'.$board.'"><input type="hidden" name="target" value="'.$cmtRow['id'].'">';
                             }
-                                echo '<button class="warning" formaction="./php/push.php?mode=un&n='.$cmtRow['num'].'"><i class="icofont-thumbs-down"></i> '.$cmtRow['voteCount_Down'].'</button>
-                                <button class="success" formaction="./php/push.php?n='.$cmtRow['num'].'"><i class="icofont-thumbs-up"></i> '.$cmtRow['voteCount_Up'].'</button>
+                                echo '<button class="warning" formaction="/php/push.php?mode=un&n='.$cmtRow['num'].'"><i class="icofont-thumbs-down"></i> '.$cmtRow['voteCount_Down'].'</button>
+                                <button class="success" formaction="/php/push.php?n='.$cmtRow['num'].'"><i class="icofont-thumbs-up"></i> '.$cmtRow['voteCount_Up'].'</button>
                                 <span class="right">
                                 <button onclick="addRp('.$cmtRow['num'].')" id="addR'.$cmtRow['num'].'" type="button"><i class="icofont-comment"></i><h-m> 답글 달기</h-m></button>
                                 </span></form>
@@ -403,7 +422,7 @@ echo '<!-- 글 관리 -->
                     </section>';
                         //답글 창 로딩
                         $parNum = $cmtRow['num'];
-                        echo '<section class="comm step_1" id="reply-'.$cmtRow['num'].'" style="display:none"><form method="post" action="./comment.php?m=reply">
+                        echo '<section class="comm step_1" id="reply-'.$cmtRow['num'].'" style="display:none"><form method="post" action="/comment.php?m=reply">
                             <div class="cimg">
                                 <img src="'.$userMail.'">
                             </div>
@@ -433,7 +452,7 @@ echo '<!-- 글 관리 -->
                         $parNum = $cmtRow['num'];
                         $ccnt = NULL;
                         $ccnt = preg_replace('/(<a href=".*">|<\/a>)/', '', $cmtRow['content']);
-                        echo '<section class="comm step_1" id="editC-'.$cmtRow['num'].'" style="display:none"><form method="post" action="./comment.php?m=edit">
+                        echo '<section class="comm step_1" id="editC-'.$cmtRow['num'].'" style="display:none"><form method="post" action="/comment.php?m=edit">
                             <div class="cimg">
                                 <img src="'.$userMail.'">
                             </div>
@@ -444,7 +463,7 @@ echo '<!-- 글 관리 -->
                                     </span>
                                 </header>
                                 <section>
-                                    <textarea maxlength="1000" style="height:5em" onkeydown="ctrSMe('.$cmtRow['num'].')" id="txtE'.$cmtRow['num'].'" name="reply" placeholder="댓글 작성">'.$ccnt.'</textarea>
+                                    <textarea maxlength="1000" style="height:5em" onkeydown="ctrSMe('.$cmtRow['num'].')" id="txtE'.$cmtRow['num'].'" name="reply" placeholder="댓글 작성">'.preg_replace('/<span .+>.+<\/span>/mu', '', $ccnt).'</textarea>
                                     <input type="hidden" name="n" value="'.$cmtRow['num'].'">
                                     <input type="hidden" name="fn" value="'.$pgNum.'">
                                 </section>
@@ -481,7 +500,7 @@ echo '<!-- 글 관리 -->
                                             <header>
                                                 <span class="subInfo">
                                                     &nbsp;<i class="icofont-user-alt-7"></i>
-                                                    <a class="muted" href="./u%3E'.$rpRow['id'].'">'.$rpRow['name'].'</a><h-d><br></h-d>&nbsp;';
+                                                    <a class="muted" href="/u/'.$rpRow['id'].'">'.$rpRow['name'].'</a><h-d><br></h-d>&nbsp;';
                                                     echo '<i class="icofont-clock-time"></i> '.get_timeFlies($rpRow['at']);
                                                 if($rpRow['isEdited']){
                                                     echo ' <span data-tooltip="'.$rpRow['isEdited'].' / '.$rpRow['whoEdited'].'"
@@ -490,21 +509,21 @@ echo '<!-- 글 관리 -->
                                                 echo '</span></header>
                                             <section class="conText">';
                                                 if($rpRow['type'] == 'FNBCON_REP'){
-                                                    echo '<img height="110" onclick="viewFNBCON(\''.$rpRow['content'].'\')" src="./fnbcon/'.$rpRow['content'].'">';
+                                                    echo '<img height="110" onclick="viewFNBCON(\''.$rpRow['content'].'\')" src="/fnbcon/'.$rpRow['content'].'">';
                                                 }else{
                                                     echo textAlter(nl2br($rpRow['content']));
                                                 }
                                             echo '</section>
-                                            <footer><form method="post" action="./comment.php?m=edit">';
+                                            <footer><form method="post" action="/comment.php?m=edit">';
                                             if($isMe){
                                                 echo '<button onclick="editC('.$rpRow['num'].')" id="ediB'.$rpRow['num'].'"
                                                 style="background:#a8a8a8" type="button"><i class="icofont-eraser"></i><h-m> 수정</h-m></button> ';
-                                            }else{
-                                                echo '<button class="error" type="submit" formaction="./php/blame.php"><i class="icofont-exclamation-circle"></i> '.$rpRow['blameCount'].'</button> ';
-                                                echo '<input type="hidden" name="blameNum" value="'.$rpRow['num'].'"><input type="hidden" name="blamePageNum" value="'.$pgNum.'">';
+                                            }elseif($isStaff){
+                                                echo '<button class="error" type="submit" formaction="/php/blame.php"><i class="icofont-ban"></i> 차단</button> ';
+                                                echo '<input type="hidden" name="board" value="'.$board.'"><input type="hidden" name="target" value="'.$rpRow['id'].'">';
                                             }
-                                                echo '<button class="warning" formaction="./php/push.php?mode=un&n='.$rpRow['num'].'"><i class="icofont-thumbs-down"></i> '.$rpRow['voteCount_Down'].'</button>
-                                                <button class="success" formaction="./php/push.php?n='.$rpRow['num'].'"><i class="icofont-thumbs-up"></i> '.$rpRow['voteCount_Up'].'</button>
+                                                echo '<button class="warning" formaction="/php/push.php?mode=un&n='.$rpRow['num'].'"><i class="icofont-thumbs-down"></i> '.$rpRow['voteCount_Down'].'</button>
+                                                <button class="success" formaction="/php/push.php?n='.$rpRow['num'].'"><i class="icofont-thumbs-up"></i> '.$rpRow['voteCount_Up'].'</button>
                                                 <span class="right">
                                                 <button onclick="addRp('.$rpRow['num'].')" id="addR'.$rpRow['num'].'" type="button"><i class="icofont-comment"></i><h-m> 답글 달기</h-m></button>
                                                 </span></form>
@@ -513,7 +532,7 @@ echo '<!-- 글 관리 -->
                                     </section>';
                                         //답글 창 로딩
                                         $parNum = $rpRow['num'];
-                                        echo '<section class="comm step_2" id="reply-'.$rpRow['num'].'" style="display:none"><form method="post" action="./comment.php?m=reply">
+                                        echo '<section class="comm step_2" id="reply-'.$rpRow['num'].'" style="display:none"><form method="post" action="/comment.php?m=reply">
                                             <div class="cimg">
                                                 <img src="'.$userMail.'">
                                             </div>
@@ -543,7 +562,7 @@ echo '<!-- 글 관리 -->
                                         //수정 창 로딩
                                         $ccnt = NULL;
                                         $ccnt = preg_replace('/(<a href=".*">|<\/a>)/', '', $rpRow['content']);
-                                        echo '<section class="comm step_2" id="editC-'.$rpRow['num'].'" style="display:none"><form method="post" action="./comment.php?m=edit">
+                                        echo '<section class="comm step_2" id="editC-'.$rpRow['num'].'" style="display:none"><form method="post" action="/comment.php?m=edit">
                                             <div class="cimg">
                                                 <img src="'.$userMail.'">
                                             </div>
@@ -594,7 +613,7 @@ echo '<!-- 글 관리 -->
                                                                     echo '<a onclick="cmtHR(\''.$rplRow['childOf'].'\')"><i class="icofont-share-alt"></i></a> ';
                                                                 }
                                                                     echo '&nbsp;<i class="icofont-user-alt-7"></i>
-                                                                    <a class="muted" href="./u%3E'.$rplRow['id'].'">'.$rplRow['name'].'</a><h-d><br></h-d>&nbsp;';
+                                                                    <a class="muted" href="/u/'.$rplRow['id'].'">'.$rplRow['name'].'</a><h-d><br></h-d>&nbsp;';
                                                                     echo '<i class="icofont-clock-time"></i> '.get_timeFlies($rplRow['at']);
                                                                 if($rplRow['isEdited']){
                                                                     echo ' <span data-tooltip="'.$rplRow['isEdited'].' / '.$rplRow['whoEdited'].'"
@@ -603,21 +622,21 @@ echo '<!-- 글 관리 -->
                                                                 echo '</span></header>
                                                             <section class="conText">';
                                                                 if($rplRow['type'] == 'FNBCON_REP'){
-                                                                    echo '<img height="100" onclick="viewFNBCON(\''.$rplRow['content'].'\')" src="./fnbcon/'.$rplRow['content'].'">';
+                                                                    echo '<img height="100" onclick="viewFNBCON(\''.$rplRow['content'].'\')" src="/fnbcon/'.$rplRow['content'].'">';
                                                                 }else{
                                                                     echo textAlter(nl2br($rplRow['content']));
                                                                 }
                                                             echo '</section>
-                                                            <footer><form method="post" action="./comment.php?m=edit">';
+                                                            <footer><form method="post" action="/comment.php?m=edit">';
                                                             if($isMe){
                                                                 echo '<button onclick="editC('.$rplRow['num'].')" id="ediB'.$rplRow['num'].'"
                                                                 style="background:#a8a8a8" type="button"><i class="icofont-eraser"></i><h-m> 수정</h-m></button> ';
-                                                            }else{
-                                                                echo '<button class="error" type="submit" formaction="./php/blame.php"><i class="icofont-exclamation-circle"></i> '.$rplRow['blameCount'].'</button> ';
-                                                                echo '<input type="hidden" name="blameNum" value="'.$rplRow['num'].'"><input type="hidden" name="blamePageNum" value="'.$pgNum.'">';
+                                                            }elseif($isStaff){
+                                                                echo '<button class="error" type="submit" formaction="/php/blame.php"><i class="icofont-ban"></i> 차단</button> ';
+                                                                echo '<input type="hidden" name="board" value="'.$board.'"><input type="hidden" name="target" value="'.$rplRow['id'].'">';
                                                             }
-                                                                echo '<button class="warning" formaction="./php/push.php?mode=un&n='.$rplRow['num'].'"><i class="icofont-thumbs-down"></i> '.$rplRow['voteCount_Down'].'</button>
-                                                                <button class="success" formaction="./php/push.php?n='.$rplRow['num'].'"><i class="icofont-thumbs-up"></i> '.$rplRow['voteCount_Up'].'</button>
+                                                                echo '<button class="warning" formaction="/php/push.php?mode=un&n='.$rplRow['num'].'"><i class="icofont-thumbs-down"></i> '.$rplRow['voteCount_Down'].'</button>
+                                                                <button class="success" formaction="/php/push.php?n='.$rplRow['num'].'"><i class="icofont-thumbs-up"></i> '.$rplRow['voteCount_Up'].'</button>
                                                                 <span class="right">
                                                                 <button onclick="addRp('.$rplRow['num'].')" id="addR'.$rplRow['num'].'" type="button"><i class="icofont-comment"></i><h-m> 답글 달기</h-m></button>
                                                                 </span></form>
@@ -625,7 +644,7 @@ echo '<!-- 글 관리 -->
                                                         </div>
                                                     </section>';
                                                         //답글 창 로딩
-                                                        echo '<section class="comm step_3" id="reply-'.$rplRow['num'].'" style="display:none"><form method="post" action="./comment.php?m=reply">
+                                                        echo '<section class="comm step_3" id="reply-'.$rplRow['num'].'" style="display:none"><form method="post" action="/comment.php?m=reply">
                                                             <div class="cimg">
                                                                 <img src="'.$userMail.'">
                                                             </div>
@@ -656,7 +675,7 @@ echo '<!-- 글 관리 -->
                                                         //수정 창 
                                                         $ccnt = NULL;
                                                         $ccnt = preg_replace('/(<a href=".*">|<\/a>)/', '', $rplRow['content']);
-                                                        echo '<section class="comm step_3" id="editC-'.$rplRow['num'].'" style="display:none"><form method="post" action="./comment.php?m=edit">
+                                                        echo '<section class="comm step_3" id="editC-'.$rplRow['num'].'" style="display:none"><form method="post" action="/comment.php?m=edit">
                                                             <div class="cimg">
                                                                 <img src="'.$userMail.'">
                                                             </div>
@@ -685,7 +704,7 @@ echo '<!-- 글 관리 -->
                         }
                     ?>
 <!-- 댓글 남기기 -->
-                    <hr>
+                    </a><hr>
                 <?php  
                 }
                 $sql = "SELECT * FROM `_comment` WHERE `from` = '$pgNum'";
@@ -695,7 +714,7 @@ echo '<!-- 글 관리 -->
                 }else{
                 ?>
                     <footer>
-                        <form method="post" action="comment.php">
+                        <form method="post" action="/comment.php">
                             <textarea onkeydown="ctrSM(0)" id="txtA0" name="c" value="<?=htmlspecialchars($_COOKIE['commBU'])?>" maxlength="1000" placeholder="댓글 작성 (1000자 이내)"></textarea>
                             <div id="fnbcon" class="flex" style="display:none">
                             <?php
@@ -710,19 +729,19 @@ echo '<!-- 글 관리 -->
                                 $fbRow = mysqli_fetch_assoc($fbResult);
 
                                 $value = trim($value);
-                                echo '<div style="float:left" onclick="selectFNBCON(\''.$value.'_ico\')"><span class="fnbcImgBox"><img style="max-width:100px" height="100" src="./fnbcon/'.$value.'/main.png"></span>
+                                echo '<div style="float:left" onclick="selectFNBCON(\''.$value.'_ico\')"><span class="fnbcImgBox"><img style="max-width:100px" height="100" src="/fnbcon/'.$value.'/main.png"></span>
                                 <span id="'.$value.'_ico" class="ico" style="display:none">';
                                 $i = 0;
                                 while($i < $fbRow['count']){
                                     $i++;
-                                    echo '<img height="80"  onclick="FNBCON(\''.$value.'/icon_'.$i.'.'.$fbRow['ext'].'\')" src="./fnbcon/'.$value.'/icon_'.$i.'.'.$fbRow['ext'].'">&nbsp; ';
+                                    echo '<img height="80"  onclick="FNBCON(\''.$value.'/icon_'.$i.'.'.$fbRow['ext'].'\')" src="/fnbcon/'.$value.'/icon_'.$i.'.'.$fbRow['ext'].'">&nbsp; ';
                                 }
                                 echo '</span></div>';
                                 
                             }
                         }
                             ?>
-                                <a href="./emoticon" style="float:left"><i class="icofont-plus-square" style="font-size: 100px"></i></a>
+                                <a href="/emoticon" style="float:left"><i class="icofont-plus-square" style="font-size: 100px"></i></a>
                             </div>
                             <button onclick="openFNBCON()" id="fnbcB" class="default full" style="font-size:0.8em" type="button">
                             <i class="icofont-simple-smile"></i> 픈비콘 사용</button><span id="fnbcI"></span>
@@ -742,105 +761,6 @@ echo '<!-- 글 관리 -->
             }
         }
             ?>
-            <!--<script type="text/javascript" src="./editor/domready.js"></script>-->
-            <script>
-                function addRp(arg){ //답글 달기
-                    if(document.getElementById('reply-' + arg).style.display == 'none'){
-                        document.getElementById('reply-' + arg).style.display = '';
-                        document.getElementById('addR' + arg).innerHTML = '<i class="icofont-error"></i><h-m> 창 닫기</h-m>';
-                    }else{
-                        document.getElementById('reply-' + arg).style.display = 'none';
-                        document.getElementById('addR' + arg).innerHTML = '<i class="icofont-comment"></i><h-m> 답글 달기</h-m>';
-                    }
-                    if(FnbcValRep){
-                        document.getElementById('txtA' + arg).innerHTML = FnbcValRep;
-                        document.getElementById('txtA' + arg).style.display = 'none';
-                        document.getElementById('txtA' + arg).parentNode.innerHTML = document.getElementById('txtA' + arg).parentNode.innerHTML + '<img height="200" src="./fnbcon/'+FnbcValRep+'">';
-                        document.getElementById('fnbCA' + arg).innerHTML = FnbcHidRep;
-                    }
-                }
-
-                function editC(arg){ //댓글 수정
-                    if(document.getElementById('editC-' + arg).style.display == 'none'){
-                        document.getElementById('editC-' + arg).style.display = '';
-                        document.getElementById('ediB' + arg).innerHTML = '<i class="icofont-error"></i><h-m> 창 닫기</h-m>';
-                    }else{
-                        document.getElementById('editC-' + arg).style.display = 'none';
-                        document.getElementById('ediB' + arg).innerHTML = '<i class="icofont-eraser"></i><h-m> 수정</h-m>';
-                    }
-                }
-
-                function cmtHR(arg){ //부모 댓글 강조
-                    if(document.querySelector('#cmt-' + arg + ' div section').style.backgroundColor == 'yellow'){
-                        document.querySelector('#cmt-' + arg + ' div section').style.backgroundColor = '';
-                    }else{
-                        document.querySelector('#cmt-' + arg + ' div section').style.backgroundColor = 'yellow';
-                    }
-                }
-
-                function ctrSM(arg){ //컨트롤+엔터 폼 전송
-                    var input = document.getElementById('txtA' + arg);
-                    input.addEventListener("keydown", function(event) {
-                        if (event.which == 13 && event.ctrlKey) {
-                            document.getElementById('addB' + arg).click();
-                        }
-                    });
-                }
-
-                function ctrSMe(arg){ //컨트롤+엔터 수정 폼 전송
-                    var input = document.getElementById('txtE' + arg);
-                    input.addEventListener("keydown", function(event) {
-                        if (event.which == 13 && event.ctrlKey) {
-                            document.getElementById('edcB' + arg).click();
-                        }
-                    });
-                }
-
-                function openFNBCON(){ //픈비콘 열기
-                    if(document.getElementById('fnbcon').style.display == 'none'){
-                        document.getElementById('fnbcon').style.display = '';
-                        document.getElementById('fnbcB').innerHTML = '<i class="icofont-simple-smile"></i> 선택창 닫기';
-                        document.getElementById('txtA0').style.display = 'none';
-                        document.getElementById('txtA0').innerHTML = '';
-                    }else{
-                        document.getElementById('fnbcon').style.display = 'none';
-                        document.getElementById('fnbcPreDiv').style.display = 'none';
-                        document.getElementById('fnbcB').innerHTML = '<i class="icofont-simple-smile"></i> 픈비콘 사용';
-                        document.getElementById('txtA0').innerHTML = '';
-                        document.getElementById('txtA0').style.display = '';
-                        document.getElementById('fnbcI').innerHTML = '';
-                    }
-                }
-
-                function selectFNBCON(arg){ //픈비콘 목록 보이기
-                    if(document.getElementById(arg).style.display == 'none'){
-                        var divsToHide = document.getElementsByClassName('ico');
-                        for(var i = 0; i < divsToHide.length; i++){
-                            divsToHide[i].style.display = "none";
-                        }
-                        document.getElementById(arg).style.display = '';
-                    }else{
-                        var divsToHide = document.getElementsByClassName('ico');
-                        for(var i = 0; i < divsToHide.length; i++){
-                            divsToHide[i].style.display = "none";
-                        }
-                    }
-                }
-
-                function viewFNBCON(arg){ //픈비콘 보기
-                    arg = arg.replace(/\/(.+)/, '');
-                    location.href = './emoticon>'+arg;
-                }
-
-                function FNBCON(arg){ //픈비콘 선택
-                    document.getElementById('txtA0').innerHTML = arg;
-                    document.getElementById('fnbcPreDiv').style.display = '';
-                    document.getElementById('fnbcPreview').src = './fnbcon/'+arg;
-                    document.getElementById('fnbcI').innerHTML = '<input type="hidden" name="fnbcon" value="FNBCON_CMT">';
-                    FnbcValRep = document.getElementById('txtA0').innerHTML;
-                    FnbcHidRep = '<input type="hidden" name="fnbcon" value="FNBCON_REP">';
-                }
-            </script>
     <div class="modal">
         <input id="infoModal" type="checkbox" />
         <label for="infoModal" class="overlay"></label>
@@ -860,7 +780,7 @@ echo '<!-- 글 관리 -->
                         echo '<green id="rate">G</green> ';
                     }
 
-                    if(empty($so)){
+                    if(empty($so) or $so == '0'){
                         $so = '<green>전체공개</green>';
                     }
                 ?>| 작성 일시: <?=$at?><br> 열람 허가 대상: <?=$so?></span><br>

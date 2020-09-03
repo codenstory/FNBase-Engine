@@ -1,7 +1,7 @@
 <?php
 
     include '../setting.php';
-    if(empty($_SESSION['fnUserId'])){
+    if(empty($_SESSION['fnUserId']) or $_SESSION['fnUserId'] == '0'){
         die('<script>alert("로그인이 반드시 필요한 서비스입니다.");history.back()</script>');
     }
 
@@ -29,13 +29,14 @@
         $txt = '꽝! 다음기회에.';
     }
 
+    $i = $_SESSION['fnUserId'];
     $sql = "SELECT `point` FROM `_account` WHERE `id` = '$i' and `point` < 999";
     $result = mysqli_query($conn, $sql);
     if(mysqli_num_rows($result) == 1){
         die('<script>alert("잔액이 부족합니다.");history.back()</script>');
     }
 
-    $id = $_SESSION['fnUserId'];
+    $id = $i;
     $name = $_SESSION['fnUserName'];
     $ip = get_client_ip();
 

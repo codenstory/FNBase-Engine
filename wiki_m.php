@@ -1,11 +1,11 @@
 <?php
     $fnMultiNum = 2;
-    include_once './setting.php';
-    include_once './func.php';
+    include_once 'setting.php';
+    include_once 'func.php';
     $fnwTitle = filt($_GET['title'], 'htm');
-    include_once './wiki_p.php';
+    include_once 'wiki_p.php';
     
-    if(empty($fnwTitle)){
+    if(empty($fnwTitle) or $fnwTitle == '0'){
         die('<script>alert("값이 비어있습니다.");history.back()</script>');
     }
 
@@ -20,13 +20,13 @@
         $cU = $iA['canUpload'];
         $iA = $iA['isAdmin'];
 
-        if($document['ACL'] === NULL){
+        if($document['ACL'] == 'all'){
             $canEdit = TRUE;
             $aclText = '전체 개방';
         }elseif($document['ACL'] == 'none'){
             $canEdit = FALSE;
             $aclText = '모두 거부';
-        }elseif($document['ACL'] == 'user'){
+        }elseif($document['ACL'] == 'user' || $document['ACL'] == NULL){
             if($id){
                 $canEdit = TRUE;
             }else{
@@ -54,24 +54,34 @@
     if(!empty($_GET['mode'])){
         if($_GET['mode'] == 'modify'){
             if($canEdit){
-                if(!empty($_POST['moveTitle'])){
+                if(!empty($_POST['moveTitle']) or $_POST['moveTitle'] == '0'){
                     $title = filt($_POST['moveTitle'], 'htm');
-                    $sql = "INSERT INTO `_history` (`title`, `id`, `name`, `at`, `modify?`) VALUES ('$fnwTitle', '$id', '$name', NOW(), 'MOVE_TITLE')";
+                    $sql = "SELECT `title` FROM `_article` WHERE `title` = '$title'";
                     $result = mysqli_query($conn, $sql);
-                    $sql = "UPDATE `_article` SET `title` = '$title', `lastEdit` = NOW(), `whoEdited` = '$id' WHERE `title` = '$fnwTitle'";
-                    $result = mysqli_query($conn, $sql);
-                    $sql = "UPDATE `_history` SET `title` = '$title' WHERE `title` = '$fnwTitle'";
-                    $result = mysqli_query($conn, $sql);
+                    if(mysqli_num_rows($result) < 1){
+                        $sql = "INSERT INTO `_history` (`title`, `id`, `name`, `at`, `modify?`) VALUES ('$fnwTitle', '$id', '$name', NOW(), 'MOVE_TITLE')";
+                        $result = mysqli_query($conn, $sql);
+                        $sql = "UPDATE `_article` SET `title` = '$title', `lastEdit` = NOW(), `whoEdited` = '$id' WHERE `title` = '$fnwTitle'";
+                        $result = mysqli_query($conn, $sql);
+                        $sql = "UPDATE `_history` SET `title` = '$title' WHERE `title` = '$fnwTitle'";
+                        $result = mysqli_query($conn, $sql);
+                        $sql = "UPDATE `_discuss` SET `title` = '$title' WHERE `title` = '$fnwTitle'";
+                        $result = mysqli_query($conn, $sql);
+                        $sql = "INSERT INTO `_article` (`type`, `at`, `title`, `namespace`, `content`, `lastEdit`, `whoEdited`, `viewCount`, `ACL`, `execute`) VALUES ('COMMON', NOW(), '$fnwTitle', NULL, '#redirect $title', NOW(), '$id', '0', NULL, NULL)";
+                        $result = mysqli_query($conn, $sql);
+                    }else{
+                        die('<script>alert("이미 있는 문서 이름입니다.");history.back()</script>');
+                    }
                 }
             }
         }else{
             if($canManage){
                 if($_GET['mode'] == 'manage'){
-                    if(!empty($_POST['acl_perm'])){
+                    if(!empty($_POST['acl_perm']) or $_POST['acl_perm'] == '0'){
                         $perm = filt($_POST['acl_perm'], 'htm');
                         $sql = "UPDATE `_article` SET `ACL` = '$perm' WHERE `title` = '$fnwTitle'";
                         $result = mysqli_query($conn, $sql);
-                    }if(!empty($_POST['namespace'])){
+                    }if(!empty($_POST['namespace']) or $_POST['namespace'] == '0'){
                         $ns = filt($_POST['namespace'], 'htm');
                         if($ns == 'none') {
                             $sql = "UPDATE `_article` SET `namespace` = NULL WHERE `title` = '$fnwTitle'";
@@ -80,7 +90,7 @@
                         }
                         $result = mysqli_query($conn, $sql);
                     }
-                }elseif(empty($_GET['mode'] == 'delete')){
+                }else{
                     $sql = "INSERT INTO `_history` (`title`, `id`, `name`, `at`, `modify?`) VALUES ('$fnwTitle', '$id', '$name', NOW(), 'DELETE')";
                     $result = mysqli_query($conn, $sql);
                     $sql = "DELETE FROM `_article` WHERE `title` = '$fnwTitle'";
@@ -112,7 +122,7 @@
         echo '<br><br><form method="post" action="/wiki_m.php?mode=manage&title='.$fnwTitle.'"><h3>ACL 조정</h3>';
         echo '<strong><red>경고!</red> 잘못된 권한 설정은 중대한 손실을 초래할 수 있습니다.</strong><br>';
         echo '<select name="acl_perm">
-            <option value="null">NULL (전체 개방)</option>
+            <option value="all">all (전체 개방)</option>
             <option value="user" selected>user (회원 수정)</option>
             <option value="admin">admin (보호; 관리자만)</option>
             <option value="none">none (모두 거부)</option>
@@ -128,7 +138,7 @@
             <option value="프로젝트">프로젝트</option>
             <option value="none">설정 안 함</option>
         </select>';
-        echo '<button type="submit" class="success full"><i class="icofont-diskette"></i> 적용하기</button>';
+        echo '<button type="submit" class="success full"><i class="icofont-diskette"></i> 적용하기</button></form>';
 
         echo '<br><br>';
 

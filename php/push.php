@@ -8,15 +8,15 @@ $ip = get_client_ip();
 $id = $_SESSION['fnUserId'];
 $name = $_SESSION['fnUserName'];
 
-if(empty($id)){
+if(empty($id) or $id == '0'){
     $id = '*ANON';
 }
-if(empty($name)){
+if(empty($name) or $name == '0'){
     $name = '익명';
 }
 
-if(!empty($_POST['n'])){
-    if(empty($_GET['mode'])){ #글 추천
+if(!empty($_POST['n']) or $_POST['n'] == '0'){
+    if(empty($_GET['mode']) or $_GET['mode'] == '0'){ #글 추천
         $sql = "SELECT `num` FROM `_othFunc` WHERE `ip` = '$ip' and `type` = 'UPVOTE_POS' and `target` = '$n'";
         $result = mysqli_query($conn, $sql);
         if(mysqli_num_rows($result) !== 0){
@@ -47,8 +47,8 @@ if(!empty($_POST['n'])){
             die('<script>history.back()</script>');
         }
     }
-}elseif(!empty($_GET['n'])){
-    if(empty($_GET['mode'])){ #댓글 추천
+}elseif(!empty($_GET['n']) or $_GET['n'] == '0'){
+    if(empty($_GET['mode']) or $_GET['mode'] == '0'){ #댓글 추천
         $sql = "SELECT `num` FROM `_othFunc` WHERE `ip` = '$ip' and `type` = 'UPVOTE_CMT' and `target` = '$n'";
         $result = mysqli_query($conn, $sql);
         if(mysqli_num_rows($result) !== 0){

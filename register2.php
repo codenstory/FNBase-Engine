@@ -1,15 +1,15 @@
-<form method="post" action="registered.php">
+<form method="post" action="/registered.php">
 <main>
     <div class="flex">
         <!-- 상단 보조메뉴 -->
         <section class="hidMob">
         </section>
         <section id="mainSec" class="half">
-        <?php require_once './alert.php'; ?>
+        <?php require_once 'alert.php'; ?>
             <?php
                 $code = filt($_GET['code'], 'abc');
                 $mail = filt($_GET['mail'], 'mail');
-                if(preg_match('/(kakao\.com|daum\.net|gmail\.com|naver\.com|hanmail\.net|yandex\.com|hotmail\.com|nate\.com|fnbase\.xyz)$/m', $mail) == FALSE){
+                if(preg_match('/(kakao\.com|daum\.net|naver\.com|hanmail\.net|fnbase\.xyz)$/m', $mail) == FALSE){
                     die('일회용 메일은 사용하실 수 없습니다.');
                 }
                 $sql = "SELECT * FROM `_auth` where `type` = 'mail' and `key` = '$mail' and `end` > NOW()";
@@ -23,17 +23,17 @@
                         }else{
                             echo '값이 일치하지 않습니다.<br>';
                             echo '메일을 다시 확인해주시고, 계속 진행되지 않을 경우 관리자에게 문의하십시오.<br>';
-                            echo '<a href="./main" class="button">메인 페이지로</a>';
+                            echo '<a href="/main" class="button">메인 페이지로</a>';
                         }
                 }else{
                     if(mysqli_num_rows($result) > 1){
                         echo '여러개의 인증 절차를 동시에 진행하실 수 없습니다!<br>';
                         echo '1개 키를 제외한 모든 키가 만료될 때 까지 기다려주십시오.<br>';
-                        echo '<a href="./main" class="button">메인 페이지로</a>';
+                        echo '<a href="/main" class="button">메인 페이지로</a>';
                     }else{
                         echo '인증 키가 만료되었거나 사용할 수 없습니다!<br>';
                         echo '회원가입 절차를 처음부터 다시 진행하여주세요.<br>';
-                        echo '<a href="./register" class="button">회원가입 페이지로</a>';
+                        echo '<a href="/register" class="button">회원가입 페이지로</a>';
                     }
                 }
 
@@ -55,8 +55,8 @@
                             <red>*</red> 표시는 반드시 입력해주세요.<br><br>
                             <div class="flex two">
                                 <div>
-                                    <label>아이디<red>*</red> <input maxlength="20" type="id" id="userid" class="check" placeholder="영문 또는 숫자" name="userid" required>
-                                    <span class="subInfo">영문 또는 숫자, 최대 20자리 / </span><span class="subInfo" id="id_check">중복 확인 대기중..</span></label>
+                                    <label>아이디<red>*</red> <input maxlength="20" type="id" id="userid" class="check" placeholder="영문 소문자 또는 숫자" name="userid" required>
+                                    <span class="subInfo">영문 소문자 또는 숫자, 최대 20자리 / </span><span class="subInfo" id="id_check">중복 확인 대기중..</span></label>
                                 </div>
                                 <div>
                                     <label>닉네임<red>*</red> <input maxlength="20" type="name" id="userck" class="check" placeholder="한글/영문/숫자/_" name="nickname" required>
@@ -166,9 +166,10 @@ $(document).ready(function(e) {
         }
 		
 		userid = self.val();
+        userid = strtolower(userid);
 		
 		$.post( //post방식으로 id_check.php에 입력한 userid값을 넘깁니다
-			"./php/check.php",
+			"php/check.php",
 			{ 'result' : userid, 'type' : vard }, 
 			function(data){ 
 				if(data){ //만약 data값이 전송되면

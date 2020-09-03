@@ -44,7 +44,7 @@ function notify() {
                 }
             })
             if(response.status != '200'){
-                alert('서버 통신 오류')
+                console.log('서버 통신 오류');
             }
         })
 
@@ -62,12 +62,13 @@ function wikiEdit(arg){
             document.querySelector("#editPlaceText").innerHTML = text;
         })
         if(response.status != '200'){
-            alert('서버 통신 오류')
+            console.log('서버 통신 오류');
         }else{
             document.querySelector("#wikiModeText").innerHTML = " (편집)";
-            if(isMobile){
-                document.querySelectorAll('#wFClose')[0].click();
-            }
+                /*if(isMobile){
+                    document.querySelectorAll('#wFClose')[0].click();
+                }*/
+            wikiKeepWrite();
         }
     })
 }
@@ -80,10 +81,10 @@ function wikiHistory(arg){
             document.querySelector("#editPlaceText").innerHTML = text;
         })
         if(response.status != '200'){
-            alert('서버 통신 오류')
+            console.log('서버 통신 오류');
         }else{
             document.querySelector("#wikiModeText").innerHTML = " (기록)";
-            if(isMobile){
+                        if(isMobile){
                 document.querySelectorAll('#wFClose')[0].click();
             }
         }
@@ -96,7 +97,7 @@ function wikiHisRev(arg){
             document.querySelector("#wHrText").innerHTML = text;
         })
         if(response.status != '200'){
-            alert('서버 통신 오류')
+            console.log('서버 통신 오류');
         }else{
             document.querySelectorAll('#wHrClose')[0].click();
         }
@@ -110,7 +111,7 @@ function wikiHisRaw(){
             document.querySelector("#wHrText").innerHTML = text;
         })
         if(response.status != '200'){
-            alert('서버 통신 오류')
+            console.log('서버 통신 오류');
         }
     })
 }
@@ -123,10 +124,10 @@ function wikiDiscuss(arg){
             document.querySelector("#editPlaceText").innerHTML = text;
         })
         if(response.status != '200'){
-            alert('서버 통신 오류')
+            console.log('서버 통신 오류');
         }else{
             document.querySelector("#wikiModeText").innerHTML = " (토론)";
-            if(isMobile){
+                        if(isMobile){
                 document.querySelectorAll('#wFClose')[0].click();
             }
         }
@@ -141,10 +142,10 @@ function wikiManage(arg){
             document.querySelector("#editPlaceText").innerHTML = text;
         })
         if(response.status != '200'){
-            alert('서버 통신 오류')
+            console.log('서버 통신 오류');
         }else{
             document.querySelector("#wikiModeText").innerHTML = " (조정)";
-            if(isMobile){
+                        if(isMobile){
                 document.querySelectorAll('#wFClose')[0].click();
             }
         }
@@ -190,6 +191,7 @@ function editCancle(){
     document.querySelector('#mainContent').style.cssText = '';
     document.querySelector('#editPlace').style.cssText = 'display:none';
     document.querySelector("#wikiModeText").innerHTML = '';
+    notSubmit = false;
 }
 
 function foldSpan(){
@@ -209,15 +211,84 @@ function wikiRollback(arg, num){
             }
         })
         if(response.status != '200'){
-            alert('서버 통신 오류')
+            console.log('서버 통신 오류');
         }
     })
 }
 
 function wikiRollConf(){
     if(prevHisNum != false){
-        if(confirm('정말 #'+prevHisNum+' 판으로 되돌리시겠습니까?')){
+        if(confirm('정말 되돌리시겠습니까?')){
             wikiRollback(wikiTitle, prevHisNum);
         }
     }
+}
+
+function wikiNotes(arg){
+    document.querySelector("#wPreNoteTxt").innerHTML = arg;
+    document.querySelectorAll('#wPreNote')[0].click();
+}
+
+function wikiKeepWrite(){
+    notSubmit = true;
+    window.onbeforeunload = function (e) {
+        if(notSubmit){
+            var message = "Are you sure ?";
+            var firefox = /Firefox[\/\s](\d+)/.test(navigator.userAgent);
+            if (firefox) {
+                var dialog = document.createElement("div");
+                document.body.appendChild(dialog);
+                dialog.id = "dialog";
+                dialog.style.visibility = "hidden";
+                dialog.innerHTML = message; 
+                var left = document.body.clientWidth / 2 - dialog.clientWidth / 2;
+                dialog.style.left = left + "px";
+                dialog.style.visibility = "visible";  
+                var shadow = document.createElement("div");
+                document.body.appendChild(shadow);
+                shadow.id = "shadow";		
+                //tip with setTimeout
+                setTimeout(function () {
+                    document.body.removeChild(document.getElementById("dialog"));
+                    document.body.removeChild(document.getElementById("shadow"));
+                }, 0);
+            }
+            return message;
+        }
+    }
+}
+
+function tempSave(){
+    if(document.querySelector('#mainEditor')){
+        content = document.querySelector('#mainEditor').innerHTML;
+    }
+    console.log(content)
+
+    fetch('https://fnbase.xyz/sub/tempsave.php?content='+content).then(function(response){
+        if(response.status == '403'){
+            alert('로그인 되어있지 않음!');
+        }else if(response.status != '200'){
+            alert('서버 통신 오류');
+        }else if(response.status == '200'){
+            alert('저장 완료!')
+        }
+    })
+}
+function tempLoad(){
+    if(document.querySelector('#mainEditor')){
+        content = document.querySelector('#mainEditor').innerHTML;
+    }
+
+    fetch('https://fnbase.xyz/sub/tempsave.php').then(function(response){
+        response.text().then(function(text){
+            document.querySelector('#mainEditor').innerHTML = text;
+        })
+        if(response.status == '403'){
+            alert('로그인 되어있지 않음!');
+        }else if(response.status != '200'){
+            alert('서버 통신 오류');
+        }else if(response.status == '200'){
+            alert('불러오기 완료!')
+        }
+    })
 }

@@ -1,7 +1,7 @@
 <?php
-    if(!empty($_POST['ad'])){
+    if(!empty($_POST['ad']) or $_POST['ad'] == '0'){
         session_start();
-        if(!empty($_SESSION['fnUserId'])){
+        if(!empty($_SESSION['fnUserId']) or $_SESSION['fnUserId'] == '0'){
             require_once '../setting.php';
             require_once '../editor/htmlpurifier/library/HTMLPurifier.auto.php';
             function filt($arg, $opt){

@@ -1,15 +1,15 @@
 <?php
 $isNot = TRUE;
-require_once './setting.php';
-require './func.php';
+require_once 'setting.php';
+require 'func.php';
 
 if($_SESSION['fnUserId']){
     session_unset();
-    echo '<script>alert("로그아웃 되었습니다.");location.href = "./main"</script>';
+    echo '<script>alert("로그아웃 되었습니다.");location.href = "/main"</script>';
     exit;
 }
 
-if(empty($_POST['id'])){
+if(empty($_POST['id']) or $_POST['id'] == '0'){
     echo '잘못된 접근';
     exit;
 }
@@ -19,7 +19,7 @@ $ip = get_client_ip();
         $connect = $conn;
 
         //입력 받은 id와 password
-        $id = filt($_POST['id'], 'abc');
+        $id = strtolower(filt($_POST['id'], 'abc'));
         $pw = filt($_POST['pw'], 'htm');
 
         //아이디가 있는지 검사

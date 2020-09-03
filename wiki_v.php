@@ -1,11 +1,11 @@
 <?php
     $fnMultiNum = 2;
-    include_once './setting.php';
-    include_once './func.php';
+    include_once 'setting.php';
+    include_once 'func.php';
 
     $fnwTitle = filt($_GET['title'], 'htm');
-    require_once './wiki_p.php';
-    if(empty($fnwTitle)){
+    require_once 'wiki_p.php';
+    if(empty($fnwTitle) or $fnwTitle == '0'){
         $fnwTitle = '대문';
     }
 
@@ -50,11 +50,11 @@
             $rev = mysqli_fetch_assoc($resulta);
             $content = filt($rev['rev'], 'oth');
     
-            if($document['ACL'] === NULL){
+            if($document['ACL'] === 'all'){
                 $canEdit = TRUE;
             }elseif($document['ACL'] == 'none'){
                 $canEdit = FALSE;
-            }elseif($document['ACL'] == 'user'){
+            }elseif($document['ACL'] == 'user' || $document['ACL'] == NULL){
                 if($id){
                     $canEdit = TRUE;
                 }else{

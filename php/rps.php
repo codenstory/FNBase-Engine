@@ -1,6 +1,6 @@
 <?php
     include '../setting.php';
-    if(empty($_SESSION['fnUserId'])){
+    if(empty($_SESSION['fnUserId']) or $_SESSION['fnUserId'] == '0'){
         die('LOGIN REQUIRED');
     }
 
@@ -20,6 +20,9 @@
 
     $p = rps_num_str(htmlspecialchars($_GET['p']));
     $v = htmlspecialchars($_POST['v']);
+    if($v < 300 or $v > 5000){
+        exit;
+    }
     $v = $v * 2;
     $i = $_SESSION['fnUserId'];
     $n = $_SESSION['fnUserName'];

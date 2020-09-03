@@ -24,11 +24,4 @@
     $sql = "INSERT INTO `_othFunc` (`id`, `name`, `type`, `value`, `reason`, `ip`, `isSuccess`)
     VALUES ('$i', '$n', 'VINDICATE_', '$t', '$c', '$ip', '0')";
     $result = mysqli_query($conn, $sql);
-    if($result){
-        $link = 'misc>vindicate';
-        $sql = "INSERT INTO `_ment` (`id`, `name`, `type`, `value`, `target`, `reason`, `ip`, `isSuccess`)
-        VALUES ('__AUTO', '차단소명 확인 요망', 'NOFI_MENTN', '$link', 'admin', '$n', '127.0.0.1', '0')";
-        $result = mysqli_query($conn, $sql);
-        die('<script>history.back()</script>');
-    }
 ?>

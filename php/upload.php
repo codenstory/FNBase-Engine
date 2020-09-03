@@ -4,7 +4,7 @@ require_once '../setting.php';
 $ip = get_client_ip();
 $id = $_SESSION['fnUserId'];
 
-if(!empty($id)){
+if(!empty($id) or $id == '0'){
     $sql = "SELECT `siteBan`, `canUpload` FROM `_account` WHERE `id` = '$id'";
     $result = mysqli_query($conn, $sql);
     $sB = mysqli_fetch_assoc($result);
@@ -19,10 +19,10 @@ if(!empty($id)){
 }
 
 $date = time();
-if(!empty($_FILES['myfile'])){
+if(!empty($_FILES['myfile']) or $_FILES['myfile'] == '0'){
 // 설정
 $uploads_dir = '../upload';
-$allowed_ext = array('jpg','jpeg','png','webp');
+$allowed_ext = array('jpg','jpeg','png','webp', 'JPG', 'PNG');
  
 // 변수 정리
 $error = $_FILES['myfile']['error'];
@@ -53,6 +53,8 @@ if($_FILES['myfile']['size'] > 2e+6){
 }
 // 파일 이동
 move_uploaded_file($_FILES['myfile']['tmp_name'], "$uploads_dir/$date$name");
+$sql = "INSERT INTO `_upload` (`filename`, `at`, `ip`) VALUES ('$date$name', CURRENT_TIMESTAMP, '$ip');";
+$result = mysqli_query($conn, $sql);
 $name = str_ireplace(' ', '%20', $name);
 // 파일 정보 출력
 echo '<!-- FNBase Engine 2 -->

@@ -1,9 +1,9 @@
 <?php
     $fnMultiNum = 2;
-    include_once './setting.php';
-    include_once './func.php';
+    include_once 'setting.php';
+    include_once 'func.php';
     $fnwTitle = filt($_GET['title'], 'htm');
-    include_once './wiki_p.php';
+    include_once 'wiki_p.php';
 
     $fnwTitle = documentRender($fnwTitle, TRUE);
 
@@ -16,7 +16,7 @@
 
 if($_GET['mode'] == 'view'){
     $num = filt($_GET['num'], 'htm');
-    if(empty($num)){
+    if(empty($num) or $num == '0'){
         die('번호가 비어있습니다.');
     }
 
@@ -25,16 +25,16 @@ if($_GET['mode'] == 'view'){
     $row = mysqli_fetch_assoc($result);
     if($row['modify?'] != ''){
         echo '<div style="border: 1px solid gainsboro;color:gray;border-radius:5px">'.$row['modify?'].'<br>
-        <a href="/u>'.$row['id'].'" class="right muted">-- <i class="icofont-user-alt-7"></i> '.$row['name'].'</a><br></div>';
+        <a href="/u/'.$row['id'].'" class="right muted">-- <i class="icofont-user-alt-7"></i> '.$row['name'].'</a><br></div>';
     }elseif($row['comment'] != ''){
         echo '<div style="border: 1px solid gainsboro;color:gray;border-radius:5px">'.$row['comment'].'<br>
-        <a href="/u>'.$row['id'].'" class="right muted">-- <i class="icofont-user-alt-7"></i> '.$row['name'].'</a><br></div>';
+        <a href="/u/'.$row['id'].'" class="right muted">-- <i class="icofont-user-alt-7"></i> '.$row['name'].'</a><br></div>';
     }
     $content = nl2br(documentRender($row['rev']));
     echo preg_replace('/<br( \/)*>\n<hr>/m', '<hr>', preg_replace('/(src="|<hr>)(.*)<br( \/)*>/m', '$1$2', preg_replace('/<\/h(\d)><br \/>/m', '</h$1>', $content)));
 }elseif($_GET['mode'] == 'raw'){
     $num = filt($_GET['num'], 'htm');
-    if(empty($num)){
+    if(empty($num) or $num == '0'){
         die('번호가 비어있습니다.');
     }
 
@@ -44,7 +44,7 @@ if($_GET['mode'] == 'view'){
 
     echo nl2br($row['rev']);  
 }else{
-    if(empty($fnwTitle)){
+    if(empty($fnwTitle) or $fnwTitle == '0'){
         die('제목이 비어있습니다.');
     }
 
@@ -84,16 +84,16 @@ if($_GET['mode'] == 'view'){
             $name = $wE;
 
             $icon = 'invisible';
-            $href = 'javascript:void(0);" data-tooltip="가입하지 않은 사용자입니다." class="tooltip-bottom';
+            $href = 'https://fnbase.xyz/misc%3EmanageCenter%3E'.$wE;
             if($isAdmin){
-                $href = '../misc>manageCenter>'.$name;
+                $href = '/misc>manageCenter>'.$name;
             }
         }else{
             $name = mysqli_fetch_assoc($resultn);
             $name = $name['name'];
 
             $icon = 'user-alt-7';
-            $href = '/u>'.$wE;
+            $href = '/u/'.$wE;
         }
         
         echo '<tr><td class="black muted"><a href="javascript:void(0)" onclick="wikiHisRev('.$row['num'].')">#'.$c.'번째 편집 ('.$row['at'].')</a>

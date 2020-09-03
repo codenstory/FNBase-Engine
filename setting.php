@@ -1,9 +1,9 @@
 <?php
 # 이 파일은 FNBase.xyz에서 배포하는 게시글 관리 엔진의 설정 파일입니다.
-$fnVersion = '2.1.0'; #세팅 파일이 작성될 때의 버전입니다.
+$fnVersion = '2.1.9'; #세팅 파일이 작성될 때의 버전입니다.
 
 #데이터베이스 연결 설정입니다.
-$fnSiteDB = ''; #데이터베이스 주소
+$fnSiteDB = 'localhost'; #데이터베이스 주소
 $fnSiteDBuser = ''; #데이터베이스 유저
 $fnSiteDBpw = ''; #데이터베이스 비밀번호
 $fnSiteDBname = ''; #기본 데이터베이스 이름
@@ -64,7 +64,7 @@ $ip = get_client_ip();
 
 if($fnType == 'OFF'){
     if(!$isNot){
-        die('<script>location.href = "./sub/"</script>');
+        die('<script>location.href = "/sub/"</script>');
     }
 }
 ?>

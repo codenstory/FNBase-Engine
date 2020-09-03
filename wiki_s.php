@@ -1,15 +1,15 @@
 <?php
     $fnMultiNum = 2;
-    include_once './setting.php';
-    include_once './func.php';
+    include_once 'setting.php';
+    include_once 'func.php';
     $fnwTitle = filt($_POST['title'], 'htm');
     $content = filt($_POST['content'], 'oth');
     $comm = filt($_POST['comment'], 'oth');
-    include_once './wiki_p.php';
+    include_once 'wiki_p.php';
     
-    if(empty($fnwTitle)){
+    if(empty($fnwTitle) or $fnwTitle == '0'){
         die('<script>alert("제목이 비어있습니다.");history.back()</script>');
-    }elseif(empty($content)){
+    }elseif(empty($content) or $content == '0'){
         die('<script>alert("내용이 비어있습니다.");history.back()</script>');
     }else{
         $sql = "SELECT `content` FROM `_article` WHERE `title` = '$fnwTitle'";
@@ -17,6 +17,12 @@
         $row = mysqli_fetch_assoc($result);
         if($content == $row['content']){
             die('<script>alert("내용이 그대로입니다.");history.back()</script>');
+        }
+    }
+
+    if(empty($id) or $id == '0'){
+        if(strstr($ip, ':')){
+            die('ipv6 대역은 익명 작성이 불가능합니다.');
         }
     }
 
@@ -30,18 +36,16 @@
         $iA = mysqli_fetch_assoc($resulta);
         $iA = $iA['isAdmin'];
 
-        if($document['ACL'] === NULL){
-            $canEdit = TRUE;
-        }elseif($document['ACL'] == 'none'){
+        if($document['ACL'] == 'none'){
             $canEdit = FALSE;
-        }elseif($document['ACL'] == 'user'){
+        }elseif($document['ACL'] == 'all'){
+            $canEdit = TRUE;
+        }elseif($document['ACL'] !== 'admin'){
             if($id){
                 $canEdit = TRUE;
             }else{
                 $canEdit = FALSE;
             }
-        }else{
-            $canEdit = FALSE;
         }
 
         if(!$iA){

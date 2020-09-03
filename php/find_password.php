@@ -43,7 +43,7 @@
     $exp = date("Y-m-d H:i:s",strtotime ("+30 minutes"));
     $val = GenStr(20);
 
-    $sql = "SELECT `name` FROM `_account` WHERE `mail` = '$mail' and `id` = '$id'";
+    $sql = "SELECT `name` FROM `_account` WHERE `mail` = '$mail' and `id` = '$id' and `type` NOT LIKE 'quit'";
     $result = mysqli_query($conn, $sql);
 
     if(mysqli_num_rows($result) == 1){

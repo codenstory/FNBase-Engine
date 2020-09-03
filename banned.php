@@ -1,4 +1,4 @@
-<?php require_once './setting.php'; include './func.php'; ?>
+<?php header("HTTP/1.1 451 Unavailable For Legal Reasons"); require_once 'setting.php'; include 'func.php'; ?>
 <!DOCTYPE html>
 <html lang="ko-KR">
   <head>
@@ -16,9 +16,9 @@
     <meta property="og:type" content="website">
 
     <!-- 불러오기 -->
-    <link rel="stylesheet" href="./default.css">
-    <link rel="stylesheet" href="./picnic.css">
-    <link rel="stylesheet" type="text/css" href="./icofont2/icofont.min.css">
+    <link rel="stylesheet" href="/default.css">
+    <link rel="stylesheet" href="/picnic.css">
+    <link rel="stylesheet" type="text/css" href="/icofont2/icofont.min.css">
   </head>
   <body>
     <!-- 상단바 -->
@@ -41,7 +41,7 @@
                 </blockquote>
                 <p>
                     대상 아이디 : <?=$_SESSION['fnUserId']?><br>
-                    <span class="subInfo">기한은 고지되지 않으며, 소명을 원하시는 경우 <a href="./misc>vindicate">여기</a>서 글을 작성하십시오.</span><br>
+                    <span class="subInfo">기한은 고지되지 않으며, 소명을 원하시는 경우 <a href="/misc>vindicate">여기</a>서 글을 작성하십시오.</span><br>
                     <span class="subInfo">계정을 새로 가입하는 등의 방식으로 차단을 회피할 시 기한이 연장되거나 다른 처벌을 받게되실 수 있습니다.</span>
                 </p>
             </section>

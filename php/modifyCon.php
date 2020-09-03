@@ -46,35 +46,54 @@
         }
     }elseif($_GET['mode'] == 'B'){ #블라인드
         $sql = "UPDATE `_content` SET `board` = 'trash', `boardName` = '$b' WHERE `num` = '$n'";
+        $sql_ = "INSERT INTO `_othFunc` (`id`, `name`, `type`, `at`, `value`, `target`, `ip`, `isSuccess`)
+                VALUES ('$id', '$name', 'AUDIT_LOG', CURRENT_TIMESTAMP(), 'blind', '$n', '$ip', '1')";
+                $result = mysqli_query($conn, $sql_);
     }elseif($_GET['mode'] == 'M'){ #이동
         $sql = "SELECT `title` FROM `_board` WHERE `slug` = '$m'";
         $result = mysqli_query($conn, $sql);
         $row = mysqli_fetch_assoc($result);
-        $bn = $row['nickTitle'];
-        $sql = "UPDATE `_content` SET `board` = '$m', `boardName` = '$bn' WHERE `num` = '$n'";
-    }elseif($_GET['mode'] == 'T'){ #블라인드 게시글 삭제
+        $sql_ = "UPDATE `_content` SET `board` = '$m', `boardName` = '이동됨' WHERE `num` = '$n'";
+                $sql = "INSERT INTO `_othFunc` (`id`, `name`, `type`, `at`, `value`, `target`, `ip`, `isSuccess`)
+                VALUES ('$id', '$name', 'AUDIT_LOG', CURRENT_TIMESTAMP(), 'move', '$n', '$ip', '1')";
+                $result = mysqli_query($conn, $sql_);
+    }elseif($_GET['mode'] == 'T'){ #기밀 해제 / 숨겨진 글 목록 휴지통
         if($b == 'trash'){
             $sql = "DELETE FROM `_content` WHERE `board` = 'trash'";
-        }elseif($b == 'mafia'){
-            $sql = "UPDATE `_content` SET `staffOnly` = NULL WHERE `board` = 'mafia'";
+            opcache_reset();
+        }else{
+            $sql = "UPDATE `_content` SET `staffOnly` = NULL WHERE `board` = '$b'";
         }
+        $sql_ = "INSERT INTO `_othFunc` (`id`, `name`, `type`, `at`, `value`, `target`, `ip`, `isSuccess`)
+        VALUES ('$id', '$name', 'AUDIT_LOG', CURRENT_TIMESTAMP(), 'trash', '$b', '$ip', '1')";
+        $result = mysqli_query($conn, $sql_);
     }elseif($_GET['mode'] == 'OFF'){ #사이트 전원 끄기
         if($isAdmin){
             $sql = "UPDATE `_setting` SET `type` = 'OFF' WHERE `num` = $fnMultiNum";
+                $sql_ = "INSERT INTO `_othFunc` (`id`, `name`, `type`, `at`, `value`, `target`, `ip`, `isSuccess`)
+                VALUES ('$id', '$name', 'AUDIT_LOG', CURRENT_TIMESTAMP(), 'off', '$fnMultiNum', '$ip', '1')";
+                $result = mysqli_query($conn, $sql_);
+        }else{
+            $sql = "INSERT INTO `_othFunc` (`id`, `name`, `type`, `at`, `value`, `target`, `ip`, `isSuccess`)
+            VALUES ('$id', '$name', 'AUDIT_LOG', CURRENT_TIMESTAMP(), 'off', '$fnMultiNum', '$ip', '0')";
+            $result = mysqli_query($conn, $sql);
         }
     }elseif($_GET['mode'] == 'ON'){ #사이트 전원 켜기
         if($isAdmin){
             $sql = "UPDATE `_setting` SET `type` = 'board' WHERE `num` = $fnMultiNum";
+                $sql_ = "INSERT INTO `_othFunc` (`id`, `name`, `type`, `at`, `value`, `target`, `ip`, `isSuccess`)
+                VALUES ('$id', '$name', 'AUDIT_LOG', CURRENT_TIMESTAMP(), 'on', '$fnMultiNum', '$ip', '0')";
+                $result = mysqli_query($conn, $sql_);
         }
     }elseif($_GET['mode'] == 'K'){ #사용자 차단
-        if(empty($kt)){
+        if(empty($kt) or $kt == '0'){
             die('시간 값 없음');
         }
         $sql = "SELECT `kicked` FROM `_board` WHERE `slug` = '$b'";
         $result = mysqli_query($conn, $sql);
         $row = mysqli_fetch_assoc($result);
         if(mb_strpos($row['kicked'], $i) === FALSE){ #추방
-            if(empty($row['kicked'])){
+            if(empty($row['kicked']) or $row['kicked'] == '0'){
                 $s = $i;
             }else{
                 $s = $row['kicked'].','.$i;

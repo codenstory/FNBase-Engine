@@ -1,12 +1,12 @@
 <?php
-if(empty($_GET)){
+if(empty($_GET) or $_GET == '0'){
     exit;
 }
 
 require '../setting.php';
 $id = $_SESSION['fnUserId'];
 $f = preg_replace('/[^a-zA-Z0-9]/', '', $_GET['f']);
-if(empty($id)){
+if(empty($id) or $id == '0'){
     die('로그인 필요');
 }
 
@@ -16,7 +16,7 @@ $row = mysqli_fetch_assoc($result);
 $a_id = $row['id'];
 $cost = $row['cost'];
 
-if(!empty($f)){ #사용 / 미사용
+if(!empty($f) or $f == '0'){ #사용 / 미사용
     $sql = "SELECT `fnbcon` FROM `_userSet` WHERE `id` = '$id'";
     $result = mysqli_query($conn, $sql);
     $row = mysqli_fetch_assoc($result);

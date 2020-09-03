@@ -1,6 +1,6 @@
 <?php
-require_once './setting.php';
-require_once './func.php';
+require_once 'setting.php';
+require_once 'func.php';
 
 $id = $_SESSION['fnUserId'];
 $name = $_SESSION['fnUserName'];
@@ -9,17 +9,12 @@ $mail = $_SESSION['fnUserMail'];
 if($id == NULL){
     die('<script>alert("로그인이 필요합니다.");history.back()</script>');
 }
-/*if($id == NULL){
-    $id = '_ANON';
-    $name = '익명_'.GenStr(5);
-    $mail = 'anon@fnbase.xyz';
-}*/
 
 $mode = filt($_GET['m'], 'abc');
 
-$c = filt($_POST['c'], 'oth');
+$c = str_replace('<', '&lt;', filt($_POST['c'], 'oth'));
 $n = filt($_REQUEST['n'], '123');
-$r = filt($_POST['reply'], 'htm');
+$r = str_replace('<', '&lt;', filt($_POST['reply'], 'htm'));
 $t = filt($_POST['t'], 'oth');
 $v = filt($_POST['v'], 'htm');
 $v = str_ireplace('&gt;', '>', $v);
@@ -48,18 +43,42 @@ if(preg_match('/(discord\.gg|open\.kakao\.com)/m', $c)){
 
 switch($mode){
     case '': #댓글 작성
-        
-        //없는 글 댓글 방지
-        $sql = "SELECT `num` FROM `_content` WHERE `num` = '$n'";
-        $result = mysqli_query($conn, $sql);
-        if(mysqli_num_rows($result) == 0){
-            die('해당 게시글이 존재하지 않습니다.');
-        }
-
         if($c == ''){
             die('<script>alert("내용이 비어있습니다.");history.back()</script>');
         }elseif(strlen($c) > 1000){
             die('<script>alert("내용이 1000자를 초과했습니다.");history.back()</script>');
+        }
+        
+        //없는 글 댓글 방지
+        $sql = "SELECT `num`,`board`,`id` FROM `_content` WHERE `num` = '$n'";
+        $result = mysqli_query($conn, $sql);
+        if(mysqli_num_rows($result) == 0){
+            die('해당 게시글이 존재하지 않습니다.');
+        }else{
+            $row = mysqli_fetch_assoc($result);
+            if($row['board'] == 'quiz'){
+                $sql = "SELECT `value`,`reason`,`id` FROM `_othFunc` WHERE `type` LIKE 'QUIZ_QUEST' AND `target` LIKE '$n' AND `isSuccess` = 0";
+                $result = mysqli_query($conn, $sql);
+                if(mysqli_num_rows($result) == 1){
+                    $row = mysqli_fetch_assoc($result);
+                        if(strcasecmp($c, $row['value']) == 0){
+                            if($id != $row['id']){
+                                $sql = "UPDATE `_account` SET `point` = `point` - ".$row['reason']." WHERE `id` = '".$row['id']."' and `point` > ".$row['reason'].";";
+                                $result = mysqli_query($conn, $sql);
+                                $sql = "UPDATE `_account` SET `point` = `point` + ".$row['reason']." WHERE `id` = '$id';";
+                                $result = mysqli_query($conn, $sql);
+                            }
+                            $c = '<span class="label success">정답</span> '.$c;
+                            $sql = "UPDATE `_othFunc` SET `isSuccess` = 1 WHERE `type` = 'QUIZ_QUEST' and `target` = '$n';";
+                            $result = mysqli_query($conn, $sql);
+                            $sql = "INSERT INTO `_ment` (`id`, `name`, `type`, `value`, `target`, `cmt_id`, `reason`, `ip`, `isSuccess`)
+                            VALUES ('$id', '$name', 'QUIZ_ANSWR', 'b/quiz/$n', '".$row['id']."', '',  '퀴즈 정답', '$ip', '0')";
+                            $result = mysqli_query($conn, $sql);
+                        }else{
+                            $c = '<span class="label error">오답</span> '.$c;
+                        }
+                }
+            }
         }
 
         $sql = "SELECT Count(*) as `cnt` FROM `_comment` WHERE `id` = '$id' and `at` > DATE_SUB(NOW(), INTERVAL 2 SECOND)";
@@ -73,7 +92,7 @@ switch($mode){
         $result = mysqli_query($conn, $sql);
         $row = mysqli_fetch_assoc($result);
         if($row['cnt'] >= 6){
-            $link = 'b>recent>'.$n;
+            $link = '/b>recent>'.$n;
             $sql = "INSERT INTO `_ment` (`id`, `name`, `type`, `value`, `target`, `reason`, `ip`, `isSuccess`)
             VALUES ('__AUTO', '시스템 경고', 'NOFI_MENTN', '$link', 'admin', '댓글 도배', '127.0.0.1', '0')";
             $result = mysqli_query($conn, $sql);
@@ -83,7 +102,7 @@ switch($mode){
             if($row['cnt'] >= 10){
                 $sql = "UPDATE `_account` SET `siteBan` = '1' WHERE `id` = '$id';";
                 $result = mysqli_query($conn, $sql);
-                die('<script>alert("귀하께서는 도배로 인하여 광역차단 되셨습니다.");location.href = \'./\'</script>');
+                die('<script>alert("귀하께서는 도배로 인하여 광역차단 되셨습니다.");location.href = \'/\'</script>');
             }else{
                 die('<script>alert("댓글 작성 빈도가 너무 짧습니다.");history.back()</script>');
             }
@@ -131,7 +150,7 @@ switch($mode){
             $result = mysqli_query($conn, $sql);
             $mnt_id = mysqli_fetch_assoc($result);
             if(mysqli_num_rows($result) == 1){
-                $c = preg_replace('/'.$value.'/', '<a href="./u>'.$mnt_id['id'].'">'.$value.'</a>', $c); #내용에서 변경
+                $c = preg_replace('/'.$value.'/', '<a href="/u/'.$mnt_id['id'].'">'.$value.'</a>', $c); #내용에서 변경
                 $mid = $mnt_id['id'];
                 if($id !== $mid){ #호출 반영
                     $sql = "INSERT INTO `_ment` (`id`, `name`, `type`, `value`, `target`, `cmt_id`, `reason`, `ip`, `isSuccess`)
@@ -148,7 +167,7 @@ switch($mode){
         $sql = "UPDATE `_comment` SET `content` = '$c' WHERE `num` = '$cn'"; #멘션으로 변경된 내용 반영
         $result = mysqli_query($conn, $sql);
 
-        echo '<script>window.location.href = "./'.$v.'#cmt-'.$cn.'"</script>';
+        echo '<script>window.location.href = "/'.$v.'#cmt-'.$cn.'"</script>';
         break;
 
     case 'edit': #댓글 수정
@@ -172,7 +191,7 @@ switch($mode){
             $result = mysqli_query($conn, $sql);
             $mnt_id = mysqli_fetch_assoc($result);
             if(mysqli_num_rows($result) == 1){
-                $r = preg_replace('/'.$value.'/', '<a href="./u>'.$mnt_id['id'].'">'.$value.'</a>', $r); #내용에서 변경
+                $r = preg_replace('/'.$value.'/', '<a href="/u/'.$mnt_id['id'].'">'.$value.'</a>', $r); #내용에서 변경
                 $mid = $mnt_id['id'];
                 if($id !== $mid){ #호출 반영
                     $f = filt($_POST['fn'], '123');
@@ -184,7 +203,7 @@ switch($mode){
                     $t = $mn['title'];
 
                     $sql = "INSERT INTO `_ment` (`id`, `name`, `type`, `value`, `target`, `cmt_id`, `reason`, `ip`, `isSuccess`)
-                    VALUES ('$id', '$name', 'NOFI_MENTN', 'b>$b>$f', '$mid', '', '$t', '$ip', '0')";
+                    VALUES ('$id', '$name', 'NOFI_MENTN', '/b/$b/$f', '$mid', '', '$t', '$ip', '0')";
                     $result = mysqli_query($conn, $sql);
                 }
 
@@ -216,16 +235,14 @@ switch($mode){
         }
 
         if($row['id'] == $_SESSION['fnUserId']){
-            $sql = "DELETE FROM `_comment` WHERE `num` = '$n' and `type` = 'FNBCON_CMT'";
+            $sql = "UPDATE `_comment` SET `type` = 'COMMON_CMT', `content` = '<span class=\"subInfo\">삭제된 댓글입니다.</span>', `id` = '' WHERE `num` = '$n' and `type` = 'FNBCON_CMT'";
             $result = mysqli_query($conn, $sql);
-            $sqli = "UPDATE `_content` SET `commentCount` = `commentCount` - 1 WHERE `num` = '$f'";
-            $result = mysqli_query($conn, $sqli);
             echo '<script>window.location.href = document.referrer;</script>';
             exit;
         }
         break;
     case 'reply': #답글 작성
-        if(empty($r)){
+        if(empty($r) or $r == '0'){
             die('<script>alert("내용이 비어있습니다.");history.back()</script>');
         }elseif(strlen($r) > 1000){
             die('<script>alert("내용이 1000자를 초과했습니다.");history.back()</script>');
@@ -248,7 +265,7 @@ switch($mode){
         $result = mysqli_query($conn, $sql);
         $row = mysqli_fetch_assoc($result);
         if($row['cnt'] >= 6){
-            $link = 'b>recent>'.$n;
+            $link = '/b>recent>'.$n;
             $sql = "INSERT INTO `_ment` (`id`, `name`, `type`, `value`, `target`, `reason`, `ip`, `isSuccess`)
             VALUES ('__AUTO', '시스템 경고', 'NOFI_MENTN', '$link', 'admin', '댓글 도배', '127.0.0.1', '0')";
             $result = mysqli_query($conn, $sql);
@@ -258,7 +275,7 @@ switch($mode){
             if($row['cnt'] >= 10){
                 $sql = "UPDATE `_account` SET `siteBan` = '1' WHERE `id` = '$id';";
                 $result = mysqli_query($conn, $sql);
-                die('<script>alert("귀하께서는 도배로 인하여 광역차단 되셨습니다.");location.href = \'./\'</script>');
+                die('<script>alert("귀하께서는 도배로 인하여 광역차단 되셨습니다.");location.href = \'/\'</script>');
             }else{
                 die('<script>alert("댓글 작성 빈도가 너무 짧습니다.");history.back()</script>');
             }
@@ -296,7 +313,7 @@ switch($mode){
         $on = $on['offNotify'];
 
         if($on == 0){
-            if($id !== $i){
+            if(strtolower($id) !== strtolower($i)){
                 $sql = "INSERT INTO `_ment` (`id`, `name`, `type`, `value`, `target`, `cmt_id`, `reason`, `ip`, `isSuccess`)
                 VALUES ('$id', '$name', 'NOFI_CMMNT', '$v', '$i', '#cmt-".$cn."', '$t', '$ip', '0')";
                 $result = mysqli_query($conn, $sql);
@@ -312,9 +329,9 @@ switch($mode){
             $result = mysqli_query($conn, $sql);
             $mnt_id = mysqli_fetch_assoc($result);
             if(mysqli_num_rows($result) == 1){
-                $r = preg_replace('/'.$value.'/', '<a href="./u>'.$mnt_id['id'].'">'.$value.'</a>', $r); #내용에서 변경
+                $r = preg_replace('/'.$value.'/', '<a href="/u/'.$mnt_id['id'].'">'.$value.'</a>', $r); #내용에서 변경
                 $mid = $mnt_id['id'];
-                if($id !== $mid){ #호출 반영
+                if(strtolower($id) !== strtolower($mid)){ #호출 반영
                     $sql = "INSERT INTO `_ment` (`id`, `name`, `type`, `value`, `target`, `cmt_id`, `reason`, `ip`, `isSuccess`)
                     VALUES ('$id', '$name', 'NOFI_MENTN', '$v', '$mid', '#cmt-".$cn."', '$t', '$ip', '0')";
                     $result = mysqli_query($conn, $sql);
@@ -329,7 +346,7 @@ switch($mode){
         $sql = "UPDATE `_comment` SET `content` = '$r' WHERE `num` = '$cn'"; #멘션으로 변경된 내용 반영
         $result = mysqli_query($conn, $sql);
 
-        echo '<script>window.location.href = "./'.$v.'#cmt-'.$cn.'"</script>';
+        echo '<script>window.location.href = "/'.$v.'#cmt-'.$cn.'"</script>';
         break;
     case 'listing': #댓글 목록
         $sql = "SELECT * FROM `_content` WHERE `num` = '$n'";
@@ -343,8 +360,8 @@ switch($mode){
         <section id="mainSec" class="half">
         <div class="card">
         <header style="background:#f3f3f3;border-bottom:1px solid #e6e6e6">';
-        echo '<h3><a style="color:#000" href="b>'.$row['board'].'>'.$n.'">'.$row['title'].'</a></h3>';
-        echo '<span class="subInfo"><i class="icofont-user-alt-7"></i> <a class="muted" href="./u>'.$row['id'].'_'.$row['board'].'">'.$row['name'].'</a></span></header></div>';
+        echo '<h3><a style="color:#000" href="/b>'.$row['board'].'>'.$n.'">'.$row['title'].'</a></h3>';
+        echo '<span class="subInfo"><i class="icofont-user-alt-7"></i> <a class="muted" href="/u/'.$row['id'].'_'.$row['board'].'">'.$row['name'].'</a></span></header></div>';
 
         echo '<div class="card">
         <header style="background:#f3f3f3;border-bottom:1px solid #e6e6e6">
@@ -357,10 +374,10 @@ switch($mode){
 
         $sql = "SELECT * FROM `_comment` WHERE `type` in ('COMMON_CMT', 'FNBCON_CMT') and `from` = '$pgNum'";
         $cmtResult = mysqli_query($conn, $sql);
-            if(empty($_SESSION['fnUserId'])){
+            if(empty($_SESSION['fnUserId']) or $_SESSION['fnUserId'] == '0'){
                 echo '
                 <section class="muted" style="padding:8px;font-size:0.9em">
-                    댓글 열람을 위해서는 <a href="./login"><i class="icofont-sign-in"></i> 로그인</a>이 필요합니다.
+                    댓글 열람을 위해서는 <a href="/login"><i class="icofont-sign-in"></i> 로그인</a>이 필요합니다.
                 </section>
                 </div>
                 ';
@@ -387,7 +404,7 @@ switch($mode){
                             <header>
                                 <span class="subInfo">
                                     &nbsp;<i class="icofont-user-alt-7"></i>
-                                    <a class="muted" href="./u>'.$cmtRow['id'].'">'.$cmtRow['name'].'</a><h-d><br></h-d>';
+                                    <a class="muted" href="/u/'.$cmtRow['id'].'">'.$cmtRow['name'].'</a><h-d><br></h-d>';
                                     echo ' <i class="icofont-clock-time"></i> '.$cmtRow['at'];
                                 if($cmtRow['isEdited']){
                                     echo '<span data-tooltip="'.$cmtRow['isEdited'].' / '.$cmtRow['whoEdited'].'"
@@ -396,12 +413,12 @@ switch($mode){
                                 echo '</span></header>
                             <section>';
                                 if($cmtRow['type'] == 'FNBCON_CMT'){
-                                    echo '<img height="100" src="./fnbcon/'.$cmtRow['content'].'">';
+                                    echo '<img height="100" src="/fnbcon/'.$cmtRow['content'].'">';
                                 }else{
                                     echo nl2br($cmtRow['content']);
                                 }
                             echo '</section>
-                            <footer><form method="post" action="./comment.php?m=edit">';
+                            <footer><form method="post" action="/comment.php?m=edit">';
                             if($isMe){
                                 echo '<button onclick="editC('.$cmtRow['num'].')" id="ediB'.$cmtRow['num'].'"
                                 style="background:#a8a8a8" type="button"><i class="icofont-eraser"></i><h-m> 수정</h-m></button> ';
@@ -418,7 +435,7 @@ switch($mode){
                     </section>';
                         //답글 창 로딩
                         $parNum = $cmtRow['num'];
-                        echo '<section class="comm step_1" id="reply-'.$cmtRow['num'].'" style="display:none"><form method="post" action="./comment.php?m=reply">
+                        echo '<section class="comm step_1" id="reply-'.$cmtRow['num'].'" style="display:none"><form method="post" action="/comment.php?m=reply">
                             <div class="cimg">
                                 <img src="'.$userMail.'">
                             </div>
@@ -443,7 +460,7 @@ switch($mode){
                     if($isMe){
                         //수정 창 로딩
                         $parNum = $cmtRow['num'];
-                        echo '<section class="comm step_1" id="editC-'.$cmtRow['num'].'" style="display:none"><form method="post" action="./comment.php?m=edit">
+                        echo '<section class="comm step_1" id="editC-'.$cmtRow['num'].'" style="display:none"><form method="post" action="/comment.php?m=edit">
                             <div class="cimg">
                                 <img src="'.$userMail.'">
                             </div>
@@ -481,7 +498,7 @@ switch($mode){
                                             <header>
                                                 <span class="subInfo">
                                                     &nbsp;<i class="icofont-user-alt-7"></i>
-                                                    <a class="muted" href="./u>'.$rpRow['id'].'">'.$rpRow['name'].'</a><h-d><br></h-d>';
+                                                    <a class="muted" href="/u/'.$rpRow['id'].'">'.$rpRow['name'].'</a><h-d><br></h-d>';
                                                     echo ' <i class="icofont-clock-time"></i> '.$rpRow['at'];
                                                 if($rpRow['isEdited']){
                                                     echo '<span data-tooltip="'.$rpRow['isEdited'].' / '.$rpRow['whoEdited'].'"
@@ -508,7 +525,7 @@ switch($mode){
                                     </section>';
                                         //답글 창 로딩
                                         $parNum = $rpRow['num'];
-                                        echo '<section class="comm step_2" id="reply-'.$rpRow['num'].'" style="display:none"><form method="post" action="./comment.php?m=reply">
+                                        echo '<section class="comm step_2" id="reply-'.$rpRow['num'].'" style="display:none"><form method="post" action="/comment.php?m=reply">
                                             <div class="cimg">
                                                 <img src="'.$userMail.'">
                                             </div>
@@ -532,7 +549,7 @@ switch($mode){
                                         </form></section>';
                                     if($isMe){
                                         //수정 창 로딩
-                                        echo '<section class="comm step_2" id="editC-'.$rpRow['num'].'" style="display:none"><form method="post" action="./comment.php?m=edit">
+                                        echo '<section class="comm step_2" id="editC-'.$rpRow['num'].'" style="display:none"><form method="post" action="/comment.php?m=edit">
                                             <div class="cimg">
                                                 <img src="'.$userMail.'">
                                             </div>
@@ -570,7 +587,7 @@ switch($mode){
                                                             <header>
                                                                 <span class="subInfo">
                                                                     &nbsp;<i class="icofont-user-alt-7"></i>
-                                                                    <a class="muted" href="./u>'.$rplRow['id'].'">'.$rplRow['name'].'</a><h-d><br></h-d>';
+                                                                    <a class="muted" href="/u/'.$rplRow['id'].'">'.$rplRow['name'].'</a><h-d><br></h-d>';
                                                                     echo ' <i class="icofont-clock-time"></i> '.$rplRow['at'];
                                                                 if($rplRow['isEdited']){
                                                                     echo '<span data-tooltip="'.$rplRow['isEdited'].' / '.$rplRow['whoEdited'].'"
@@ -599,7 +616,7 @@ switch($mode){
                                                         </div>
                                                     </section>';
                                                         //답글 창 로딩
-                                                        echo '<section class="comm step_3" id="reply-'.$rplRow['num'].'" style="display:none"><form method="post" action="./comment.php?m=reply">
+                                                        echo '<section class="comm step_3" id="reply-'.$rplRow['num'].'" style="display:none"><form method="post" action="/comment.php?m=reply">
                                                             <div class="cimg">
                                                                 <img src="'.$userMail.'">
                                                             </div>
@@ -624,7 +641,7 @@ switch($mode){
                                                         </form></section>';
                                                     if($isMe){
                                                         //수정 창 로딩
-                                                        echo '<section class="comm step_3" id="editC-'.$rplRow['num'].'" style="display:none"><form method="post" action="./comment.php?m=edit">
+                                                        echo '<section class="comm step_3" id="editC-'.$rplRow['num'].'" style="display:none"><form method="post" action="/comment.php?m=edit">
                                                             <div class="cimg">
                                                                 <img src="'.$userMail.'">
                                                             </div>

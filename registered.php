@@ -1,14 +1,14 @@
 <?php
-require_once './setting.php';
-require_once './func.php';
+require_once 'setting.php';
+require_once 'func.php';
 
-if(empty($_POST['userid'])){
+if(empty($_POST['userid']) or $_POST['userid'] == '0'){
     exit;
 }
 
 $ip = get_client_ip();
 
-$id = filt($_POST['userid'], 'abc');
+$id = strtolower(filt($_POST['userid'], 'abc'));
 $name = filt($_POST['nickname'], '영한');
 $mail = filt($_POST['mail'], 'mail');
 $pw = filt($_POST['password'], 'htm');
@@ -20,8 +20,13 @@ $mail = mb_substr($mail, 0, 320);
 
 $intro = filt($_POST['intro'], 'htm');
 
-if(empty($_POST['intro'])){
+if(empty($_POST['intro']) or $_POST['intro'] == '0'){
     $intro = '<span class="muted">없음.</span>';
+}
+if(empty($name) or $name == '0'){
+    exit;
+}if(empty($id) or $id == '0'){
+    exit;
 }
 
 
@@ -51,6 +56,6 @@ $password_b = password_hash($pw, PASSWORD_DEFAULT);
                 if($result === false){
                     echo '데이터베이스 연결 실패';
                 }else{
-                    echo "<script>location.href='./index.php?alert=plslogin'</script>";
+                    echo "<script>location.href='/index.php?alert=plslogin'</script>";
                 }
 ?>

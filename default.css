@@ -76,6 +76,10 @@ green {
 	font-size: 0.7em;
 }
 
+a.black {
+	color: #000;
+}
+
 .black a {
 	color: #000
 }

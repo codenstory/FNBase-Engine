@@ -40,7 +40,7 @@ if($_GET['miscmode'] !== 'board'){
 }
         switch ($_GET['miscmode']) {
             case 'ranking':
-                echo '<hr>&nbsp;<a class="lager"><i class="icofont-rouble"></i> 포인트 랭킹</a><br>
+                echo '<hr>&nbsp;<a href="/misc" class="lager"><i class="icofont-rouble"></i> 포인트 랭킹</a><br>
                 &nbsp;<span class="subInfo">열심히 활동해 순위권에 들어보세요!</span><hr>
                     <table class="list full black noGray">
                         <thead>
@@ -63,7 +63,7 @@ if($_GET['miscmode'] !== 'board'){
 
                             echo '<tr>
                                 <td>'.$i.'</td>
-                                <td><a href="u>'.$row['id'].'"><b>'.$row['name'].'</b><br>
+                                <td><a href="/u/'.$row['id'].'"><b>'.$row['name'].'</b><br>
                                 <span class="muted"> ( '.$row['point'].' ⓟ) / '.$cont.'</span></a></td>
                             </tr>';
                             $i++;
@@ -72,7 +72,7 @@ if($_GET['miscmode'] !== 'board'){
                     </table>';
                 break;
             case 'hall_of_shame':
-                echo '<hr>&nbsp;<a class="lager"><i class="icofont-ban"></i> 불명예의 전당</a><br>
+                echo '<hr>&nbsp;<a href="/misc" class="lager"><i class="icofont-ban"></i> 불명예의 전당</a><br>
                 &nbsp;<span class="subInfo">사이트 전체에서 차단당했거나 기록이 말소된 이용자들의 목록입니다.</span><hr>
                     <table class="list full black noGray">
                         <thead>
@@ -92,7 +92,7 @@ if($_GET['miscmode'] !== 'board'){
                             }
 
                             echo '<tr>
-                                <td><a href="u>'.$row['id'].'"><b>'.$row['name'].'</b><br>
+                                <td><a href="/u/'.$row['id'].'"><b>'.$row['name'].'</b><br>
                                 <span class="muted">'.$cont.'</span></a></td>
                             </tr>';
                         }
@@ -104,11 +104,12 @@ if($_GET['miscmode'] !== 'board'){
                 $result = mysqli_query($conn, $sql);
                 $iA = mysqli_fetch_assoc($result);
                     if(!$iA['isAdmin']){
-                        exit;
+                        echo '이 사용자는 가입되지 않았습니다.';
+                        break;
                     }
-                echo '<hr>&nbsp;<a class="lager"><i class="icofont-ban"></i> 관리 센터</a><br>
+                echo '<hr>&nbsp;<a href="/misc" class="lager"><i class="icofont-ban"></i> 관리 센터</a><br>
                 &nbsp;<span class="subInfo">아이피나 아이디를 직접 입력해 차단할 수 있습니다.</span><hr>
-                <form method="post" action="./ban_page.php">
+                <form method="post" action="/ban_page.php">
                 <input type="text" placeholder="ip 주소 입력, ipv6 가능." name="ip" value="'.filt($_GET['miscplus'], 'htm').'">
                 <red><b>주의!</b> 격리조치시 되돌리지 못합니다.</red>
                 <button type="submit" class="error full">격리 조치</button>
@@ -116,11 +117,11 @@ if($_GET['miscmode'] !== 'board'){
                 break;
             case 'nstat':
                 $isMain = TRUE;
-                include './sub/nstat.php';
+                include 'sub/nstat.php';
                 break;
             case 'adv':
-                echo '<hr>&nbsp;<a class="lager"><i class="icofont-interface"></i> 광고 목록</a><br>
-                &nbsp;<span class="subInfo">30일 이내에 등록된 광고들의 목록입니다.</span><hr>
+                echo '<hr>&nbsp;<a href="/misc" class="lager"><i class="icofont-interface"></i> 광고 목록</a><br>
+                &nbsp;<span class="subInfo">30일 이내에 등록된 광고들의 목록입니다.</span><a class="right" style="font-size:.75em" href="/adv">광고 등록</a><hr>
                     <table class="list full black noGray">
                         <thead>
                             <tr>
@@ -139,7 +140,7 @@ if($_GET['miscmode'] !== 'board'){
                             }
 
                             echo '<tr>
-                                <td><a href="u>'.$row['id'].'"><b>'.$row['name'].'</b></a><br>
+                                <td><a href="/u/'.$row['id'].'"><b>'.$row['name'].'</b></a><br>
                                 <a href="'.$row['link'].'" style="color:gray">'.$cont.'</a></td>
                             </tr>';
                         }
@@ -163,7 +164,7 @@ if($_GET['miscmode'] !== 'board'){
                             }
 
                             echo '<tr>
-                            <td><a href="u>'.$row['id'].'"><b>'.$row['name'].'</b></a><br>
+                            <td><a href="/u/'.$row['id'].'"><b>'.$row['name'].'</b></a><br>
                             <a href="'.$row['link'].'" style="color:gray">'.$cont.'</a></td>
                         </tr>';
                         }
@@ -171,32 +172,41 @@ if($_GET['miscmode'] !== 'board'){
                     </table>';
                 break;
             case 'anonwrite':
+                if(strstr($ip, ':')){
+                    die('ipv6 대역은 비회원 작성이 불가능합니다.');
+                }
+                if(date('H') >= 22 or date('H') <= 17){
+                    echo '익명 글 작성은 오후 6시부터 오후 10시 까지만 가능합니다.<br>
+                    <a href="/register">회원가입</a> 후 제약 없이 작성 가능.';
+                    break;
+                }
                 $sqls = "SELECT * FROM `_ipban` WHERE `ip` = '$ip'";
                 $results = mysqli_query($conn, $sqls);
                 if(mysqli_num_rows($results) > 0){
                     echo '부적절한 이용으로 인해 차단됨!'; break;
                 }
-                if(empty($_SESSION['fnAnonNick'])){
-                    $nickname = '익명_'.GenStr(5);
+                if(empty($_SESSION['fnAnonNick']) or $_SESSION['fnAnonNick'] == '0'){
+                    $nickname = '비회원_'.GenStr(5);
                     $_SESSION['fnAnonNick'] = $nickname;
                 }else{
                     $nickname = $_SESSION['fnAnonNick'];
                 }
                 echo '<input type="checkbox" id="anonwriten">
                 <article class="card" style="text-align:center;">
-                    <p>1분당 글 1개 미만 작성 바람.</p>
+                    <p>1분당 최대 1개씩만 작성 바람.</p>
                     <label for="anonwriten" class="close">×</a>
                 </article>';
-                echo '<form method="post" action="./sub/anonwrite.php"><h3 style="display:inline">비회원 글쓰기</h3> <span class="muted">(자유 게시판)</span>';
+                echo '<form method="post" action="/sub/anonwrite.php"><h3 style="display:inline">비회원 글쓰기</h3> <span class="muted">(자유 게시판)</span>';
                 echo '<hr><input type="text" name="title" style="border:none" maxlength="20" placeholder="제목"><hr>';
                 echo '<input type="text" name="nickname" style="border:none;font-size:0.75em" maxlength="10" placeholder="닉네임" value="'.$nickname.'"><hr>';
                 echo '<textarea name="content" style="border:none;height:7em" maxlength="1000" placeholder="내용 (500자 이내)"></textarea><hr>
-                <button class="right success">등록</button></form><br>수정 및 삭제가 불가능하오니 신중하게 작성하세요.<br>모든 책임은 작성자에게 있으며 대한민국 법률이 적용됨.<br>';
-                echo '회원가입 후 글을 쓸 경우 부가기능을 적용할 수 있고, 내용을 길게 적을 수 있음.';
+                <div style="height:3em"><button class="right success">등록</button></div></form>수정 및 삭제가 불가능하오니 신중하게 작성하세요.<br>모든 책임은 작성자에게 있으며 대한민국 법률이 적용됨.<br>';
+                echo '<a href="/register">회원가입</a> 후 글을 쓸 경우 부가기능을 적용할 수 있고, 내용을 길게 적을 수 있음.';
                 break;
             case 'owner_only':
-                echo '<hr>&nbsp;<a class="lager"><i class="icofont-castle"></i> 소유주 전용 게시판 목록</a><br>
+                echo '<hr>&nbsp;<a href="/misc" class="lager"><i class="icofont-castle"></i> 소유주 전용 게시판 목록</a><br>
                 &nbsp;<span class="subInfo">소유주만 글을 쓸 수 있는, 개인용 게시판들입니다.</span><hr>
+                <input type="text" id="boardSearch" onkeyup="boardSearch()" placeholder="게시판 검색">
                     <table class="list full black noGray">
                         <thead>
                             <tr>
@@ -208,22 +218,36 @@ if($_GET['miscmode'] !== 'board'){
                         $result = mysqli_query($conn, $sql);
                         while($row = mysqli_fetch_assoc($result)){
                             echo '<tr>
-                                <td><a href="./b>'.$row['slug'].'"><b>'.$row['title'].'</b><br>
-                                <span class="muted"><a style="color:green" href="./u>'.$row['id'].'">@'.$row['name'].'</a> / '.$row['boardIntro'].'</span></a></td>
+                                <td class="boardName muted"><a href="/b>'.$row['slug'].'"><b>'.$row['title'].'</b><br>
+                                <a style="color:green" href="/u/'.$row['id'].'">@'.$row['name'].'</a> / '.$row['boardIntro'].'</a></td>
                             </tr>';
                         }
                         echo '</tbody>
-                    </table>';
+                    </table>'."
+                    <script>
+                    function boardSearch(){
+                        var query = document.querySelector('#boardSearch').value;
+                        document.querySelectorAll('.boardName').forEach(element => {
+                            if(query == ''){
+                                element.parentElement.style.display = '';
+                            }else if(element.innerHTML.search(query) < 1){
+                                element.parentElement.style.display = 'none';
+                            }else{
+                                element.parentElement.style.display = '';
+                            }
+                        });
+                    }
+                </script>";
                 break;
             case 'vindicate':
-                echo '<hr>&nbsp;<a class="lager"><i class="icofont-file-text"></i> 차단 소명하기</a><br>
+                echo '<hr>&nbsp;<a href="/misc" class="lager"><i class="icofont-file-text"></i> 차단 소명하기</a><br>
                 &nbsp;<span class="subInfo">사이트 전체 차단자만 이용 바랍니다.</span><hr>';
-                if(!empty($id)){
+                if(!empty($id) or $id == '0'){
                     $sql = "SELECT `siteBan` FROM `_account` WHERE `id` = '$id'";
                     $result = mysqli_query($conn, $sql);
                     $sB = mysqli_fetch_assoc($result);
                     if($sB['siteBan'] == 1){
-                        echo '<form action="./php/vindicate.php" method="post">
+                        echo '<form action="/php/vindicate.php" method="post">
                             <hr>
                                 <input type="text" name="t" placeholder="제목" style="border:none">
                             <hr>
@@ -266,7 +290,7 @@ if($_GET['miscmode'] !== 'board'){
                             }
 
                             echo '<tr>
-                                <td><a href="u>'.$row['id'].'"><b>'.$row['name'].'</b><br>
+                                <td><a href="/u/'.$row['id'].'"><b>'.$row['name'].'</b><br>
                                 <span class="muted"><b>'.$row['value'].'</b><br>'.$cont.'</span></a></td>
                             </tr>';
                         }
@@ -274,15 +298,15 @@ if($_GET['miscmode'] !== 'board'){
                     </table>';
                 break;
             case 'point':
-                echo '<hr>&nbsp;<a class="lager"><i class="icofont-rouble"></i> 포인트 주기</a><br>
+                echo '<hr>&nbsp;<a href="/misc" class="lager"><i class="icofont-rouble"></i> 포인트 주기</a><br>
                 &nbsp;<span class="subInfo">다른 이용자에게 포인트를 넘겨줄 수 있습니다.</span><hr>';
-                if(!empty($id)){
+                if(!empty($id) or $id == '0'){
                     $sql = "SELECT `point` FROM `_account` WHERE `id` = '$id'";
                     $result = mysqli_query($conn, $sql);
                     $pt = mysqli_fetch_assoc($result);
                     if($pt['point'] > 300){
                         $ptm = $pt['point'] - 100;
-                        echo '<form action="./php/point.php" method="post">
+                        echo '<form action="/php/point.php" method="post">
                             <hr>
                                 <input type="text" name="t" placeholder="받을 사람 ID" value="'.$_GET['miscplus'].'" style="border:none">
                             <hr>
@@ -309,7 +333,7 @@ if($_GET['miscmode'] !== 'board'){
                         $result = mysqli_query($conn, $sql);
                         while($row = mysqli_fetch_assoc($result)){
                             echo '<tr>
-                                <td><a href="u>'.$row['id'].'">'.$row['name'].'</a> > <a href="u>'.$row['target'].'">'.$row['reason'].'</a><br>
+                                <td><a href="/u/'.$row['id'].'">'.$row['name'].'</a> > <a href="/u/'.$row['target'].'">'.$row['reason'].'</a><br>
                                 <span class="muted">( '.$row['value'].' ⓟ )<br></span></td>
                             </tr>';
                         }
@@ -318,9 +342,9 @@ if($_GET['miscmode'] !== 'board'){
                 break;
 
             case 'rps_game':
-                echo '<hr>&nbsp;<a class="lager"><i class="icofont-hand-power"></i> 가위바위보</a><br>
+                echo '<hr>&nbsp;<a href="/misc" class="lager"><i class="icofont-hand-power"></i> 가위바위보</a><br>
                 &nbsp;<span class="subInfo">이길때마다 2배의 포인트를 획득할 수 있습니다.</span><hr>';
-                if(!empty($id)){
+                if(!empty($id) or $id == '0'){
                     echo '<input type="checkbox" id="game_warning">
                     <article class="card" style="text-align:center;">
                         <p>과도한 도박은 심각한 부작용을 초래할 수 있습니다.</p>
@@ -334,9 +358,9 @@ if($_GET['miscmode'] !== 'board'){
                         $ptm = $pt['point'] - 100;
                         echo '<form method="post">
                             <div class="flex">
-                                <p align="center"> <button style="width:100%;height:200px" formaction="./php/rps.php?p=1" class="error">가위</button> </p>
-                                <p align="center"> <button style="width:100%;height:200px" formaction="./php/rps.php?p=2" class="">바위</button> </p>
-                                <p align="center"> <button style="width:100%;height:200px" formaction="./php/rps.php?p=3" class="success">보</button> </p>
+                                <p align="center"> <button style="width:100%;height:200px" formaction="/php/rps.php?p=1" class="error">가위</button> </p>
+                                <p align="center"> <button style="width:100%;height:200px" formaction="/php/rps.php?p=2" class="">바위</button> </p>
+                                <p align="center"> <button style="width:100%;height:200px" formaction="/php/rps.php?p=3" class="success">보</button> </p>
                             </div>
                             <hr>
                                 <input type="number" min="300" max="5000" name="v" placeholder="걸어볼 포인트" style="border:none" required>
@@ -364,7 +388,7 @@ if($_GET['miscmode'] !== 'board'){
                         $result = mysqli_query($conn, $sql);
                         while($row = mysqli_fetch_assoc($result)){
                             echo '<tr>
-                                <td><a href="u>'.$row['id'].'">'.$row['name'].'</a> <span class="subInfo">('.get_timeFlies($row['at']).')</span><br>
+                                <td><a href="/u/'.$row['id'].'">'.$row['name'].'</a> <span class="subInfo">('.get_timeFlies($row['at']).')</span><br>
                                 <span class="muted">'.$row['value'].' ⓟ - <b>'.rps_win($row['target'], $row['reason']).
                                 '</b> ( CPU : '.$row['target'].' | '.$row['name'].' : '.$row['reason'].' )</span></td>
                             </tr>';
@@ -374,10 +398,10 @@ if($_GET['miscmode'] !== 'board'){
                 break;
 
             case 'ready_shoot':
-                echo '<hr>&nbsp;<a class="lager"><i class="icofont-penalty-card"></i> 즉석복권</a><br>
+                echo '<hr>&nbsp;<a href="/misc" class="lager"><i class="icofont-penalty-card"></i> 즉석복권</a><br>
                 &nbsp;<span class="subInfo">최대 500,000ⓟ 획득 가능</span><hr>';
-                if(!empty($id)){
-                    if(!empty($_COOKIE['fnGameRpsR'])){
+                if(!empty($id) or $id == '0'){
+                    if(!empty($_COOKIE['fnGameRpsR']) or $_COOKIE['fnGameRpsR'] == '0'){
                         echo $_COOKIE['fnGameRpsP'];
                     }
                     echo '<input type="checkbox" id="game_warning">
@@ -392,15 +416,15 @@ if($_GET['miscmode'] !== 'board'){
                     $sql = "SELECT `point` FROM `_account` WHERE `id` = '$id'";
                     $result = mysqli_query($conn, $sql);
                     $pt = mysqli_fetch_assoc($result);
-                    if($pt['point'] > 300){
+                    if($pt['point'] > 1000){
                         $ptm = $pt['point'] - 100;
                         echo '<form method="post">
-                            <button style="width:100%;height:200px" formaction="./php/lotto.php" class="error">1,000포인트를 소모하여<br>복권 구매</button>
+                            <button style="width:100%;height:200px" formaction="/php/lotto.php" class="error">1,000포인트를 소모하여<br>복권 구매</button>
                             <span class="subInfo">1일 1회 구매할 수 있습니다.</span><br>
                             <span class="subInfo">FNBase는 국내법을 준수하며, 이 사이트의 재화는 실제 현금으로 반출되지 않습니다.</span>
                         </form>';
                     }else{
-                        echo '300ⓟ 이상의 금액이 필요합니다.';
+                        echo '1000ⓟ 이상의 금액이 필요합니다.';
                     }
                 }else{
                     $sql = "SELECT `point` FROM `_account` WHERE `id` = '$id'";
@@ -434,7 +458,7 @@ if($_GET['miscmode'] !== 'board'){
                                 echo '<tr style="background:yellow">';
                             }
                             echo '
-                                <td><a href="u>'.$row['id'].'">'.$row['name'].'</a> <span class="subInfo">('.get_timeFlies($row['at']).')</span><br>
+                                <td><a href="/u/'.$row['id'].'">'.$row['name'].'</a> <span class="subInfo">('.get_timeFlies($row['at']).')</span><br>
                                 <span class="muted">'.$row['value'].' ⓟ ('.$row['reason'].')</span></td>
                             </tr>';
                         }
@@ -445,7 +469,7 @@ if($_GET['miscmode'] !== 'board'){
             case 'tags':
                 $lsPg = filt($_GET['tagspage'], '123');
                 $lsPgN = 10; #1페이지에 표시될 글 수
-                    if(empty($lsPg)){
+                    if(empty($lsPg) or $lsPg == '0'){
                         $limit = '0, '.$lsPgN;
                         $lsPg = 1;
                     }else{
@@ -479,7 +503,7 @@ if($_GET['miscmode'] !== 'board'){
                 $lsNotice = $lsBoard['subIntro'];
                 $alNotice = $lsBoard['notice'];
             
-                if(!empty($lsBoard['icon'])){
+                if(!empty($lsBoard['icon']) or $lsBoard['icon'] == '0'){
                     $boardIcon = '<i class="icofont-'.$lsBoard['icon'].'"></i> ';
                 }
 
@@ -496,7 +520,7 @@ if($_GET['miscmode'] !== 'board'){
                         break;
                 }
 
-                echo '<hr>&nbsp;<a class="lager">'.$boardIcon.$boardName.'<span class="muted">#'.$tgName.'</span></a><br>
+                echo '<hr>&nbsp;<a href="/misc" class="lager">'.$boardIcon.$boardName.'<span class="muted">#'.$tgName.'</span></a><br>
                 &nbsp;<span class="subInfo">'.$boardIntro.'</span><hr>';
                 $sql = "SELECT * FROM `_content` $sqlW ORDER BY `at` DESC $limit";
                 $result = mysqli_query($conn, $sql);
@@ -514,14 +538,14 @@ if($_GET['miscmode'] !== 'board'){
 
                     echo '<tr>';
                     echo '<td class="hidMob muted">'.$row['category'].'</td>';
-                    echo '<td class="black"><a href="./b%3E'.$row['board'].'%3E'.$row['num'].'-'.$lsPg.'">'.$row['title'].'</a>
+                    echo '<td class="black"><a href="/b/'.$row['board'].'/'.$row['num'].'-'.$lsPg.'">'.$row['title'].'</a>
                     <green class="little">['.$row['commentCount'].']</green>';
-                    if(!empty($row['staffOnly'])){
+                    if(!empty($row['staffOnly']) or $row['staffOnly'] == '0'){
                         echo '<i class="icofont-lock"></i>';
                     }
                     echo '</td>';
                     echo '<td class="infoList"><i class="icofont-user-alt-7"></i>
-                    <a class="muted" href="./u%3E'.$row['id'].'_'.$board.'">'.$row['name'].'</a><h-d><br></h-d>';
+                    <a class="muted" href="/u/'.$row['id'].'_'.$board.'">'.$row['name'].'</a><h-d><br></h-d>';
                     echo ' <i class="icofont-clock-time"></i> '.$time.'</td>';
                     echo '</tr>';
                 }
@@ -529,7 +553,7 @@ if($_GET['miscmode'] !== 'board'){
                 echo '<!-- 페이지 이동 --><br>
                 <div class="center">
                     <div class="pagination">
-                        <a href="b%3E'.$board.'%3E'.$tgMode.'_'.$tgName.'-1">&laquo;</a>';
+                        <a href="/b/'.$board.'/'.$tgMode.'_'.$tgName.'-1">&laquo;</a>';
 
                         $sql = "SELECT COUNT(`num`) as `cnt` FROM `_content` $sqlW";
 
@@ -552,9 +576,9 @@ if($_GET['miscmode'] !== 'board'){
                         $i = 1;
                         while ($lsPgStart <= $lsPgEnd) {
                             if($lsPg == $lsPgStart){
-                                echo '<a class="active" href="b%3E'.$board.'%3E'.$tgMode.'_'.$tgName.'-'.$lsPgStart.'">'.$lsPgStart.'</a>';
+                                echo '<a class="active" href="/b/'.$board.'/'.$tgMode.'_'.$tgName.'-'.$lsPgStart.'">'.$lsPgStart.'</a>';
                             }else{
-                                echo '<a href="b%3E'.$board.'%3E'.$tgMode.'_'.$tgName.'-'.$lsPgStart.'">'.$lsPgStart.'</a>';
+                                echo '<a href="/b/'.$board.'/'.$tgMode.'_'.$tgName.'-'.$lsPgStart.'">'.$lsPgStart.'</a>';
                             }
                             if($i == 5){
                             break;
@@ -563,7 +587,7 @@ if($_GET['miscmode'] !== 'board'){
                             $i++;
                         }
 
-                        echo '<a href="b%3E'.$board.'%3E'.$tgMode.'_'.$tgName.'-'.$lsPgEnd.'">&raquo;</a>';
+                        echo '<a href="/b/'.$board.'/'.$tgMode.'_'.$tgName.'-'.$lsPgEnd.'">&raquo;</a>';
                     echo '</div>
                 </div>';
                 break;
@@ -575,7 +599,7 @@ if($_GET['miscmode'] !== 'board'){
                 echo '<span class="lager"><i class="icofont-upload"></i> 이미지 업로드</span>
                 <hr>
                 <br>
-                <form enctype="multipart/form-data" action="./php/upload.php" method="post">
+                <form enctype="multipart/form-data" action="/php/upload.php" method="post">
                     <input type="file" name="myfile">
                     <br>
                     <span class="subInfo">".png, .jpg/.jpeg, .webp" 파일만 업로드 가능합니다.</span><br>
@@ -616,7 +640,7 @@ if($_GET['miscmode'] !== 'board'){
                         echo '<tr style="background:yellow">';
                     }
                     echo '<td class="infoList">
-                    <a style="font-weight:700;color:black" href="./u%3E'.$row['id'].'">'.$row['name'].'</a><br>';
+                    <a style="font-weight:700;color:black" href="/u%3E'.$row['id'].'">'.$row['name'].'</a><br>';
                     echo ' <i class="icofont-clock-time"></i> '.$row['at'].'<h-d><br></h-d><h-m> </h-m>('.$time.')</td>';
                     echo '<td>'.$row['value'].' ⓟ</td>';
                     echo '</tr>';
@@ -630,7 +654,7 @@ if($_GET['miscmode'] !== 'board'){
                 if(mysqli_num_rows($result) == 1){
                     echo '<button class="full" disabled><i class="icofont-checked"></i> 출석 완료!</button>';
                 }else{
-                    echo '<a href="./php/attendance.php" class="button full"><i class="icofont-check"></i> 출석하기</a>';
+                    echo '<a href="/php/attendance.php" class="button full"><i class="icofont-check"></i> 출석하기</a>';
                 }
                 echo '<hr><span class="muted">출석시 기본적으로 100포인트를 획득하며, 매일 0시에 초기화됩니다.<br>
                 30분의 1의 확률로 최대 5000포인트, 6분의 1의 확률로 최대 500포인트를 획득할 수 있습니다.</span>';
@@ -639,9 +663,10 @@ if($_GET['miscmode'] !== 'board'){
                 echo '<main>
                 <div class="flex">
                     <section id="mainSec" class="half black noGray listMain">
-                                <hr>&nbsp;<a class="lager"><i class="icofont-listine-dots"></i> 게시판 목록</a><br>
+                                <hr>&nbsp;<a href="/misc" class="lager"><i class="icofont-listine-dots"></i> 게시판 목록</a><br>
                                     &nbsp;<span class="subInfo">모든 게시판의 목록입니다.</span>
-                                    <a href="./mkBoard" style="float:right;color:#0074d9;text-decoration:none;font-size:0.7em">게시판 만들기</a><hr>
+                                    <a href="/mkBoard" style="float:right;color:#0074d9;text-decoration:none;font-size:0.7em">게시판 만들기</a><hr>
+                                        <input type="text" id="boardSearch" onkeyup="boardSearch()" placeholder="게시판 검색">
                                         <table class="list full">
                                             <thead>
                                                 <tr>
@@ -661,23 +686,39 @@ if($_GET['miscmode'] !== 'board'){
                                         case 'PRIVAT_OPT':
                                             $boardType = '사설';
                                             break;
+                                        case 'CREAT_SOME':
+                                            $boardType = '창작';
+                                            $boardTypeStyle = 'class="label" style="background:purple;color:white"';
+                                            break;
                                     }
                                             echo '<tr>
                                                 <td>'.$boardType.'</td>
-                                                <td><a href="./b%3E'.$row['slug'].'"><b>'.$row['title'].'</b><br>
+                                                <td class="boardName"><a href="/b%3E'.$row['slug'].'"><b>'.$row['title'].'</b><br>
                                                 <span class="muted">'.$row['boardIntro'].'</span></a></td>
                                             </tr>';
                                 }
                                 echo '</tbody></table></section>';
                                 ?>
-                                    <aside class="hidMob" id="nofiSec">
-                                    </aside>
+                                        <script>
+                                            function boardSearch(){
+                                                var query = document.querySelector('#boardSearch').value;
+                                                document.querySelectorAll('.boardName').forEach(element => {
+                                                    if(query == ''){
+                                                        element.parentElement.style.display = '';
+                                                    }else if(element.innerHTML.search(query) < 1){
+                                                        element.parentElement.style.display = 'none';
+                                                    }else{
+                                                        element.parentElement.style.display = '';
+                                                    }
+                                                });
+                                            }
+                                        </script>
                                 <?php
                 break;
                 
             default:
-                echo '<hr>&nbsp;<a class="lager"><i class="icofont-interface"></i> 기타 페이지</a><br>
-                &nbsp;<span class="subInfo">계속 추가될 예정입니다. 필요하신게 있다면 <a href="./b>maint">운영실</a>에서 건의해주세요.</span><hr>
+                echo '<hr>&nbsp;<a href="/misc" class="lager"><i class="icofont-interface"></i> 기타 페이지</a><br>
+                &nbsp;<span class="subInfo">계속 추가될 예정입니다. 필요하신게 있다면 <a href="/b>maint">운영실</a>에서 건의해주세요.</span><hr>
                     <table class="list full black noGray">
                         <thead>
                             <tr>
@@ -688,39 +729,49 @@ if($_GET['miscmode'] !== 'board'){
                         <tbody>
                             <tr>
                                 <td>순위</td>
-                                <td><a href="misc>ranking"><b>포인트 랭킹</b><br>
+                                <td><a href="/misc>ranking"><b>포인트 랭킹</b><br>
                                 <span class="muted">활동 포인트가 많은 순서대로 이용자들을 보여줍니다.</span></a></td>
                             </tr>
                             <tr>
                                 <td>게임</td>
-                                <td><a href="misc>rps_game"><b>가위바위보</b><br>
+                                <td><a href="/misc>rps_game"><b>가위바위보</b><br>
                                 <span class="muted">포인트를 걸고 2배로 불려보세요!</span></a></td>
                             </tr>
                             <tr>
                                 <td>게임</td>
-                                <td><a href="misc>ready_shoot"><b>즉석복권</b><br>
+                                <td><a href="/misc>ready_shoot"><b>즉석복권</b><br>
                                 <span class="muted">최대 500,000ⓟ! 1일 1회 구매 가능.</span></a></td>
                             </tr>
                             <tr>
                                 <td>기능</td>
-                                <td><a href="misc>point"><b>포인트 주기</b><br>
+                                <td><a href="/misc>point"><b>포인트 주기</b><br>
                                 <span class="muted">다른 이용자에게 포인트를 넘겨줄 수 있습니다.</span></a></td>
                             </tr>
                             <tr>
                                 <td>목록</td>
-                                <td><a href="misc>hall_of_shame"><b>불명예의 전당</b><br>
+                                <td><a href="/misc>hall_of_shame"><b>불명예의 전당</b><br>
                                 <span class="muted">사이트 전체 차단당한 이용자들의 목록입니다.</span></a></td>
                             </tr>
                             <tr>
                                 <td>목록</td>
-                                <td><a href="misc>vindicate"><b>차단 소명</b><br>
+                                <td><a href="/misc>vindicate"><b>차단 소명</b><br>
                                 <span class="muted">억울하게 차단당하셨나요? 결백을 증명해보세요.</span></a></td>
                             </tr>
                             <tr>
                                 <td>목록</td>
-                                <td><a href="misc>adv"><b>광고 목록</b><br>
+                                <td><a href="/misc>adv"><b>광고 목록</b><br>
                                 <span class="muted">30일 이내에 등록된 광고들의 목록입니다.</span></a></td>
                             </tr>
+                            <tr>
+                            <td>목록</td>
+                            <td><a href="/misc>board"><b>게시판 목록</b><br>
+                            <span class="muted">개인용 게시판을 제외한 게시판들의 목록입니다.</span></a></td>
+                        </tr>
+                        <tr>
+                            <td>목록</td>
+                            <td><a href="/misc>owner_only"><b>개인용 게시판 목록</b><br>
+                            <span class="muted">개인용 게시판의 목록입니다.</span></a></td>
+                        </tr>
                         </tbody>
                     </table>';
                 break;

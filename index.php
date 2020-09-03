@@ -1,6 +1,6 @@
 <?php
-require_once './setting.php';
-require_once './func.php';
+require_once 'setting.php';
+require_once 'func.php';
 
 $idTemp_1 = filt($_GET['b'], 'abc');
 $idTemp_2 = filt($_GET['n'], '123');
@@ -8,21 +8,21 @@ $idTemp_3 = filt($_GET['mode'], 'abc');
 $idTemp_4 = filt($_GET['board'], 'abc');
 $idAlert = filt($_GET['alert'], 'abc');
 
-if(empty($idTemp_1)){ #게시판 값이 비어있음
+if(empty($idTemp_1) or $idTemp_1 == '0'){ #게시판 값이 비어있음
     $isBoard = FALSE;
-}elseif(!empty($idTemp_2)){ #글 번호 있음
+}elseif(!empty($idTemp_2) or $idTemp_2 == '0'){ #글 번호 있음
     $lsBoard = $idTemp_1;
     $pgNumber = $idTemp_2;
     $isBoard = TRUE;
     $isPage = TRUE;
-}elseif(!empty($idTemp_1)){ #게시판 값만 있음
+}elseif(!empty($idTemp_1) or $idTemp_1 == '0'){ #게시판 값만 있음
     $lsBoard = $idTemp_1;
     $isBoard = TRUE;
     $isPage = FALSE;
 }
 
 if(!$isBoard){
-    if(!empty($idTemp_3)){ #모드 값이 있음
+    if(!empty($idTemp_3) or $idTemp_3 == '0'){ #모드 값이 있음
         $idPage = $idTemp_3;
         if($idTemp_4){
             $lsBoard = $idTemp_4;
@@ -40,7 +40,7 @@ if(!$isBoard){
     $idPage = 'list';
 }
 
-if(!empty($id)){
+if(!empty($id) or $id == '0'){
     $sql = "SELECT `siteBan`, `canUpload` FROM `_account` WHERE `id` = '$id'";
     $result = mysqli_query($conn, $sql);
     $sB = mysqli_fetch_assoc($result);
@@ -58,7 +58,7 @@ if(!empty($id)){
         <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.css" rel="stylesheet">
         <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.js"></script>';
     }elseif($uS['editor'] == 'c' && $idPage == 'write' || $uS['editor'] == 'c' && $idPage == 'edit'){
-        $lsHead = "<script src=\"./editor/ckeditor5/build/ckeditor.js\"></script>";
+        $lsHead = "<script src=\"/editor/ckeditor5/build/ckeditor.js\"></script>";
     }
 
     if(!empty($uS['homepage']) && $isMain){
@@ -96,7 +96,7 @@ if(mysqli_num_rows($result) > 0){
             }
             break;
         case 2:
-            $sql = "SELECT count(*) as `cnt` FROM `_content` WHERE `rate` NOT LIKE 'R' and `voteCount_Up` > 10 and `at` > DATE_SUB(NOW(), INTERVAL 21 DAY)";
+            $sql = "SELECT count(*) as `cnt` FROM `_content` WHERE `rate` NOT LIKE 'R' and `staffOnly` IS NOT NULL and `voteCount_Up` > 10 and `at` > DATE_SUB(NOW(), INTERVAL 21 DAY)";
             $res = mysqli_query($conn, $sql);
             $res = mysqli_fetch_assoc($res);
             $cnt = $res['cnt'] - 1;
@@ -106,7 +106,7 @@ if(mysqli_num_rows($result) > 0){
             if($cnt < 0){
                 $isEmpty = TRUE;
             }else{
-                $sql = "SELECT `title`, `num` FROM `_content` WHERE `rate` NOT LIKE 'R' and `voteCount_Up` > 10 and `at` > DATE_SUB(NOW(), INTERVAL 21 DAY)";
+                $sql = "SELECT `title`, `num` FROM `_content` WHERE `rate` NOT LIKE 'R' and `staffOnly` IS NOT NULL and `voteCount_Up` > 10 and `at` > DATE_SUB(NOW(), INTERVAL 21 DAY)";
                 $res = mysqli_query($conn, $sql);
                 $res = mysqli_fetch_assoc($res);
 
@@ -115,7 +115,7 @@ if(mysqli_num_rows($result) > 0){
             }
             break;
         case 3:
-            $sql = "SELECT count(*) as `cnt` FROM `_content` WHERE `rate` NOT LIKE 'R' and `viewCount` > 500 and `at` > DATE_SUB(NOW(), INTERVAL 7 DAY)";
+            $sql = "SELECT count(*) as `cnt` FROM `_content` WHERE `rate` NOT LIKE 'R' and `staffOnly` IS NOT NULL and `viewCount` > 1000 and `at` > DATE_SUB(NOW(), INTERVAL 7 DAY)";
             $res = mysqli_query($conn, $sql);
             $res = mysqli_fetch_assoc($res);
             $cnt = $res['cnt'] - 1;
@@ -125,7 +125,7 @@ if(mysqli_num_rows($result) > 0){
             if($cnt < 0){
                 $isEmpty = TRUE;
             }else{
-                $sql = "SELECT `title`, `num` FROM `_content` WHERE `rate` NOT LIKE 'R' and `viewCount` > 500 and `at` > DATE_SUB(NOW(), INTERVAL 7 DAY)";
+                $sql = "SELECT `title`, `num` FROM `_content` WHERE `rate` NOT LIKE 'R' and `staffOnly` IS NOT NULL and `viewCount` > 500 and `at` > DATE_SUB(NOW(), INTERVAL 7 DAY)";
                 $res = mysqli_query($conn, $sql);
                 $res = mysqli_fetch_assoc($res);
 
@@ -161,7 +161,7 @@ if(mysqli_num_rows($result) > 0){
 <html lang="<?=$fnLang?>">
     <head>
         <meta charset="UTF-8">
-        <meta name="robots" content="noindex">
+        <meta name="robots" content="noarchive">
         <meta name="author" content="FNBase Team">
         <meta name="theme-color" content="<?=$fnPColor?>">
         <meta name="classification" content="html">
@@ -186,6 +186,9 @@ if(mysqli_num_rows($result) > 0){
                 .hidMob {
                     display:none;
                 }
+                .brand-r h-d {
+                    font-size: 0.7em;
+                }
             }
             @media (min-width: 1900px) {
                 html {
@@ -198,10 +201,11 @@ if(mysqli_num_rows($result) > 0){
             }
             html { overflow-y:scroll; word-break: break-word }
         </style>
+        <link rel="stylesheet" href="https://fnbase.xyz/icofont/icofont.min.css">
         <link rel="stylesheet" href="https://fnbase.xyz/default.css">
         <link rel="stylesheet" href="https://fnbase.xyz/picnic.css">
-        <link rel="stylesheet" type="text/css" href="https://fnbase.xyz/icofont/icofont.min.css">
         <link rel="shortcut icon" href="https://fnbase.xyz/icon.png">
+        <link rel="manifest" href="https://fnbase.xyz/manifest.webmanifest">
         <?=$fnPHead.$lsHead?>
     </head>
     <body style="background:<?=$fnBColor?>">
@@ -213,7 +217,7 @@ if(mysqli_num_rows($result) > 0){
                     <span style="color:#fff"><?=$fnTitle?></span>
                 </a>
                 <a href="/sublist" class="brand-r">
-                    <span style="color:#fff"><i class="icofont-folder"></i><h-m> 구독 글 목록</h-m><h-d> 구독</h-d></span>
+                    <span style="color:#fff"><i class="icofont-folder"></i><h-m> 구독 게시판</h-m><h-d> 구독</h-d></span>
                 </a>
                 <a href="/board" class="brand-r">
                     <span style="color:#fff"><i class="icofont-listine-dots"></i><h-m> 게시판 목록</h-m><h-d> 목록</h-d></span>
@@ -237,7 +241,7 @@ if(mysqli_num_rows($result) > 0){
             </nav>
             <span style="color:white">
                 <div id="topNoticeLine" style="background:<?=$fnSColor?>">
-                    <a href="<?=$tnHref?>" style="color:white"><span class="label"><?=$tnLabel?></span> <?=$tnText?></a>
+                    <a href="/misc>adv" class="label"><?=$tnLabel?></a> <a onclick="if(confirm('광고 링크로 이동하시겠습니까?')){location.href = '<?=$tnHref?>'}" style="color:white"><?=$tnText?></a>
                 </div>
             </span>
         </header>
@@ -265,7 +269,7 @@ if(mysqli_num_rows($result) > 0){
                     $result = mysqli_query($conn, $sql);
                     $mA = mysqli_fetch_assoc($result);
                     if($mA['type'] == 'password'){
-                        require './php/change_password.php';
+                        require 'php/change_password.php';
                     }elseif($mA['type'] == 'complete'){
                         echo '이미 가입을 완료했습니다!';
                     }else{
@@ -278,24 +282,24 @@ if(mysqli_num_rows($result) > 0){
                 
                 #직접표시
                 case 'login':
-                    if(!empty($_SESSION['fnUserId'])){
+                    if(!empty($_SESSION['fnUserId']) or $_SESSION['fnUserId'] == '0'){
                         echo '<script>history.back()</script>';
                     }
                     $lsPlus = '<article class="card">
                     <header>
                     <h3 class="muted"><i class="icofont-sign-in"></i> 로그인</h3>
                     </header>
-                    <form method="post" action="login.php">
+                    <form method="post" action="/login.php">
                         <section class="content">
                             <label><input type="id" name="id" placeholder="아이디" required></label><br>
                             <label><input type="password" name="pw" placeholder="비밀번호" required></label>
                             <input type="hidden" name="from" value="/2/">
                         </section>
                         <footer>
-                            <a href="./forgot_password">비밀번호를 잊으셨나요?</a> 
-                            <a href="./php/ip_login.php" style="float:right"><i class="icofont-checked"></i> ip 로그인</a>
+                            <a href="/forgot_password">비밀번호를 잊으셨나요?</a> 
+                            <a href="/php/ip_login.php" style="float:right"><i class="icofont-checked"></i> ip 로그인</a>
                             <button class="button success full" type="submit">로그인</button>
-                            <span class="subInfo">계정이 없으신가요? <a href="./register">만들어보세요!</a></span>
+                            <span class="subInfo">계정이 없으신가요? <a href="/register">만들어보세요!</a></span>
                         </footer>
                     </form>
                     </article>';
@@ -305,12 +309,12 @@ if(mysqli_num_rows($result) > 0){
 
                 case 'maint':
                     if(!$_SESSION['fnUserId']){
-                        die('<script>alert("회원가입 후 이용해주세요.");location.href="./register"</script>');
+                        die('<script>alert("회원가입 후 이용해주세요.");location.href="/register"</script>');
                     }
                     $sql = "SELECT * FROM `_board` WHERE `id` = '$id'";
                     $result = mysqli_query($conn, $sql);
                     $row = mysqli_fetch_assoc($result);
-                            if($id !== $row['id']){ #채널 설정 권한 여부
+                            if(strtolower($id) !== strtolower($row['id'])){ #채널 설정 권한 여부
                                 if(!preg_match('/(^|,)'.$id.'($|,)/', $row['keeper'])){
                                     die('권한 없음.');
                                 }
@@ -323,7 +327,7 @@ if(mysqli_num_rows($result) > 0){
                     <header>
                     <h3 class="muted"><i class="icofont-settings"></i> 채널 설정</h3>
                     </header>
-                    <form method="post" action="./php/maint.php">
+                    <form method="post" action="/php/maint.php">
                         <section class="content">
                             <label>게시판 이름<input type="text" name="t" placeholder="게시판 이름" value="'.$row['title'].'" readonly></label><br>
                             <span class="subInfo">게시판 이름 변경은 운영실에서 문의해주세요.</span><br>
@@ -341,11 +345,19 @@ if(mysqli_num_rows($result) > 0){
                             <span class="subInfo">게시글 블라인드 및 등급 조정, 공지 지정 권한을 가집니다.</span><br>
                             <span class="subInfo">게시판 소유권 위임은 운영실에서 문의해주세요.</span>
                             <hr>
+                            <label>종합 글 목록<select name="rct">
+                            <option value="'.$row['rct'].'">선택해주세요.</option>
+                            <option value="1">노출을 원함</option>
+                            <option value="0">노출을 원하지 않음</option>
+                            </select></label>
+                            <hr>
                             <label>게시판 타입<select name="ty">
                             <option value="'.$row['type'].'">선택해주세요.</option>
                             <option value="PRIVAT_OPT">전체 공개</option>
+                            <option value="CREAT_SOME">창작 공간</option>
                             <option value="OWNER_ONLY">소유주 전용</option>
                             </select></label>
+                            <br>
                             <span class="subInfo">전체 공개시 누구나 글을 쓸 수 있습니다. 소유주 전용 선택시 소유주만 가능합니다.</span><br>
                             <span class="subInfo">게시판 열람이나 추천 등은 금지할 수 없는 점 알려드립니다.</span>
                             <hr>
@@ -357,17 +369,22 @@ if(mysqli_num_rows($result) > 0){
                             <span class="subInfo">'.$fnTitle.'의 사설 게시판 관리 서비스 이용시 <a href="https://fnbase.xyz/b%3Emaint%3E213">사설 게시판 이용수칙</a>에 동의한 것으로 간주됩니다.</span>
                         </footer>';
                         if($lsBoard == 'trash'){
-                            $lsPlus .= '<button class="error" formaction="./php/modifyCon.php?mode=T"><i class="icofont-bin"></i> 휴지통 비우기</button>
+                            $lsPlus .= '<button class="error" formaction="/php/modifyCon.php?mode=T"><i class="icofont-bin"></i> 휴지통 비우기</button>
                             <input type="hidden" name="b" value="trash">';
                         }elseif($lsBoard == 'mafia'){
-                            $lsPlus .= '<button class="error" formaction="./php/modifyCon.php?mode=T"><i class="icofont-error"></i> 기밀 해제</button>
+                            $lsPlus .= '<button class="error" formaction="/php/modifyCon.php?mode=T"><i class="icofont-error"></i> 기밀 해제</button>
                             <input type="hidden" name="b" value="mafia">';
                         }elseif($lsBoard == 'recent'){
                             if($fnType == 'board'){
-                                $lsPlus .= '<button class="error" formaction="./php/modifyCon.php?mode=OFF"><i class="icofont-toggle-off"></i> 사이트 끄기</button>';
-                                $lsPlus .= '<a href="/ban_page.php">차단 페이지</a>';
+                                $lsPlus .= '<button class="error" formaction="/php/modifyCon.php?mode=OFF"><i class="icofont-toggle-off"></i> 사이트 끄기</button>';
                             }else{
-                                $lsPlus .= '<button class="error" formaction="./php/modifyCon.php?mode=ON"><i class="icofont-toggle-on"></i> 사이트 켜기</button>';
+                                $lsPlus .= '<button class="error" formaction="/php/modifyCon.php?mode=ON"><i class="icofont-toggle-on"></i> 사이트 켜기</button>';
+                            }
+                        }elseif($lsBoard == '3'){
+                            if($fnType == 'board'){
+                                $lsPlus .= '<button class="error" formaction="/php/modifyCon.php?mode=OFF"><i class="icofont-toggle-off"></i> 사이트 끄기</button>';
+                            }else{
+                                $lsPlus .= '<button class="error" formaction="/php/modifyCon.php?mode=ON"><i class="icofont-toggle-on"></i> 사이트 켜기</button>';
                             }
                         }
                     echo '</form>
@@ -377,16 +394,21 @@ if(mysqli_num_rows($result) > 0){
 
                 case 'write':
                     if(!$_SESSION['fnUserId']){
-                        die('<script>alert("회원가입 후 이용해주세요.");location.href="./register"</script>');
+                        die('<script>alert("회원가입 없이는 자유 게시판 에서만 글을 작성하실 수 있습니다.");location.href="/misc>anonwrite"</script>');
+                    }else{
+                        $_SESSION['fnUserId'] = $_SESSION['fnUserId'];
+                        $_SESSION['fnUserName'] = $_SESSION['fnUserName'];
+                        $_SESSION['fnUserMail'] = $_SESSION['fnUserMail'];
                     }
                     if($lsBoard == 'recent'){
-                        die('<script>alert("종합 글 목록에는 글을 작성하실 수 없습니다.");location.href="./main"</script>');
+                        die('<script>alert("종합 글 목록에는 글을 작성하실 수 없습니다.");location.href="/main"</script>');
                     }
 
                     if($uS['editor'] == NULL){
                         $lsEditor = '<textarea id="mainEditor" name="content" placeholder="내용 (기본 Textarea 사용중)" style="border:none;color:gray;height:12em"></textarea>';
+                        $lsEditorS = '<hr><button onclick="notSubmit=false;" class="button full" style="background:green" type="submit">작성 완료</button>';
                     }elseif($uS['editor'] == 's'){
-                        $lsEditor = '
+                        $lsEditor = '<span style="font-size:17px">
                         <textarea id="summernote" name="content"></textarea>'."
                         <script>
                         $('#summernote').summernote({
@@ -405,10 +427,41 @@ if(mysqli_num_rows($result) > 0){
                             ]
                         });
                         </script>
-                        ";
+                        </span>";
+                        $lsEditorPlusV = "document.querySelector('.note-editable').innerHTML += '<img src=\"'+data+'\" style=\"width:50%\"><br>';document.querySelector('.note-editable').click()";
+                        $lsEditorS = '<hr><button onclick="notSubmit=false;" class="button full" style="background:green" type="submit">작성 완료</button>';
+                    }elseif($uS['editor'] == 'q'){
+                        $lsEditor = '<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+                        <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+                        
+                        <div id="editor" style="height:15em;font-size:1em"></div>
+                        <textarea id="txtAreaEditor" name="content" style="display:none"></textarea>
+                        '."
+                        <script>
+                        var options = {
+                            placeholder: '내용 (Quill 사용중)',
+                            modules: {
+                                toolbar: [
+                                    [{ 'header': [1, 2, 3, false] }],
+                                    ['bold', 'italic', 'underline', 'strike', { 'script': 'sub'}, { 'script': 'super' }, 'link'],
+                                    [{ 'indent': '-1'}, { 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '+1' }],
+                                    ['background', 'color', 'align', 'video', 'blockquote', 'divider'],
+                                    ['clean']
+                                  ]
+                            },
+                            theme: 'snow'
+                        };
+                        var editor = new Quill('#editor', options);
+                        function quillSubmit(){
+                            document.querySelector('#txtAreaEditor').innerHTML = document.querySelector('.ql-editor').innerHTML;
+                            document.querySelector('#contForm').submit();
+                        }
+                        </script>";
+                        $lsEditorPlusV = "document.querySelector('.ql-editor').innerHTML += '<img src=\"'+data+'\" style=\"width:50%\"><br>';document.querySelector('.ql-editor').click()";
+                        $lsEditorS = '<hr><button onclick="notSubmit=false;quillSubmit()" class="button full" style="background:green" type="button">작성 완료</button>';
                     }
                     if($sB['canUpload']){
-                        $lsEditorPlus .= '<hr><form id="contentImage" enctype="multipart/form-data"><red style="font-size:0.7em">.png / .webp / .jpg / .jpeg 허용. 2MB 미만.</red>
+                        $lsEditorPlus .= '<hr><form id="contentImage" enctype="multipart/form-data"><red style="font-size:0.7em">.png / .webp / .jpg / .jpeg 허용. 5MB 미만.</red>
                         <input type="file" name="myfile">
                         <button id="submitImage" class="full" type="button">이미지 업로드</button></form>'.
                         "<script>
@@ -416,7 +469,7 @@ if(mysqli_num_rows($result) > 0){
 
                         button.addEventListener('click', () => {
                         const form = new FormData(document.querySelector('#contentImage'));
-                        const url = './sub/fetchUpload.php'
+                        const url = '/sub/fetchUpload.php'
                         const request = new Request(url, {
                             method: 'POST',
                             body: form
@@ -428,13 +481,17 @@ if(mysqli_num_rows($result) > 0){
                                 if(document.querySelector('#mainEditor') != null){
                                     document.querySelector('#mainEditor').innerHTML += data+' ';
                                 }else{
-                                    document.querySelector('.note-editable').innerHTML += '<img src=\"'+data+'\">';
+                                    ".$lsEditorPlusV."
                                 }
                             })
                             
                         });
                         </script><hr>
                         ";
+                    }
+                    if($_GET['board'] == 'quiz'){
+                        $Quiz = '<input type="text" name="answer" style="border:none;font-size:0.8em" placeholder="퀴즈 정답 (20자 이내)" maxlength="20"><hr>';
+                        $Quiz .= '<input type="number" name="prize" style="border:none;font-size:0.8em" placeholder="정답 상금 (10만 포인트 이내)" min="300" max="100000"><hr>';
                     }
                     $lsPlus = '<article class="card">
                         <header>
@@ -444,11 +501,12 @@ if(mysqli_num_rows($result) > 0){
                                 <hr>
                                 <input type="text" name="title" placeholder="제목" style="border:none;color:gray">
                                 <hr>
-                                '.$lsEditor.'
-                                <hr>
-                                <button class="button full" style="background:green" type="submit">작성 완료</button>
+                                '.$Quiz.'
+                                '.$lsEditor.$lsEditorS.'
                                 <span class="subInfo">상단 우측의 \'부가 기능(보라색)\'을 눌러 더 많은 기능을 사용하실 수 있습니다.</span><br>
-                                <red style="font-size:0.7em">이미지 업로드: 이미지 주소 그대로 입력 -> 작성 완료시 처리.</red>
+                                <span class="subInfo">링크 삽입: 유튜브/이미지 파일 - 링크만 입력 (처리 없이)</span><br>
+                                <red style="font-size:0.7em">이미지 업로드: <a href="/b>maint">이미지 업로드 권한 요청</a>(<a href="https://iloveimg.com/ko">압축</a>) /
+                                <a href="https://imgbb.com">외부 업로드</a></red>
                             </section>
                     </article>
                     </form>';
@@ -461,10 +519,14 @@ if(mysqli_num_rows($result) > 0){
 
                 case 'edit':
                     if(!$_SESSION['fnUserId']){
-                        die('<script>alert("회원가입 후 이용해주세요.");location.href="./register"</script>');
+                        die('<script>alert("회원가입 후 이용해주세요.");location.href="/register"</script>');
+                    }else{
+                        $_SESSION['fnUserId'] = $_SESSION['fnUserId'];
+                        $_SESSION['fnUserName'] = $_SESSION['fnUserName'];
+                        $_SESSION['fnUserMail'] = $_SESSION['fnUserMail'];
                     }
                     if($lsBoard == 'recent'){
-                        die('<script>alert("종합 글 목록에서는 글을 수정하실 수 없습니다.");location.href="./main"</script>');
+                        die('<script>alert("종합 글 목록에서는 글을 수정하실 수 없습니다.");location.href="/main"</script>');
                     }
 
                     $idTemp_5 = filt($_POST['n'], '123');
@@ -479,14 +541,15 @@ if(mysqli_num_rows($result) > 0){
                         $edContent = mysqli_fetch_assoc($contResult);
                     }
 
-                    if($_SESSION['fnUserId'] !== $edContent['id']){
+                    if(strtolower($_SESSION['fnUserId']) !== strtolower($edContent['id'])){
                         die('아이디가 일치하지 않습니다.');
                     }
 
                     if($uS['editor'] == NULL){
                         $lsEditor = '<textarea id="mainEditor" name="content" placeholder="내용 (기본 Textarea 사용중)"  style="border:none;color:gray;height:12em">'.$edContent['content'].'</textarea>';
+                        $lsEditorS = '<button onclick="notSubmit=false;" class="button full" style="background:green" type="submit">작성 완료</button>';
                     }elseif($uS['editor'] == 's'){
-                        $lsEditor = '
+                        $lsEditor = '<span style="font-size:17px">
                         <textarea id="summernote" name="content">'.$edContent['content'].'</textarea>'."
                         <script>
                         $('#summernote').summernote({
@@ -505,10 +568,41 @@ if(mysqli_num_rows($result) > 0){
                             ]
                         });
                         </script>
-                        ";
+                        </span>";
+                        $lsEditorPlusV = "document.querySelector('.note-editable').innerHTML += '<img src=\"'+data+'\" style=\"width:50%\"><br>';document.querySelector('.note-editable').click()";
+                        $lsEditorS = '<button onclick="notSubmit=false;" class="button full" style="background:green" type="submit">작성 완료</button>';
+                    }elseif($uS['editor'] == 'q'){
+                        $lsEditor = '<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+                        <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+                        
+                        <div id="editor" style="height:15em;font-size:1em">'.$edContent['content'].'</div>
+                        <textarea id="txtAreaEditor" name="content" style="display:none"></textarea>
+                        '."
+                        <script>
+                        var options = {
+                            placeholder: '내용 (Quill 사용중)',
+                            modules: {
+                                toolbar: [
+                                    [{ 'header': [1, 2, 3, false] }],
+                                    ['bold', 'italic', 'underline', 'strike', { 'script': 'sub'}, { 'script': 'super' }, 'link'],
+                                    [{ 'indent': '-1'}, { 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '+1' }],
+                                    ['background', 'color', 'align', 'video', 'blockquote'],
+                                    ['clean']
+                                  ]
+                            },
+                            theme: 'snow'
+                        };
+                        var editor = new Quill('#editor', options);
+                        function quillSubmit(){
+                            document.querySelector('#txtAreaEditor').innerHTML = document.querySelector('.ql-editor').innerHTML;
+                            document.querySelector('#contForm').submit();
+                        }
+                        </script>";
+                        $lsEditorPlusV = "document.querySelector('.ql-editor').innerHTML += '<img src=\"'+data+'\" style=\"width:50%\"><br>';document.querySelector('.ql-editor').click()";
+                        $lsEditorS = '<button onclick="notSubmit=false;quillSubmit()" class="button full" style="background:green" type="button">작성 완료</button>';
                     }
                     if($sB['canUpload']){
-                        $lsEditorPlus .= '<hr><form id="contentImage" enctype="multipart/form-data"><red style="font-size:0.7em">.png / .webp / .jpg / .jpeg 허용. 2MB 미만.</red>
+                        $lsEditorPlus .= '<hr><form id="contentImage" enctype="multipart/form-data"><red style="font-size:0.7em">.png / .webp / .jpg / .jpeg 허용. 5MB 미만.</red>
                         <input type="file" name="myfile">
                         <button id="submitImage" class="full" type="button">이미지 업로드</button></form>'.
                         "<script>
@@ -516,7 +610,7 @@ if(mysqli_num_rows($result) > 0){
 
                         button.addEventListener('click', () => {
                         const form = new FormData(document.querySelector('#contentImage'));
-                        const url = './sub/fetchUpload.php'
+                        const url = '/sub/fetchUpload.php'
                         const request = new Request(url, {
                             method: 'POST',
                             body: form
@@ -528,7 +622,7 @@ if(mysqli_num_rows($result) > 0){
                                 if(document.querySelector('#mainEditor') != null){
                                     document.querySelector('#mainEditor').innerHTML += data+' ';
                                 }else{
-                                    document.querySelector('.note-editable').innerHTML += '<img src=\"'+data+'\">';
+                                    $lsEditorPlusV
                                 }
                             })
                             
@@ -542,13 +636,15 @@ if(mysqli_num_rows($result) > 0){
                         </header>
                             <section class="content">
                                 <hr>
-                                <input type="text" name="title" placeholder="제목" style="border:none;color:gray" value="'.$edContent['title'].'" required>
+                                <input type="text" name="title" placeholder="제목" style="border:none;color:gray" value="'.preg_replace('/<\/{0,1}red>/mu', '', $edContent['title']).'" required>
                                 <hr>
                                 '.$lsEditor.'
                                 <hr>
-                                <button class="button full" style="background:green" type="submit">수정 완료</button>
+                                '.$lsEditorS.'
                                 <span class="subInfo">상단 우측의 \'부가 기능(보라색)\'을 눌러 더 많은 기능을 사용하실 수 있습니다.</span><br>
-                                <red style="font-size:0.7em">이미지 업로드: 이미지 주소 그대로 입력 -> 작성 완료시 처리. (Textarea 사용시 글 쓰면서 업로드 가능)</red>
+                                <span class="subInfo">링크 삽입: 유튜브/이미지 파일 - 링크만 입력 (처리 없이)</span><br>
+                                <red style="font-size:0.7em">이미지 업로드: <a href="/b>maint">이미지 업로드 권한 요청</a>(<a href="https://iloveimg.com/ko">압축</a>) /
+                                <a href="https://imgbb.com">외부 업로드</a></red>
                             </section>
                     </article></form>';
                     if($lsEditorPlus){
@@ -560,14 +656,14 @@ if(mysqli_num_rows($result) > 0){
 
                 case 'delete':
                     if(!$_SESSION['fnUserId']){
-                        die('<script>alert("회원가입 후 이용해주세요.");location.href="./register"</script>');
+                        die('<script>alert("회원가입 후 이용해주세요.");location.href="/register"</script>');
                     }
                     if($lsBoard == 'recent'){
-                        die('<script>alert("종합 글 목록에서는 글을 관리하실 수 없습니다.");location.href="./main"</script>');
+                        die('<script>alert("종합 글 목록에서는 글을 관리하실 수 없습니다.");location.href="/main"</script>');
                     }
                     $tit = filt($_POST['t'], 'htm');
                     $num = filt($_POST['n'], '123');
-                    $lsPlus = '<form method="post" action="save.php?e=dlt">
+                    $lsPlus = '<form method="post" action="/save.php?e=dlt">
                         <article class="card">
                             <header>
                             <h3 class="muted"><i class="icofont-bin"></i> 글 삭제</h3>
@@ -595,7 +691,7 @@ if(mysqli_num_rows($result) > 0){
                     <header>
                     <h3 class="muted"><i class="icofont-key"></i> 비밀번호 찾기</h3>
                     </header>
-                    <form method="post" action="./php/find_password.php">
+                    <form method="post" action="/php/find_password.php">
                         <section class="content">
                             <label><input type="email" name="mail" placeholder="이메일 주소" required></label><br>
                             <label><input type="id" name="id" placeholder="아이디" required></label>
@@ -613,7 +709,7 @@ if(mysqli_num_rows($result) > 0){
                 case 'userInfo':
                     $uid = filt($_GET['u'], 'htm');
                     $unm = filt($_GET['u_name'], 'htm');
-                    if(empty($uid) && !empty($unm)){
+                    if(empty($uid) or $uid == '0' && !empty($unm) or $unm == '0'){
                         $sql = "SELECT `id` FROM `_account` WHERE `name` = '$unm'";
                         $result = mysqli_query($conn, $sql);
                         if(mysqli_num_rows($result) != 0){
@@ -657,7 +753,7 @@ if(mysqli_num_rows($result) > 0){
                             $time = explode(' ', $row['at']);
 
                             $articleUser .= '<tr>';
-                            $articleUser .= '<td class="black"><a href="./b>'.$row['board'].'>'.$row['num'].'">'.$row['title'].'</a>
+                            $articleUser .= '<td class="black"><a href="/b>'.$row['board'].'>'.$row['num'].'">'.$row['title'].'</a>
                             <green class="little">['.$row['commentCount'].']</green></td>';
                             $articleUser .= '<td class="subInfo"><i class="icofont-clock-time"></i><h-d> 작성 일시</h-d>
                             '.$time[0].' <h-d><br></h-d>'.$time[1].'</td>';
@@ -668,31 +764,40 @@ if(mysqli_num_rows($result) > 0){
                         $articleUser = '<span class="subInfo">작성한 글이 없습니다.</span>';
                     }
 
-                    $sql = "SELECT * FROM `_comment` WHERE `id` = '$uid' ORDER BY `num` DESC LIMIT 10";
+                    $sql = "SELECT `isAdmin` FROM `_account` WHERE `id` = \"".$_SESSION['fnUserId'].'"';
                     $result = mysqli_query($conn, $sql);
-                    if(mysqli_num_rows($result) != 0){
-                        $commentUser = '<table class="full"><tbody>';
-                        while($row = mysqli_fetch_assoc($result)){ #작성 댓글 조회
-                            $time = explode(' ', $row['at']);
-
-                            if(strlen($row['content']) > 100){
-                                $cont = mb_substr($row['content'], 0, 96).'..';
-                            }else{
-                                $cont = $row['content'];
-                            }
-
-                            $commentUser .= '<tr>';
-                            $commentUser .= '<td><a class="subInfo" href="./b>recent>'.$row['from'].'#cmt-'.$row['num'].'">'.$cont.'</a></td>';
-                            $commentUser .= '<td class="subInfo"><i class="icofont-clock-time"></i><h-d> 작성 일시</h-d>
-                            '.$time[0].' <h-d><br></h-d>'.$time[1].'</td>';
-                            $commentUser .= '</tr>';
+                    $iA = mysqli_fetch_assoc($result);
+                        if($iA['isAdmin']){
+                            $isAdmin = TRUE;
                         }
-                        $commentUser .= '</tbody></table>';
-                    }else{
-                        $commentUser = '<span class="subInfo">작성한 댓글이 없습니다.</span>';
+                
+                    if($uid == $_SESSION['fnUserId'] or $isAdmin){
+                        $sql = "SELECT * FROM `_comment` WHERE `id` = '$uid' ORDER BY `num` DESC LIMIT 10";
+                        $result = mysqli_query($conn, $sql);
+                        if(mysqli_num_rows($result) != 0){
+                            $commentUser = '<table class="full"><tbody>';
+                            while($row = mysqli_fetch_assoc($result)){ #작성 댓글 조회
+                                $time = explode(' ', $row['at']);
+
+                                if(strlen($row['content']) > 100){
+                                    $cont = mb_substr($row['content'], 0, 96).'..';
+                                }else{
+                                    $cont = $row['content'];
+                                }
+
+                                $commentUser .= '<tr>';
+                                $commentUser .= '<td><a class="subInfo" href="/b>recent>'.$row['from'].'#cmt-'.$row['num'].'">'.$cont.'</a></td>';
+                                $commentUser .= '<td class="subInfo"><i class="icofont-clock-time"></i><h-d> 작성 일시</h-d>
+                                '.$time[0].' <h-d><br></h-d>'.$time[1].'</td>';
+                                $commentUser .= '</tr>';
+                            }
+                            $commentUser .= '</tbody></table>';
+                        }else{
+                            $commentUser = '<span class="subInfo">작성한 댓글이 없습니다.</span>';
+                        }
                     }
 
-                    if(!empty($_SESSION['fnUserId'])){
+                    if(!empty($_SESSION['fnUserId']) or $_SESSION['fnUserId'] == '0'){
                         if($uid == $_SESSION['fnUserId']){
                             $sql = "SELECT * FROM `_userSet` WHERE `id` = '$uid'";
                             $result = mysqli_query($conn, $sql);
@@ -703,11 +808,14 @@ if(mysqli_num_rows($result) > 0){
                             }
 
                             $manageUser = '<br><h4>회원 정보 수정</h4>';
-                            $manageUser .= '<form method="post" action="./save.php?e=usr">';
+                            $manageUser .= '<form method="post" action="/save.php?e=usr">';
                             $manageUser .= '<label>닉네임 변경 <input type="text" name="title" value="'.$uIrow['name'].'"></label>';
                             $manageUser .= '<span class="subInfo">1000 포인트가 소모되며, 영문/국문/숫자 또는 공백 문자(_)를 20글자 이내로 입력해주세요.</span>';
                             $manageUser .= '<hr>';
                             $manageUser .= '<label>메일 주소 <span class="subInfo">(변경 불가)</span><input type="text" value="'.$uIrow['mail'].'" readonly></label>';
+                            $manageUser .= '<span class="subInfo">프로필 사진 설정은 메일과 연동됩니다!</span><br>';
+                            $manageUser .= '<span class="subInfo"><a href="http://ko.gravatar.com/">여기</a>에 위의 이메일 주소로 가입하고 프로필을 설정하세요.</span>';
+                            $manageUser .= '<span class="subInfo">기본적으로 지원되지 않는 기능이며, 편의를 위해 제공됩니다.</span><br>';
                             $manageUser .= '<hr>';
                             $manageUser .= '<p><label>현재 비밀번호 <input type="password" name="password_old"></label></p>';
                             $manageUser .= '<p><label>바꿀 비밀번호 <input type="password" name="password_new"></label></p>';
@@ -726,7 +834,7 @@ if(mysqli_num_rows($result) > 0){
                             $manageUser .= '<span class="subInfo">로그인 창에서 "<i class="icofont-checked"></i> ip 로그인"을 눌러 이용 가능합니다.';
                             $manageUser .= ' <strong>보안 상 심각한 위험이 있을 수 있으니 주의 바랍니다.</strong></span>';
                             $manageUser .= '<p>현재 로그인 정보로 고정<br>';
-                            $manageUser .= '<a class="button warning" href="./php/c.php">'.$ip.'</a></p>';
+                            $manageUser .= '<a class="button warning" href="/php/c.php">'.$ip.'</a></p>';
                             $manageUser .= '<span class="subInfo">자동 로그인 사용 시 반드시 버튼을 눌러 저장해주세요!</span><br>';
                             $manageUser .= '<span class="subInfo">고정하신 정보는 다른 정보로 로그인 해도 변하지 않습니다.</span>';
                             $manageUser .= '<hr>';
@@ -751,7 +859,7 @@ if(mysqli_num_rows($result) > 0){
                             $manageUser .= '<textarea name="content">'.$uIrow['userIntro'].'</textarea>';
                             $manageUser .= '<span class="subInfo">HTML 코드를 사용하실 수 없으며, 최대 250자까지 서술 가능합니다.</span>';
                             $manageUser .= '<hr>';
-                            $manageUser .= '<p>회원 탈퇴<br><a class="button error" href="./quit">계정 삭제 페이지</a></p>';
+                            $manageUser .= '<p>회원 탈퇴<br><a class="button error" href="/quit">계정 삭제 페이지</a></p>';
                             $manageUser .= '<hr>';
                             $manageUser .= '<input type="hidden" name="b" value="'.$uid.'">';
                             $manageUser .= '<button type="submit" class="full">수정하기</button>';
@@ -767,19 +875,19 @@ if(mysqli_num_rows($result) > 0){
                                     $manageUser = '<h4>권한 조정</h4>';
                                     $manageUser .= '<form method="post">';
                                         if($uIrow['siteBan'] == 1){
-                                            $manageUser .= '<button class="outline" type="submit" formaction="./php/quarantine.php"><i class="icofont-gavel"></i> 완전 격리</button> ';
+                                            $manageUser .= '<button class="outline" type="submit" formaction="/php/quarantine.php"><i class="icofont-gavel"></i> 완전 격리</button> ';
                                             $manageUser .= '<input type="hidden" name="target" value="'.$uid.'">';
-                                            $manageUser .= '<button class="warning" type="submit" formaction="./save.php?e=manag&m=siteBan"><i class="icofont-gavel"></i> 전체 차단 해제</button> ';
+                                            $manageUser .= '<button class="warning" type="submit" formaction="/save.php?e=manag&m=siteBan"><i class="icofont-gavel"></i> 전체 차단 해제</button> ';
                                             $manageUser .= '<input type="hidden" name="sn" value="0"><input type="hidden" name="title" value="'.$uid.'">';
                                         }elseif($uIrow['siteBan'] < 1){
-                                            $manageUser .= '<button class="error" type="submit" formaction="./save.php?e=manag&m=siteBan"><i class="icofont-ban"></i> 사이트 전체 차단</button> ';
+                                            $manageUser .= '<button class="error" type="submit" formaction="/save.php?e=manag&m=siteBan"><i class="icofont-ban"></i> 사이트 전체 차단</button> ';
                                             $manageUser .= '<input type="hidden" name="sn" value="1"><input type="hidden" name="title" value="'.$uid.'">';
                                         }
                                         if($uIrow['canUpload'] == 1){
-                                            $manageUser .= '<button class="warning" type="submit" formaction="./save.php?e=manag&m=canUpload"><i class="icofont-close-squared-alt"></i> 업로드 권한 회수</button>';
+                                            $manageUser .= '<button class="warning" type="submit" formaction="/save.php?e=manag&m=canUpload"><i class="icofont-close-squared-alt"></i> 업로드 권한 회수</button>';
                                             $manageUser .= '<input type="hidden" name="sni" value="0"><input type="hidden" name="title" value="'.$uid.'">';
                                         }else{
-                                            $manageUser .= '<button class="success" type="submit" formaction="./save.php?e=manag&m=canUpload"><i class="icofont-upload"></i> 업로드 권한 부여</button>';
+                                            $manageUser .= '<button class="success" type="submit" formaction="/save.php?e=manag&m=canUpload"><i class="icofont-upload"></i> 업로드 권한 부여</button>';
                                             $manageUser .= '<input type="hidden" name="sni" value="1"><input type="hidden" name="title" value="'.$uid.'">';
                                         }
                                     $manageUser .= '<input type="hidden" name="content" value="something else">';
@@ -801,13 +909,13 @@ if(mysqli_num_rows($result) > 0){
                         <section class="content">
                             <h4>소개 및 정보</h4>'.$infoUser.'
                             <h4>작성한 게시글</h4>'.$articleUser;
-                        if($uid == $_SESSION['fnUserId']){
+                        if($uid == $_SESSION['fnUserId'] or $isAdmin){
                             $lsPlus .= '<h4>작성한 댓글</h4>'.$commentUser;
                         }
                             $lsPlus .= $manageUser.'
                         </section>
-                        <footer><form action="./php/dis_none.php" method="post">';
-                        $lsPlus .= '<a class="button warning full" href="./misc>point>'.$uid.'" type="submit"'.$disOpt.'><i class="icofont-rouble"></i> 포인트 주러가기</a>';
+                        <footer><form action="/php/dis_none.php" method="post">';
+                        $lsPlus .= '<a class="button warning full" href="/misc>point>'.$uid.'" type="submit"'.$disOpt.'><i class="icofont-rouble"></i> 포인트 주러가기</a>';
                         if(!preg_match('/'.$uid.'/', $uS['display_none'])){
                             $lsPlus .= '<button class="button error full" type="submit"'.$disOpt.'><i class="icofont-volume-mute"></i> 이 사용자 차단</button>';
                         }else{
@@ -827,7 +935,7 @@ if(mysqli_num_rows($result) > 0){
                             <section id="mainSec" class="half black noGray listMain">
                                 <hr>&nbsp;<a class="lager"><i class="icofont-listine-dots"></i> 상위 게시판 목록</a><br>
                                     &nbsp;<span class="subInfo">구독자 수 기준 상위 게시판들입니다.</span>
-                                    <a href="./mkBoard" style="float:right;color:#0074d9;text-decoration:none;font-size:0.7em">게시판 만들기</a><hr>
+                                    <a href="/mkBoard" style="float:right;color:#0074d9;text-decoration:none;font-size:0.7em">게시판 만들기</a><hr>
                                         <table class="list full">
                                             <thead>
                                                 <tr>
@@ -847,21 +955,24 @@ if(mysqli_num_rows($result) > 0){
                                         case 'PRIVAT_OPT':
                                             $boardType = '사설';
                                             break;
+                                        case 'CREAT_SOME':
+                                            $boardType = '창작';
+                                            break;    
                                     }
                                             echo '<tr>
                                                 <td>'.$boardType.'</td>
-                                                <td><a href="./b%3E'.$row['slug'].'"><b>'.$row['title'].'</b><br>
+                                                <td><a href="/b%3E'.$row['slug'].'"><b>'.$row['title'].'</b><br>
                                                 <span class="muted">'.$row['boardIntro'].'</span></a></td>
                                             </tr>';
                                 }
                                             echo '<tr>
                                                 <td>목록</td>
-                                                <td><a href="./misc>owner_only"><mark><b>소유주 전용 게시판</b></mark><br>
+                                                <td><a href="/misc>owner_only"><mark><b>소유주 전용 게시판</b></mark><br>
                                                 <span class="muted">개인용 게시판들의 목록입니다.</span></a></td>
                                             </tr>';
                                             echo '<tr>
                                                 <td>목록</td>
-                                                <td><a href="./misc>board"><mark><b>모든 공개 게시판</b></mark><br>
+                                                <td><a href="/misc>board"><mark><b>모든 공개 게시판</b></mark><br>
                                                 <span class="muted">모든 공개 게시판들의 목록입니다.</span></a></td>
                                             </tr>';
                                             echo '</tbody>
@@ -882,12 +993,13 @@ if(mysqli_num_rows($result) > 0){
                                         $boardType = $row['nickTitle'];
                                                 echo '<tr>
                                                     <td>'.$boardType.'</td>
-                                                    <td><a href="./b%3E'.$row['slug'].'"><b>'.$row['title'].'</b><br>
+                                                    <td><a href="/b%3E'.$row['slug'].'"><b>'.$row['title'].'</b><br>
                                                     <span class="muted">'.$row['boardIntro'].'</span></a></td>
                                                 </tr>';
                                     }
                                                 echo '</tbody>
                                             </table>
+                                            <br>
                                     <br><hr>&nbsp;<a class="lager"><i class="icofont-plus-square"></i> 부가 기능</a><br>
                                         &nbsp;<span class="subInfo">다른 기능들을 찾고있나요? 확인해보세요.</span><hr>
                                             <table class="list full">
@@ -900,73 +1012,69 @@ if(mysqli_num_rows($result) > 0){
                                                 <tbody>
                                                     <tr>
                                                         <td>특수</td>
-                                                        <td><a href="./emoticon"><b>FNBCon Store</b><br>
+                                                        <td><a href="/emoticon"><b>FNBCon Store</b><br>
                                                         <span class="muted">FNBCon을 사고 파실 수 있습니다.</span></a></td>
                                                     </tr>
                                                     <tr>
                                                         <td>특수</td>
-                                                        <td><a href="./adv"><b>광고 등록</b><br>
+                                                        <td><a href="/adv"><b>광고 등록</b><br>
                                                         <span class="muted">3일간 표시될 광고를 등록할 수 있습니다.</span></a></td>
                                                     </tr>
                                                     <tr>
                                                         <td>특수</td>
-                                                        <td><a href="./misc>attendance"><b><mark>출석 체크</mark></b><br>
+                                                        <td><a href="/misc>attendance"><b><mark>출석 체크</mark></b><br>
                                                         <span class="muted">매일 최대 5,000 포인트를 획득 가능합니다.</span></a></td>
                                                     </tr>
                                                     ';
                                                     if($sB['canUpload']){
                                                     echo '<tr>
                                                         <td>특수</td>
-                                                        <td><a href="./misc>upload"><b>이미지 업로드</b><br>
+                                                        <td><a href="/misc>upload"><b>이미지 업로드</b><br>
                                                         <span class="muted">이미지를 업로드 할 수 있습니다.</span></a></td>
                                                     </tr>';
                                                     }
                                                     echo '
                                                     <tr>
                                                         <td>목록</td>
-                                                        <td><a href="./misc"><b>기타 페이지</b><br>
+                                                        <td><a href="/misc"><b>기타 페이지</b><br>
                                                         <span class="muted">포인트 랭킹, 포인트 게임, 차단 소명 등이 있습니다.</span></a></td>
                                                     </tr>
                                                 </tbody>
                                             </table>';
                                 echo '</section>';
-                                ?>
-                                        <aside class="hidMob" id="nofiSec">
-                                            <h-m style="position:absolute;right:2em;margin:9px;opacity:0.7">
-                                                <?php 
-                                    if($uS['hideAdv'] != 1 || $isLogged == FALSE){
-                                            echo '<div class="card" style="width:300px">
-                                                <header>
-                                                    '.$fnTitle.' 인기 게시글
-                                                </header>
-                                                <section><table style="font-size:0.8em">';
-                                            $sql = "SELECT * FROM `_content` WHERE `staffOnly` IS NULL and `rate` NOT LIKE 'R' ORDER BY `voteCount_Up` DESC LIMIT 5"; #인기글 조회
-                                            $result = mysqli_query($conn, $sql);
-                                            if(mysqli_num_rows($result) != 0){
-                                                while($row = mysqli_fetch_assoc($result)){
-                                                    $time = get_timeFlies($row['at']);
-                                                    echo '<tr>';
-                                                    echo '<td><b><a href="./b%3E'.$row['board'].'%3E'.$row['num'].'">'.$row['title'].'</a></b> <green class="little">['.$row['commentCount'].']</green>';
-                                                    echo '</td>';
-                                                    echo '<td><i class="icofont-user-suited"></i>
-                                                    <a class="muted" href="./u%3E'.$row['id'].'">'.$row['name'].'</a></td>';
-                                                    echo '</tr>';
-                                                }
-                                            }
-                                                echo '</table></section>
-                                            </div>';
-                                            echo '<div class="card" style="width:300px">
-                                                <header>
-                                                    광고 <a href="./adv" target="_blank" class="little right">등록하기</a>
-                                                </header>
-                                                <section id="advSec">';
-                                                    include './php/ad.php';
-                                                    echo '<hr><p style="font-size: 0.7em;text-align:right"><b>광고는 커뮤니티를 지탱하는 기둥입니다.</b><br>
-                                                    우측 카드가 화면을 가릴 경우,<br>
-                                                    \'내 정보\'에서 해제하실 수 있습니다.</p>
-                                                </section>
-                                            </div>';
-                                    }?>
+    //광고 / 인기 게시판 처리
+    require 'adswitch.php';
+
+    if(isMobile()){
+            echo '<div class="card">
+                <header>
+                    광고 <a href="/adv" target="_blank" class="little right">등록하기</a>
+                </header>
+                <section id="advSec"><p>
+                    <a href="'.$VJlink.'"><img src="'.$VJimg.'"></a>
+                </p><hr><p style="font-size: 0.7em;text-align:right"><b>광고는 커뮤니티를 지탱하는 기둥입니다.</b><br>
+                    이 카드가 화면을 가릴 경우,<br>
+                    \'내 정보\'에서 해제하실 수 있습니다.</p>
+                </section>
+            </div>';
+        echo '</section>
+        <aside class="hidMob"><h-m>';
+    }else{
+            echo '</section>
+            <aside class="hidMob" id="nofiSec">
+                <h-m style="position:absolute;right:2em;margin:9px;opacity:0.7">';
+                echo '<div class="card" style="width:300px">
+                    <header>
+                        광고 <a href="/adv" target="_blank" class="little right">등록하기</a>
+                    </header>
+                    <section id="advSec"><p>
+                        <a href="'.$VJlink.'"><img src="'.$VJimg.'"></a>
+                    </p><hr><p style="font-size: 0.7em;text-align:right"><b>광고는 커뮤니티를 지탱하는 기둥입니다.</b><br>
+                        우측 카드가 화면을 가릴 경우,<br>
+                        \'내 정보\'에서 해제하실 수 있습니다.</p>
+                    </section>
+                </div>';
+    }?>
                                         </h-m>
                                     </aside>
                                 <?php
@@ -976,7 +1084,7 @@ if(mysqli_num_rows($result) > 0){
 
                 case 'subList':
                     if(!$isLogged){
-                        die('<script>location.href="./login"</script>');
+                        die('<script>location.href="/login"</script>');
                     }
                     echo '<main>
                         <div class="flex">
@@ -993,7 +1101,7 @@ if(mysqli_num_rows($result) > 0){
                                     </thead>
                                     <tbody>';
                                     $in = $uS['subs'];
-                                    if(empty($in)){
+                                    if(empty($in) or $in == '0'){
                                         echo '<tr><td></td><td>구독한 게시판이 없습니다.</td><td></td></tr>';
                                         echo '</tbody></table>';
                                     }else{
@@ -1014,7 +1122,7 @@ if(mysqli_num_rows($result) > 0){
                                             $sql = "SELECT `num` FROM `_content` WHERE `board` IN ($in_s) ORDER BY `at` DESC LIMIT 10";
                                         }
                                     }
-                                    if(empty($in)){
+                                    if(empty($in) or $in == '0'){
                                         echo '<tr><td></td><td>구독한 게시판이 없습니다.</td><td></td></tr>';
                                     }else{
                                         if(count($in) == 1){
@@ -1034,6 +1142,12 @@ if(mysqli_num_rows($result) > 0){
                                                 case 'PRIVAT_OPT':
                                                     $boardType = '사설';
                                                     break;
+                                                case 'OWNER_ONLY':
+                                                    $boardType = '개인';
+                                                    break;
+                                                case 'CREAT_SOME':
+                                                    $boardType = '창작';
+                                                    break;
                                                 case 'AUTO_GENER':
                                                     $boardType = '자동';
                                                     break;
@@ -1041,51 +1155,47 @@ if(mysqli_num_rows($result) > 0){
                 
                                             echo '<tr>';
                                             echo '<td class="hidMob">'.$boardType.'</td>';
-                                            echo '<td class="black"><a href="b%3E'.$row['slug'].'">'.$row['title'].'</a></td>';
-                                            echo '<td><form method="post" action="./php/sub.php"><input type="hidden" name="board" value="'.$row['slug'].'">
+                                            echo '<td class="black"><a href="/b/'.$row['slug'].'">'.$row['title'].'</a></td>';
+                                            echo '<td><form method="post" action="/php/sub.php"><input type="hidden" name="board" value="'.$row['slug'].'">
                                             <button type="submit" class="error right"><i class="icofont-error"></i><h-m> 구독 취소</h-m></button></form></td>';
                                             echo '</tr>';
                                         }
                                         echo '</tbody></table>';
-                                        echo '<a href="./feed" class="button full" style="background:gray">구독 피드로 가기</a>';
+                                        echo '<a href="/feed" class="button full" style="background:gray">구독 피드로 가기</a>';
                                     }
-                            ?>
-                                    </section><aside class="hidMob" id="nofiSec">
-                                        <h-m style="position:absolute;right:2em;margin:9px;opacity:0.7">
-                                            <?php 
-                                if($uS['hideAdv'] != 1 || $isLogged == FALSE){
-                                        echo '<div class="card" style="width:300px">
-                                            <header>
-                                                '.$fnTitle.' 인기 게시글
-                                            </header>
-                                            <section><table style="font-size:0.8em">';
-                                        $sql = "SELECT * FROM `_content` WHERE `staffOnly` IS NULL and `rate` NOT LIKE 'R' ORDER BY `viewCount` DESC LIMIT 5"; #인기글 조회
-                                        $result = mysqli_query($conn, $sql);
-                                        if(mysqli_num_rows($result) != 0){
-                                            while($row = mysqli_fetch_assoc($result)){
-                                                $time = get_timeFlies($row['at']);
-                                                echo '<tr>';
-                                                echo '<td><b><a href="./b%3E'.$row['board'].'%3E'.$row['num'].'">'.$row['title'].'</a></b> <green class="little">['.$row['commentCount'].']</green>';
-                                                echo '</td>';
-                                                echo '<td><i class="icofont-user-suited"></i>
-                                                <a class="muted" href="./u%3E'.$row['id'].'">'.$row['name'].'</a></td>';
-                                                echo '</tr>';
-                                            }
-                                        }
-                                            echo '</table></section>
-                                        </div>';
-                                        echo '<div class="card" style="width:300px">
-                                            <header>
-                                                광고 <a href="./adv" target="_blank" class="little right">등록하기</a>
-                                            </header>
-                                            <section id="advSec">';
-                                                include './php/ad.php';
-                                                echo '<hr><p style="font-size: 0.7em;text-align:right"><b>광고는 커뮤니티를 지탱하는 기둥입니다.</b><br>
-                                                우측 카드가 화면을 가릴 경우,<br>
-                                                \'내 정보\'에서 해제하실 수 있습니다.</p>
-                                            </section>
-                                        </div>';
-                                }?>
+                                //광고 / 인기 게시판 처리
+    require 'adswitch.php';
+
+    if(isMobile()){
+            echo '<div class="card">
+                <header>
+                    광고 <a href="/adv" target="_blank" class="little right">등록하기</a>
+                </header>
+                <section id="advSec"><p>
+                    <a href="'.$VJlink.'"><img src="'.$VJimg.'"></a>
+                </p><hr><p style="font-size: 0.7em;text-align:right"><b>광고는 커뮤니티를 지탱하는 기둥입니다.</b><br>
+                    이 카드가 화면을 가릴 경우,<br>
+                    \'내 정보\'에서 해제하실 수 있습니다.</p>
+                </section>
+            </div>';
+        echo '</section>
+        <aside class="hidMob"><h-m>';
+    }else{
+            echo '</section>
+            <aside class="hidMob" id="nofiSec">
+                <h-m style="position:absolute;right:2em;margin:9px;opacity:0.7">';
+                echo '<div class="card" style="width:300px">
+                    <header>
+                        광고 <a href="/adv" target="_blank" class="little right">등록하기</a>
+                    </header>
+                    <section id="advSec"><p>
+                        <a href="'.$VJlink.'"><img src="'.$VJimg.'"></a>
+                    </p><hr><p style="font-size: 0.7em;text-align:right"><b>광고는 커뮤니티를 지탱하는 기둥입니다.</b><br>
+                        우측 카드가 화면을 가릴 경우,<br>
+                        \'내 정보\'에서 해제하실 수 있습니다.</p>
+                    </section>
+                </div>';
+    }?>
                                     </h-m>
                                 </aside>
                             <?php
@@ -1094,7 +1204,7 @@ if(mysqli_num_rows($result) > 0){
                     break;
                 case 'subFeed':
                     if(!$isLogged){
-                        die('<script>location.href="./login"</script>');
+                        die('<script>location.href="/login"</script>');
                     }
                     echo '<main>
                         <div class="flex">
@@ -1103,7 +1213,7 @@ if(mysqli_num_rows($result) > 0){
                             &nbsp;<span class="subInfo">구독하신 게시판의 최신 글을 보여드립니다.</span><hr>
                                 <table class="list full">';
                                     $in = $uS['subs'];
-                                    if(empty($in)){
+                                    if(empty($in) or $in == '0'){
                                         echo '<tr><td></td><td>구독한 게시판이 없습니다.</td><td></td></tr>';
                                     }else{
                                         $in = explode(',', $in);
@@ -1143,7 +1253,7 @@ if(mysqli_num_rows($result) > 0){
                                                     }else{
                                                         $em = '<red>반대함</red>';
                                                     }
-                                                    $link = './b>'.$pgContent['board'].'>'.$pgContent['num'];
+                                                    $link = '/b>'.$pgContent['board'].'>'.$pgContent['num'];
                                                     $so = $pgContent['staffOnly'];
                                                     $name = $_SESSION['fnUserName'];
 
@@ -1161,7 +1271,7 @@ if(mysqli_num_rows($result) > 0){
                                             <div class="card">
                                                 <header style="background:#f3f3f3;border-bottom:1px solid #e6e6e6">
                                                     <h3 id="title"><?=$pgContent['title']?></h3><br>
-                                                    <span class="subInfo"><i class="icofont-user-alt-7"></i> <a class="muted" href="./u%3E<?=$pgContent['id']?>"><?=$pgContent['name']?></a>
+                                                    <span class="subInfo"><i class="icofont-user-alt-7"></i> <a class="muted" href="/u%3E<?=$pgContent['id']?>"><?=$pgContent['name']?></a>
                                                     <i class="icofont-clock-time"></i> <?=get_timeFlies($pgContent['at'])?>
                                                     | 반응 : <?=$em?> | 조회수 <green id="count"><?=$vc?></green> | 댓글 수 <blue><?=$cc?></blue>
                                                     </span>
@@ -1185,45 +1295,42 @@ if(mysqli_num_rows($result) > 0){
                                         }
                                         echo '</tbody></table>';
                                     }
-                                    echo '<a href="./sublist" class="button full" style="background:gray">구독 게시판 목록으로 가기</a>';
+                                    echo '<a href="/sublist" class="button full" style="background:gray">구독 게시판 목록으로 가기</a>';
                                 echo '</section>';
-                            ?>
-                                    <aside class="hidMob" id="nofiSec">
-                                        <h-m style="position:absolute;right:2em;margin:9px;opacity:0.7">
-                                            <?php 
-                                if($uS['hideAdv'] != 1 || $isLogged == FALSE){
-                                        echo '<div class="card" style="width:300px">
-                                            <header>
-                                                '.$fnTitle.' 인기 게시글
-                                            </header>
-                                            <section><table style="font-size:0.8em">';
-                                        $sql = "SELECT * FROM `_content` WHERE `staffOnly` IS NULL and `rate` NOT LIKE 'R' ORDER BY `voteCount_Up` DESC LIMIT 5"; #인기글 조회
-                                        $result = mysqli_query($conn, $sql);
-                                        if(mysqli_num_rows($result) != 0){
-                                            while($row = mysqli_fetch_assoc($result)){
-                                                $time = get_timeFlies($row['at']);
-                                                echo '<tr>';
-                                                echo '<td><b><a href="./b%3E'.$row['board'].'%3E'.$row['num'].'">'.$row['title'].'</a></b> <green class="little">['.$row['commentCount'].']</green>';
-                                                echo '</td>';
-                                                echo '<td><i class="icofont-user-suited"></i>
-                                                <a class="muted" href="./u%3E'.$row['id'].'">'.$row['name'].'</a></td>';
-                                                echo '</tr>';
-                                            }
-                                        }
-                                            echo '</table></section>
-                                        </div>';
-                                        echo '<div class="card" style="width:300px">
-                                            <header>
-                                                광고 <a href="./adv" target="_blank" class="little right">등록하기</a>
-                                            </header>
-                                            <section id="advSec">';
-                                                include './php/ad.php';
-                                                echo '<hr><p style="font-size: 0.7em;text-align:right"><b>광고는 커뮤니티를 지탱하는 기둥입니다.</b><br>
-                                                우측 카드가 화면을 가릴 경우,<br>
-                                                \'내 정보\'에서 해제하실 수 있습니다.</p>
-                                            </section>
-                                        </div>';
-                                }?>
+    //광고 / 인기 게시판 처리
+    require 'adswitch.php';
+
+    if(isMobile()){
+            echo '<div class="card">
+                <header>
+                    광고 <a href="/adv" target="_blank" class="little right">등록하기</a>
+                </header>
+                <section id="advSec"><p>
+                    <a href="'.$VJlink.'"><img src="'.$VJimg.'"></a>
+                </p><hr><p style="font-size: 0.7em;text-align:right"><b>광고는 커뮤니티를 지탱하는 기둥입니다.</b><br>
+                    이 카드가 화면을 가릴 경우,<br>
+                    \'내 정보\'에서 해제하실 수 있습니다.</p>
+                </section>
+            </div>';
+        echo '</section>
+        <aside class="hidMob"><h-m>';
+    }else{
+            echo '</section>
+            <aside class="hidMob" id="nofiSec">
+                <h-m style="position:absolute;right:2em;margin:9px;opacity:0.7">';
+                echo '<div class="card" style="width:300px">
+                    <header>
+                        광고 <a href="/adv" target="_blank" class="little right">등록하기</a>
+                    </header>
+                    <section id="advSec"><p>
+                        <a href="'.$VJlink.'"><img src="'.$VJimg.'"></a>
+                    </p><hr><p style="font-size: 0.7em;text-align:right"><b>광고는 커뮤니티를 지탱하는 기둥입니다.</b><br>
+                        우측 카드가 화면을 가릴 경우,<br>
+                        \'내 정보\'에서 해제하실 수 있습니다.</p>
+                    </section>
+                </div>';
+    }
+    ?>
                                     </h-m>
                                 </aside>
                             <?php
@@ -1233,7 +1340,7 @@ if(mysqli_num_rows($result) > 0){
 
                 case 'emoji':
                     $id = $_SESSION['fnUserId'];
-                    if(empty($id)){
+                    if(empty($id) or $id == '0'){
                         echo '</section></article></section><aside class="hidMob"></aside></div></body></html>';
                         die('<script>alert("로그인이 필요합니다.");history.back()</script>');
                     }
@@ -1246,9 +1353,9 @@ if(mysqli_num_rows($result) > 0){
                             <section id="mainSec" class="half">
                                 <article class="card">
                                     <header>
-                                        <h3><a href="./emoticon" style="color:#218470"><i class="icofont-simple-smile">
+                                        <h3><a href="/emoticon" style="color:#218470"><i class="icofont-simple-smile">
                                         </i> FNBCon Store</a> <span class="subInfo">> <span id="tbreplace">'.$f.'</span></span></h3>
-                                        <a style="font-size:0.7em;float:right" onclick="alert(\'운영실에서 문의하세요.\')">등록하기</a>
+                                        <a style="font-size:0.7em;float:right" href="https://fnbase.xyz/b%3Emaint%3E3518">등록하기</a>
                                     </header>
                                     <section>';
                                     $sql = "SELECT * FROM `_fnbcon` WHERE `folder` = '$f' ORDER BY `use` DESC";
@@ -1257,16 +1364,16 @@ if(mysqli_num_rows($result) > 0){
                                     echo '<script>document.getElementById(\'tbreplace\').innerHTML = \''.$row['title'].'\';</script>';
                                         echo '<div class="card comm">
                                             <div class="cimg">
-                                                <img height="70" src="./fnbcon/'.$row['folder'].'/main.png">
+                                                <img height="70" src="/fnbcon/'.$row['folder'].'/main.png">
                                             </div>
                                             <div class="card">
                                                 <header>
                                                     <h4>'.$row['title'].'</h4> <h-d><br></h-d><span class="subInfo">'.$row['content'].'</span><br>
                                                     <span class="subInfo">';
-                                                    if(empty($row['id'])){
+                                                    if(empty($row['id']) or $row['id'] == '0'){
                                                         echo '<a class="muted"><i class="icofont-user-suited"></i> ';
                                                     }else{
-                                                        echo '<a class="muted" href="./u>'.$row['id'].'"><i class="icofont-user-alt-7"></i> ';
+                                                        echo '<a class="muted" href="/u/'.$row['id'].'"><i class="icofont-user-alt-7"></i> ';
                                                     }
                                                     
                                                     echo $row['name'].'</a> / '.get_timeFlies($row['at']).'
@@ -1276,7 +1383,7 @@ if(mysqli_num_rows($result) > 0){
                                                 $i = 0;
                                                 while($i < $row['count']){
                                                     $i++;
-                                                    echo '<img height="125" src="./fnbcon/'.$row['folder'].'/icon_'.$i.'.'.$row['ext'].'"> ';
+                                                    echo '<img height="125" src="/fnbcon/'.$row['folder'].'/icon_'.$i.'.'.$row['ext'].'"> ';
                                                 }
                                                     echo '</span>
                                                 </section>
@@ -1288,10 +1395,10 @@ if(mysqli_num_rows($result) > 0){
                                                     $uS = $uS['fnbcon'];
                                                     if(preg_match('/(^|,)'.$row['folder'].'($|,)/', $uS)){
                                                         echo '<button class="warning" type="submit"
-                                                        formaction="./php/emoji.php?f='.$row['folder'].'"><i class="icofont-ui-rate-remove"></i> 사용안함</button>';
+                                                        formaction="/php/emoji.php?f='.$row['folder'].'"><i class="icofont-ui-rate-remove"></i> 사용안함</button>';
                                                     }else{
                                                         echo '<button class="button" type="submit"
-                                                        formaction="./php/emoji.php?f='.$row['folder'].'"><i class="icofont-ui-rate-add"></i> 사용하기</button>';
+                                                        formaction="/php/emoji.php?f='.$row['folder'].'"><i class="icofont-ui-rate-add"></i> 사용하기</button>';
                                                     }
                                                     echo'</form>
                                                 </footer>
@@ -1317,10 +1424,10 @@ if(mysqli_num_rows($result) > 0){
                                 <article class="card">
                                     <header>
                                         <h3 style="color:#218470"><i class="icofont-simple-smile"></i> FNBCon Store</h3>
-                                        <a style="font-size:0.7em;float:right" onclick="alert(\'운영실에서 문의하세요.\')">등록하기</a>
+                                        <a style="font-size:0.7em;float:right" href="https://fnbase.xyz/b%3Emaint%3E3518">등록하기</a>
                                     </header>
                                     <section>';
-                                    if(empty($id)){
+                                    if(empty($id) or $id == '0'){
                                         die('<script>alert("로그인이 반드시 필요한 서비스입니다.");history.back()</script>');
                                     }
                                     $sql = "SELECT `fnbcon` FROM `_userSet` WHERE `id` = '$id'";
@@ -1339,29 +1446,29 @@ if(mysqli_num_rows($result) > 0){
                                         }
                                         echo '<div class="card comm"'.$emCBG.'>
                                             <div class="cimg">
-                                                <img height="70" src="./fnbcon/'.$row['folder'].'/main.png">
+                                                <img height="70" src="/fnbcon/'.$row['folder'].'/main.png">
                                             </div>
                                             <div class="card">
                                                 <header>
                                                     <h4>'.$emCTxt.$row['title'].'</h4> <h-d><br></h-d><span class="subInfo">'.$row['content'].'</span><br>
                                                     <span class="subInfo">';
-                                                    if(empty($row['id'])){
+                                                    if(empty($row['id']) or $row['id'] == '0'){
                                                         echo '<a class="muted"><i class="icofont-user-suited"></i> ';
                                                     }else{
-                                                        echo '<a class="muted" href="./u>'.$row['id'].'"><i class="icofont-user-alt-7"></i> ';
+                                                        echo '<a class="muted" href="/u/'.$row['id'].'"><i class="icofont-user-alt-7"></i> ';
                                                     }
                                                     
-                                                    echo $row['name'].'</a> / '.get_timeFlies($row['at']).' / <a href="./emoticon>'.$row['folder'].'">이모티콘 전체 보기</a>
+                                                    echo $row['name'].'</a> / '.get_timeFlies($row['at']).' / <a href="/emoticon>'.$row['folder'].'">이모티콘 전체 보기</a>
                                                 </header>
                                                 <section>
                                                     <span id="ico_'.$row['folder'].'">';
                                                 $i = 0;
                                                 while($i < $row['count']){
                                                     $i++;
-                                                    echo '<img height="50" src="./fnbcon/'.$row['folder'].'/icon_'.$i.'.'.$row['ext'].'"> ';
+                                                    echo '<img height="50" src="/fnbcon/'.$row['folder'].'/icon_'.$i.'.'.$row['ext'].'"> ';
                                                     if($i > 4){
                                                         $rc = $row['count'] - 5;
-                                                        echo '<a href="./emoticon>'.$row['folder'].'">'.$rc.'개 더 보기</a>';
+                                                        echo '<a href="/emoticon>'.$row['folder'].'">'.$rc.'개 더 보기</a>';
                                                         break;
                                                     }
                                                 }
@@ -1371,10 +1478,10 @@ if(mysqli_num_rows($result) > 0){
                                                     <form method="post">';
                                                     if(preg_match('/(^|,)'.$row['folder'].'($|,)/', $uS)){
                                                         echo '<button class="warning" type="submit"
-                                                        formaction="./php/emoji.php?f='.$row['folder'].'"><i class="icofont-ui-rate-remove"></i> 사용안함</button>';
+                                                        formaction="/php/emoji.php?f='.$row['folder'].'"><i class="icofont-ui-rate-remove"></i> 사용안함</button>';
                                                     }else{
                                                         echo '<button class="button" type="submit"
-                                                        formaction="./php/emoji.php?f='.$row['folder'].'"><i class="icofont-ui-rate-add"></i> 사용하기</button>';
+                                                        formaction="/php/emoji.php?f='.$row['folder'].'"><i class="icofont-ui-rate-add"></i> 사용하기</button>';
                                                     }
                                                     echo'</form>
                                                 </footer>
@@ -1416,7 +1523,7 @@ if(mysqli_num_rows($result) > 0){
                     <header>
                     <h3 class="muted"><i class="icofont-notification"></i> 알림 센터</h3>
                     </header>
-                    <form method="post" action="./php/notify.php">
+                    <form method="post" action="/php/notify.php">
                         <section class="content black">';
                 if($isLogged){
                     $sql = "SELECT * FROM `_ment` WHERE `target` = '$id' and `isSuccess` = 0";
@@ -1425,13 +1532,15 @@ if(mysqli_num_rows($result) > 0){
                         while($row = mysqli_fetch_assoc($result)){
                             $i++;
                             if($row['type'] == 'NOFI_CMMNT'){
-                                $lsPlus .= '<a href="./'.$row['value'].'_'.$row['num'].$row['cmt_id'].'">['.$row['name'].']님이 ['.$row['reason'].']에 댓글을 다셨습니다.</a><br>';
+                                $lsPlus .= '<a href="/'.$row['value'].'_'.$row['num'].$row['cmt_id'].'">['.$row['name'].']님이 ['.$row['reason'].']에 댓글을 다셨습니다.</a><br>';
                             }elseif($row['type'] == 'NOFI_REPLY'){
-                                $lsPlus .= '<a href="./'.$row['value'].'_'.$row['num'].$row['cmt_id'].'">['.$row['name'].']님이 ['.$row['reason'].']에 다신 댓글에 답글을 다셨습니다.</a><br>';
+                                $lsPlus .= '<a href="/'.$row['value'].'_'.$row['num'].$row['cmt_id'].'">['.$row['name'].']님이 ['.$row['reason'].']에 다신 댓글에 답글을 다셨습니다.</a><br>';
                             }elseif($row['type'] == 'NOFI_MENTN'){
-                                $lsPlus .= '<a href="./'.$row['value'].'_'.$row['num'].$row['cmt_id'].'">['.$row['name'].']님이 ['.$row['reason'].']글에서 부르셨습니다.</a><br>';
+                                $lsPlus .= '<a href="'.$row['value'].'_'.$row['num'].$row['cmt_id'].'">['.$row['name'].']님이 ['.$row['reason'].']글에서 부르셨습니다.</a><br>';
+                            }elseif($row['type'] == 'QUIZ_ANSWR'){
+                                $lsPlus .= '<a href="/'.$row['value'].'_'.$row['num'].'#discussBtm">['.$row['name'].']님이 퀴즈 정답을 맞추셨습니다.</a><br>';
                             }else{
-                                $lsPlus .= '<a href="/'.$row['value'].'_'.$row['num'].'#discussBtm">['.$row['name'].']님이 ['.$row['reason'].'] 문서 토론에서 부르셨습니다.</a><br>';
+                                $lsPlus .= '<a href="/'.$row['value'].'_'.$row['num'].'#discussBtm">['.$row['name'].']님이 위키 토론에 부르셨습니다.</a><br>';
                             }
                         }
                         $col = ' error"';
@@ -1444,7 +1553,7 @@ if(mysqli_num_rows($result) > 0){
                         <button class="button full'.$col.' type="submit"><i class="icofont-bin"></i> 전체 삭제</button>
                     </footer>';
                 }else{
-                    $lsPlus .= '<a href="./login"><i class="icofont-sign-in"></i> 로그인</a>이 필요합니다.</section>';
+                    $lsPlus .= '<a href="/login"><i class="icofont-sign-in"></i> 로그인</a>이 필요합니다.</section>';
                 }
                     $lsPlus .= '</form>
                     </article>';
@@ -1465,7 +1574,7 @@ if(mysqli_num_rows($result) > 0){
                     <header>
                     <h3 class="muted"><i class="icofont-restaurant-menu"></i> 광고 등록</h3>
                     </header>
-                    <form method="post" action="./php/ad.php">
+                    <form method="post" action="/php/ad.php">
                         <section class="content">
                             <label><input type="text" name="ad" placeholder="표시할 문구" required></label>
                             <label><input type="text" name="link" placeholder="이동할 링크" required></label>'.$advPs.'
@@ -1480,14 +1589,14 @@ if(mysqli_num_rows($result) > 0){
                     include 'list.php';
                     break;
                 case 'mkBoard':
-                    if(empty($id)){
+                    if(empty($id) or $id == '0'){
                         die('<script>alert("로그인이 반드시 필요한 서비스입니다.");history.back()</script>');
                     }
                     $lsPlus = '<article class="card">
                     <header>
                     <h3 class="muted"><i class="icofont-plus-square"></i> 게시판 개설</h3>
                     </header>
-                    <form method="post" action="./php/mkBoard.php">
+                    <form method="post" action="/php/mkBoard.php">
                         <section class="content">
                             <label><input type="text" name="slug" placeholder="게시판 아이디" required></label>
                             <span class="subInfo"><b>변경이 불가능합니다.</b> 영문 50글자 내로 겹치지 않게 적어주세요.</span><br>
@@ -1512,14 +1621,14 @@ if(mysqli_num_rows($result) > 0){
                     include 'list.php';
                     break;
                 case 'userDelete':
-                    if(empty($id)){
+                    if(empty($id) or $id == '0'){
                         die('<script>alert("로그인이 반드시 필요한 서비스입니다.");history.back()</script>');
                     }
                     $lsPlus = '<article class="card">
                     <header>
                     <h3 style="color:red"><i class="icofont-warning"></i> 계정 삭제</h3>
                     </header>
-                    <form method="post" action="./php/quit.php">
+                    <form method="post" action="/php/quit.php">
                         <section class="content">
                             <label>본인 확인
                                 <input name="password" type="password" placeholder="비밀번호 입력" required>
@@ -1558,8 +1667,8 @@ if(mysqli_num_rows($result) > 0){
             <?=$fnTitle?> 계정이 없으시다면 가입해보세요! 3분도 채 걸리지 않습니다.
             </section>
             <footer>
-            <a class="button" style="color: #fff;background-color: #6633FF;" href="./register">회원가입</a> 
-            <a href="./login" style="float:right" class="button">로그인</a>
+            <a class="button" style="color: #fff;background-color: #6633FF;" href="/register">회원가입</a> 
+            <a href="/login" style="float:right" class="button">로그인</a>
             </footer>
         </article>
     </div>
@@ -1575,14 +1684,14 @@ if(mysqli_num_rows($result) > 0){
                     <h3>메뉴</h3>
                     <label for="userModal" class="close">&times;</label>
                     </header>
-                    <form method="post" action="login.php">
+                    <form method="post" action="/login.php">
                         <section class="content">
                             회원 전용 기능입니다. 사용해보세요!
                         </section>
                         <footer class="lilMob">
-                            <a class="button" href="./u>'.$_SESSION['fnUserId'].'">내 정보</a>
+                            <a class="button" href="/u/'.$_SESSION['fnUserId'].'">내 정보</a>
                             <span class="right">
-                            <a class="button dangerous" href="./login.php?from='.$idPath.'">로그아웃</a>
+                            <a class="button dangerous" href="/login.php?from='.$idPath.'">로그아웃</a>
                             </span>
                         </footer>
                     </form>
@@ -1603,7 +1712,7 @@ if(mysqli_num_rows($result) > 0){
         $sql = "SELECT `type` FROM `_ment` WHERE `target` = '$id' and `isSuccess` = 0";
         $result = mysqli_query($conn, $sql);
         if(mysqli_num_rows($result) > 0){
-            echo '<a id="nofiBox" href="./nofi">
+            echo '<a id="nofiBox" href="/nofi">
                 <span style="color:yellow">[알림] 새 알림이 있습니다!</span>';
             $cmC = 0;
             $mtC = 0;
@@ -1617,8 +1726,10 @@ if(mysqli_num_rows($result) > 0){
             }
             echo '<br><span class="nofiText">(호출 '.$mtC.'건, 댓글 '.$cmC.'건)</span><br>';
         }elseif($board == 'recent'){
-            echo '<a id="nofiBox" href="./nofi" style="opacity: 0.7">
+            echo '<a id="nofiBox" href="/nofi" style="opacity: 0.7">
                 <span class="nofiText">[알림] 새 알림이 없습니다.</span><br>';
+        }else{
+            echo '<span id="nofiBox"></span>';
         }
     }
     echo '</a>';
@@ -1631,7 +1742,7 @@ if(mysqli_num_rows($result) > 0){
             </div>
             <div>
                 <p class="left muted">
-                    <a href="/w/이용%20안내/FNBase" target="_blank">이용 안내</a>
+                    <a href="/w/이용%20안내" target="_blank">이용 안내</a>
                 </p>
             </div>
         </div>

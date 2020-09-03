@@ -66,8 +66,8 @@ switch ($idAlert) { #알림창
         ';
         break;
     case 'notice':
-        require_once './setting.php';
-        include_once './func.php';
+        require_once 'setting.php';
+        include_once 'func.php';
         $alNotice = textAlter($alNotice, 2);
         echo '
         <input type="checkbox" id="mailfail">

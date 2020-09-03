@@ -22,7 +22,7 @@ function filt($arg, $opt){
         $val = preg_replace($re, '', $arg);
     }else{
         $arg = str_replace("'", "\'", $arg);
-        require_once './editor/htmlpurifier/library/HTMLPurifier.auto.php';
+        require_once 'editor/htmlpurifier/library/HTMLPurifier.auto.php';
         $purifier = new HTMLPurifier();
         $val = $purifier->purify($arg);
     }
@@ -81,6 +81,9 @@ function get_timeFlies($arg){
         if($days >= 365){
             $years = floor($days / 365);
             $val = $years.'년 전';
+        }elseif($days >= 21){
+            $years = floor($days / 7);
+            $val = $years.'주 전';
         }else{
             $val = $days.'일 전';
         }
@@ -90,19 +93,19 @@ function get_timeFlies($arg){
 
 function textAlter($val, $isCon = 0){
     //공통 (금지어 등)
-    $val = preg_replace('/(namu\.live|남라|나무라이브)/m', '"그 사이트"', $val);
+    /*$val = preg_replace('/(namu\.live|남라|나무라이브)/m', '"그 사이트"', $val);
     $val = preg_replace('/(\*ㅎㅎ|\*ㅇㅇ|\*ㄴㄴ|\*ㅅㅅ|\*ㅁㅁ)/m', '"그 파라과이인"', $val);
-    $val = preg_replace('/(우만레|umanle)/m', '"그 파라과이 법인"', $val);
+    $val = preg_replace('/(우만레|umanle)/m', '"그 파라과이 법인"', $val);*/
 
     //글 처리 (마크다운, 유튜브 등)
     if($isCon < 3){
-        $val = preg_replace('/(>|^)((https|http):\/\/)([^< \n]+\/[^< \n]+\.(png|jpg|jpeg|gif|webp|svg))/m', '$1<img style="max-width:100%" src="$3:$4">', $val);
-        $val = preg_replace('/((https|http):\/\/)([^< \n]+\/[^< \n]+\.(mp4|mov|avi|ogg|ogv|flv|3gp|webm|mkv))/m', '<video height="240" style="max-width:100%" src="$2:$3" preload="metadata" controls>', $val);
-        $val = preg_replace('/https:\/\/(www\.|m\.){0,1}(youtube\.com\/watch\?v=|youtu\.be)([^< \n]+)/m', '<iframe src="yt#escape#youtube.com/embed/$3" height="240" width="100%" allowfullscreen></iframe>', $val);
+        $val = preg_replace('/(>|^)((https|http):\/\/)([^< \n]+\/[^< \n]+\.(png|jpg|jpeg|gif|webp|svg))/mi', '$1<img style="max-width:100%" src="$3:$4">', $val);
+        $val = preg_replace('/((https|http):\/\/)([^< \n]+\/[^< \n]+\.(mp4|mov|avi|ogg|ogv|flv|3gp|webm|mkv))/mi', '<video height="240" style="max-width:100%" src="$2:$3" preload="metadata" controls>', $val);
+        $val = preg_replace('/https:\/\/(www\.|m\.){0,1}(youtube\.com\/watch\?v=|youtu\.be)([^< \n]+)/mi', '<iframe src="yt#escape#youtube.com/embed/$3" height="240" width="100%" allowfullscreen></iframe>', $val);
         if($isCon == 0){
             $val = preg_replace('/(https|http|ftp|mailto|tel):\/\/[a-zA-Z0-9-]*(\.|\@)[\w-]{2,63}[^< \n]*/m', '<a href="$0" target="_blank">$0</a>', $val);
         }elseif($isCon == 2){
-            require_once './php/Parsedown.php';
+            require_once 'php/Parsedown.php';
             $Parsedown = new Parsedown();
             $val = $Parsedown->text($val);
         }
@@ -111,5 +114,9 @@ function textAlter($val, $isCon = 0){
         $val = str_ireplace('yt#escape#', 'https://', $val);
     }
     return $val;
+}
+
+function isMobile() {
+    return preg_match("/(android|avantgo|blackberry|bolt|boost|cricket|docomo|fone|hiptop|mini|mobi|palm|phone|pie|tablet|up\.browser|up\.link|webos|wos)/i", $_SERVER["HTTP_USER_AGENT"]);
 }
 ?>

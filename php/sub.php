@@ -1,6 +1,6 @@
 <?php
     include '../setting.php';
-    $b = preg_replace('/[^a-zA-Z0-9_]*/', '', $_POST['board']);
+    $b = preg_replace('/[^a-zA-Z0-9_ ]*/', '', $_POST['board']);
     $i = $_SESSION['fnUserId'];
 
     $sql = "SELECT `subs` FROM `_userSet` WHERE `id` = '$i'";
@@ -18,7 +18,7 @@
         $sqlb = "UPDATE `_board` SET `subs` = `subs` - 1 WHERE `slug` = '$b'";
         $result = mysqli_query($conn, $sqlb);
     }else{ #구독하기
-        if(empty($row['subs'])){
+        if(empty($row['subs']) or $row['subs'] == '0'){
             $s = $b;
         }else{
             $s = $row['subs'].','.$b;
