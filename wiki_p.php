@@ -99,13 +99,17 @@
                             $inc20 = $title[22][$i];
                         }
                     }
+                    if ($incT == $document['title']) {
+                        continue;
+                    }
 
                     $incA = $title[0][$i];
 
                     $sql = "SELECT `content` FROM `_article` WHERE `title` = '$incT'";
                     $result = mysqli_query($conn, $sql);
                     if(mysqli_num_rows($result) !== 1){
-                        break;
+                        echo '<strong>끼워넣은 문서가 존재하지 않습니다!</strong><br><a href="/e/'.myUrlEncode($incT).'">'.$incT.'</a><br>';
+                        continue;
                     }
                     $row = mysqli_fetch_assoc($result);
                     $incCon = documentRender($row['content'], FALSE, TRUE);
@@ -268,9 +272,9 @@
                         $sql = "SELECT `num` FROM `_article` WHERE `title` = '$linkT'";
                         $result = mysqli_query($conn, $sql);
                         if(mysqli_num_rows($result) < 1){
-                            $linkC = 'class="link-red" ';
+                            $linkC = 'class="link-red" href="/e/';
                         }else{
-                            unset($linkC);
+                            $linkC = 'href="/w/';
                         }
 
                         if($isAnchor){
@@ -286,9 +290,9 @@
                         $linkT = myUrlEncode($linkT);
 
                         if($linkS == ''){
-                            $doc = str_ireplace($linkA, $bold.'<a '.$linkC.'href="/w/'.$linkT.'">'.myUrlDecode($linkT).'</a>'.$bold, $doc);
+                            $doc = str_ireplace($linkA, $bold.'<a '.$linkC.$linkT.'">'.myUrlDecode($linkT).'</a>'.$bold, $doc);
                         }else{
-                            $doc = str_ireplace($linkA, $bold.'<a '.$linkC.'href="/w/'.$linkT.'">'.$linkS.'</a>'.$bold, $doc);
+                            $doc = str_ireplace($linkA, $bold.'<a '.$linkC.$linkT.'">'.$linkS.'</a>'.$bold, $doc);
                         }
                         if ($i > 5000) {
                             die('하이퍼링크가 너무 많습니다!');
