@@ -1,12 +1,12 @@
 <?php
     $pgNum = filt($_GET['n'], '123');
     $pgPage = filt($_GET['p'], '123');
-    if(empty($pgPage) or $pgPage == '0'){
+    if(empty($pgPage) and $pgPage != '0'){
         $pgPage = 1;
     }
     $pgBoard = $board;
 
-    if(in_array($pgBoard, array('recent', 'whole', 'HOF'))){ #게시글 표시
+    if(in_array($pgBoard, array('recent', 'whole', 'fresh', 'HOF'))){ #게시글 표시
         $sql = "SELECT * FROM `_content` WHERE `num` = '$pgNum' and `type` IN ('COMMON', 'ANON_WRITE')";
         $isRCT = TRUE;
     }else{
@@ -46,6 +46,41 @@
             }
         }
     }
+
+    if($isRCT){
+        $kcboard = $pgContent['board'];
+
+        $sql = "SELECT `kicked`,`title` FROM `_board` WHERE `slug` = '$kcboard'";
+        $result = mysqli_query($conn, $sql);
+        $btk = mysqli_fetch_assoc($result);
+        $kcd = $btk['kicked'];
+        
+        if(mb_strpos($kcd, $id) !== FALSE){ #채널 추방 여부
+            $sql = "SELECT `type` FROM `_othFunc` WHERE `type` = 'BOARD_KICK' and `value` = '$kcboard' and `target` = '$id' and `at` > NOW() and `isSuccess` = '1'";
+            $result = mysqli_query($conn, $sql);
+            if(mysqli_num_rows($result) !== 1){ #차단 기간 만료로 인한 해제
+                $sql = "UPDATE `_othFunc` SET `isSuccess` = '0' WHERE `type` = 'BOARD_KICK' and `value` = '$kcboard' and `target` = '$id' and `at` < NOW()";
+                $result = mysqli_query($conn, $sql);
+                $s = $kcd;
+                $s = str_ireplace($id, '', $s);
+                $s = preg_replace('/[,]{2,}/m', ',', $s);
+                $s = preg_replace('/^,/', '', $s);
+                $s = preg_replace('/,$/', '', $s);
+                $sql = "UPDATE `_board` SET `kicked` = '$s' WHERE `slug` = '$kcboard'";
+                $result = mysqli_query($conn, $sql);
+                if($result){
+                    die('<script>location.reload()</script>');
+                }else{
+                    die('데이터베이스 연결 실패');
+                }
+            }else{
+                $row = mysqli_fetch_assoc($result);
+                echo '<a href="/b/'.$kcboard.'">"'.$btk['title'].'"</a>에서 차단되어 이 글을 볼 수 없습니다. </section><aside class="hidMob"></aside></div><hr></body></html>';
+                goto page_end;
+            }
+        }
+    }
+
         $at = $pgContent['at'];
         $rt = $pgContent['rate'];
         $cat = $pgContent['category'];
@@ -165,6 +200,7 @@
                     </footer>
                 </div>
             <?php
+if(!$isWrong){
             if($isStaff || $isAdmin){
                 if($cat == '공지'){
                     $ntc = '해제';
@@ -232,7 +268,7 @@ echo '<!-- 글 관리 -->
                   </form>
                 </section>';
             }
-            ?>
+        ?>
 <!-- 댓글 -->
                 <div class="card" id="comment">
                     <header style="background:#f3f3f3;border-bottom:1px solid #e6e6e6">
@@ -244,7 +280,7 @@ echo '<!-- 글 관리 -->
                 $cmtResult = mysqli_query($conn, $sql);
                 $sql = "SELECT * FROM `_comment` WHERE `from` = '$pgNum'";
                 $cmtfResult = mysqli_query($conn, $sql);
-            if(empty($_SESSION['fnUserId']) or $_SESSION['fnUserId'] == '0'){
+            if(empty($_SESSION['fnUserId']) and $_SESSION['fnUserId'] != '0'){
                 echo '<section class="muted" style="font-size:0.9em;padding:5px;border-bottom:1px solid #f5f5f5">
                     댓글 작성을 위해서는 <a href="/login"><i class="icofont-sign-in"></i> 로그인</a>이 필요합니다.
                 </section>';
@@ -760,6 +796,7 @@ echo '<!-- 글 관리 -->
             <?php
             }
         }
+}
             ?>
     <div class="modal">
         <input id="infoModal" type="checkbox" />
@@ -780,7 +817,7 @@ echo '<!-- 글 관리 -->
                         echo '<green id="rate">G</green> ';
                     }
 
-                    if(empty($so) or $so == '0'){
+                    if(empty($so) and $so != '0'){
                         $so = '<green>전체공개</green>';
                     }
                 ?>| 작성 일시: <?=$at?><br> 열람 허가 대상: <?=$so?></span><br>
@@ -797,13 +834,14 @@ echo '<!-- 글 관리 -->
         </article>
     </div>
 <?php
-    if($isLogged){
+    if($_SESSION['fnUserId']){
         if($_GET['ment']){
             $num = filt($_GET['ment'], '123');
-            $sql = "SELECT `target` FROM `_ment` WHERE `num` = '$num'";
+            $sql = "SELECT `value`, `target` FROM `_ment` WHERE `num` = '$num'";
             $result = mysqli_query($conn, $sql);
+            $row = mysqli_fetch_assoc($result);
             if(mysqli_num_rows($result) == 1){
-                $sql = "UPDATE `_ment` SET `isSuccess` = 1 WHERE `num` = '$num'";
+                $sql = "UPDATE `_ment` SET `isSuccess` = 1 WHERE `value` = '".$row['value']."' and `target` = '".$row['target']."'";
                 $result = mysqli_query($conn, $sql);
                 if(!$result){
                     echo '데이터베이스 연결 실패';
@@ -811,4 +849,5 @@ echo '<!-- 글 관리 -->
             }
         }
     }
+    page_end:
 ?>

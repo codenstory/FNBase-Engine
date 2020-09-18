@@ -1,6 +1,6 @@
 <?php
     include '../setting.php';
-    if(empty($_SESSION['fnUserId']) or $_SESSION['fnUserId'] == '0'){
+    if(empty($_SESSION['fnUserId']) and $_SESSION['fnUserId'] != '0'){
         die('LOGIN REQUIRED');
     }
 

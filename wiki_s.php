@@ -7,9 +7,9 @@
     $comm = filt($_POST['comment'], 'oth');
     include_once 'wiki_p.php';
     
-    if(empty($fnwTitle) or $fnwTitle == '0'){
+    if(empty($fnwTitle) and $fnwTitle != '0'){
         die('<script>alert("제목이 비어있습니다.");history.back()</script>');
-    }elseif(empty($content) or $content == '0'){
+    }elseif(empty($content) and $content != '0'){
         die('<script>alert("내용이 비어있습니다.");history.back()</script>');
     }else{
         $sql = "SELECT `content` FROM `_article` WHERE `title` = '$fnwTitle'";
@@ -20,7 +20,7 @@
         }
     }
 
-    if(empty($id) or $id == '0'){
+    if(empty($id) and $id != '0'){
         if(strstr($ip, ':')){
             die('ipv6 대역은 익명 작성이 불가능합니다.');
         }

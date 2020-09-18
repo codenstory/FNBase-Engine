@@ -3,7 +3,7 @@
     require_once 'setting.php';
     require_once 'func.php';
 
-    if(!empty($id) or $id == '0'){
+    if(!empty($id) and $id != '0'){
         $sql = "SELECT `siteBan` FROM `_account` WHERE `id` = '$id'";
         $result = mysqli_query($conn, $sql);
         $row = mysqli_fetch_assoc($result);
@@ -22,9 +22,9 @@
         }
     }
 
-    $fnwTitle = filt($_GET['title'], 'htm');
+    $fnwTitle = filt(urldecode($_GET['title']), 'htm');
     require_once 'wiki_p.php';
-    if(empty($fnwTitle) or $fnwTitle == '0'){
+    if(empty($fnwTitle) and $fnwTitle != '0'){
         $fnwTitle = '대문';
     }
 
@@ -147,7 +147,7 @@
                 <a href="/w/특수 문서 목록" class="brand-r">
                     <span style="color:#fff"><i class="icofont-file-exe"></i><h-m> 다른 기능</h-m></span>
                 </a>
-                <a href="/b>recent" class="brand-r">
+                <a href="/" class="brand-r">
                     <span style="color:#fff"><i class="icofont-listing-box"></i><h-m> 게시판</h-m></span>
                 </a>
                 <?php
@@ -164,7 +164,7 @@
                     }
                 ?>
             </nav>
-            <form action="javascript:void(0)" onsubmit="if(!document.querySelector('#search-top').value){document.querySelector('#search-top').value = document.querySelector('#search-top').placeholder;};location.href = '/w/'+document.getElementById('search-top').value.replace('?', '%3F')">
+            <form action="javascript:void(0)" onsubmit="if(!document.querySelector('#search-top').value){document.querySelector('#search-top').value = document.querySelector('#search-top').placeholder;};location.href = '/w/'+encodeURIComponent(document.getElementById('search-top').value).replace(/%23/g, '%2523').replace(/%2F/g, '/')">
                 <div id="topNoticeLine" style="background:<?=$fnSColor?>;text-overflow:unset;color:white">
                     <a href="/w/임의 문서로" class="label success">검색</a><input id="search-top" style="background:transparent;border:none;height:1.2em" placeholder="<?=$fnwSuggest?>">
                 </div>
@@ -200,7 +200,7 @@
                     $d_title = $row['discussName'];
                     echo '<div class="card" class="wikiDiscussCard">
                             <header style="background:#f3f3f3;border-bottom:1px solid #e6e6e6">
-                                <h4 class="black noGray"><a href="/w/'.$row['title'].'"><i class="icofont-page"></i> '.$row['title'].'</a></h4>
+                                <h4 class="black noGray"><a href="/w/'.myUrlEncode($row['title']).'"><i class="icofont-page"></i> '.$row['title'].'</a></h4>
                             </header>
                             <section>';
                             if($row['status'] == 'ACTIVE'){
@@ -301,7 +301,7 @@
                         $fnwTitle = '(토론) '.$d_title;
                 }else{ ?>
                 <div id="mainTitle">
-                    <h2 id="wikiTitleText" class="black noGray"><a href="/w/<?=$url?>"><?=$title?><span id="wikiModeText" class="muted"></span></a></h2>
+                    <h2 id="wikiTitleText" class="black noGray"><a href="/w/<?=myUrlEncode($url)?>"><?=$title?><span id="wikiModeText" class="muted"></span></a></h2>
                     <hr><span id="wikiTitleRaw" style="display:none"><?=$fnwTitle?></span>
                     <script>
                         if(document.URL.includes('?from=')){
@@ -323,7 +323,7 @@
                                 $catTitle = $catTitle[1];
                                 $document['execute'] = 'category';
                             }else{
-                                echo '상위 문서 : <a href="/w/'.$parStr.'">'.$parStr.'</a><hr style="margin-top:4px">';
+                                echo '상위 문서 : <a href="/w/'.myUrlEncode($parStr).'">'.$parStr.'</a><hr style="margin-top:4px">';
                             }
                         }
                         $content = nl2br(documentRender($document['content']));
@@ -336,7 +336,7 @@
                                     $sql = "SELECT `title`, `lastEdit`, `whoEdited` FROM `_article` WHERE `type` = 'SpecialDOC' ORDER BY `num`";
                                     $result = mysqli_query($conn, $sql);
                                     while($row = mysqli_fetch_assoc($result)){
-                                        echo '<tr><td class="black"><a href="/w/'.$row['title'].'"><i class="icofont-gears"></i> '.$row['title'].'</td></tr>';
+                                        echo '<tr><td class="black"><a href="/w/'.myUrlEncode($row['title']).'"><i class="icofont-gears"></i> '.$row['title'].'</td></tr>';
                                     }
                                     echo '</tbody></table>';
                                     break;
@@ -385,7 +385,7 @@
                                             $icon = 'user-alt-7';
                                             $href = '/u/'.$wE;
                                         }
-                                        echo '<tr><td class="black"><a href="/w/'.$row['title'].'"><i class="icofont-page"></i> '.$row['title'].'<br>
+                                        echo '<tr><td class="black"><a href="/w/'.myUrlEncode($row['title']).'"><i class="icofont-page"></i> '.$row['title'].'<br>
                                         <span class="subInfo"><i class="icofont-eraser"></i> '.get_timeFlies($row['lastEdit']).'
                                         <i class="icofont-'.$icon.'"></i> <a class="subInfo" href="'.$href.'">'.$name.'</a></span></td></tr>';
                                     }
@@ -399,7 +399,7 @@
 
                                         echo '<tr><td class="black"><a href="/discuss/'.$row['num'].'"><i class="icofont-users-alt-7"></i> '.$row['discussName'].'<br>
                                         <span class="subInfo"><i class="icofont-eraser"></i> '.get_timeFlies($row['lastEdit']).' /</span>
-                                        <a href="/w/'.$row['title'].'" class="subInfo"><i class="icofont-page"></i> '.$row['title'].'</a></td></tr>';
+                                        <a href="/w/'.myUrlEncode($row['title']).'" class="subInfo"><i class="icofont-page"></i> '.$row['title'].'</a></td></tr>';
                                     }
                                     echo '</tbody></table>';
                                     break;
@@ -407,7 +407,7 @@
                                     $sql = "SELECT `title` FROM `_article` WHERE `type` = 'COMMON' ORDER BY rand() LIMIT 1";
                                     $result = mysqli_query($conn, $sql);
                                     $row = mysqli_fetch_assoc($result);
-                                    echo '<script>location.href = "/w/'.$row['title'].'"</script>';
+                                    echo '<script>location.href = "/w/'.myUrlEncode($row['title']).'"</script>';
                                     break;
                                 case 'search':
                                     echo '<br><hr><h3>검색 결과</h3><b>제목 일치</b><table class="full"><tbody>';
@@ -431,7 +431,7 @@
                                                 $icon = 'user-alt-7';
                                                 $href = '/u/'.$wE;
                                             }
-                                            echo '<tr><td class="black noGray"><a href="/w/'.$row['title'].'"><i class="icofont-page"></i> '.$row['title'].'<br>
+                                            echo '<tr><td class="black noGray"><a href="/w/'.myUrlEncode($row['title']).'"><i class="icofont-page"></i> '.$row['title'].'<br>
                                             <span class="subInfo"><i class="icofont-eraser"></i> '.get_timeFlies($row['lastEdit']).'
                                             <i class="icofont-'.$icon.'"></i> <a class="subInfo" href="'.$href.'">'.$name.'</a></span></td></tr>';
                                         }
@@ -463,7 +463,7 @@
                                                 $icon = 'user-alt-7';
                                                 $href = '/u/'.$wE;
                                             }
-                                            echo '<tr><td class="black noGray"><a href="/w/'.$row['title'].'"><i class="icofont-page"></i> '.$row['title'].'<br>
+                                            echo '<tr><td class="black noGray"><a href="/w/'.myUrlEncode($row['title']).'"><i class="icofont-page"></i> '.$row['title'].'<br>
                                             <blockquote>..'.preg_replace('/&lt;(\/){0,1}mark&gt;/', '<$1mark>', htmlspecialchars($stxt[0])).'..</blockquote>
                                             <span class="subInfo"><i class="icofont-eraser"></i> '.get_timeFlies($row['lastEdit']).'
                                             <i class="icofont-'.$icon.'"></i> <a class="subInfo" href="'.$href.'">'.$name.'</a></span><br></td></tr>';
@@ -486,7 +486,7 @@
                                 case 'articles':
                                     $qP = filt($_GET['ap'], '123');
 
-                                    if(empty($qP) or $qP == '0'){
+                                    if(empty($qP) and $qP != '0'){
                                         $qP = 1;
                                     }
                                     $l = $qP * 50;
@@ -500,7 +500,7 @@
 
                                     echo '<br><table class="full"><tbody>';
                                     while($row = mysqli_fetch_assoc($result)){
-                                        echo '<tr><td class="black"><a href="/wiki/'.$row['title'].'"><i class="icofont-page"></i> '.$row['title'].'<br>
+                                        echo '<tr><td class="black"><a href="/wiki/'.myUrlEncode($row['title']).'"><i class="icofont-page"></i> '.$row['title'].'<br>
                                         <span class="subInfo"><i class="icofont-eraser"></i> '.get_timeFlies($row['lastEdit']).' /</span> <green class="little">'.$row['viewCount'].'</green></td></tr>';
                                     }
                                     echo '</tbody></table>';
@@ -549,7 +549,7 @@
                                 case 'insolvent':
                                     $qP = filt($_GET['ip'], '123');
 
-                                    if(empty($qP) or $qP == '0'){
+                                    if(empty($qP) and $qP != '0'){
                                         $qP = 1;
                                     }
                                     $l = $qP * 50;
@@ -564,7 +564,7 @@
 
                                     echo '<br><table class="full"><tbody>';
                                     while($row = mysqli_fetch_assoc($result)){
-                                        echo '<tr><td class="black"><a href="/wiki/'.$row['title'].'"><i class="icofont-page"></i> '.$row['title'].'<br>
+                                        echo '<tr><td class="black"><a href="/wiki/'.myUrlEncode($row['title']).'"><i class="icofont-page"></i> '.$row['title'].'<br>
                                         <span class="subInfo"><b>'.$row['length'].' 글자</b> <i class="icofont-eraser"></i> '.get_timeFlies($row['lastEdit']).' /</span> <green class="little">'.$row['viewCount'].'</green></td></tr>';
                                     }
                                     echo '</tbody></table>';
@@ -613,7 +613,7 @@
                                 case 'unctgrzd':
                                     $qP = filt($_GET['gp'], '123');
 
-                                    if(empty($qP) or $qP == '0'){
+                                    if(empty($qP) and $qP != '0'){
                                         $qP = 1;
                                     }
                                     $l = $qP * 50;
@@ -627,7 +627,7 @@
 
                                     echo '<br><table class="full"><tbody>';
                                     while($row = mysqli_fetch_assoc($result)){
-                                        echo '<tr><td class="black"><a href="/wiki/'.$row['title'].'"><i class="icofont-page"></i> '.$row['title'].'<br>
+                                        echo '<tr><td class="black"><a href="/wiki/'.myUrlEncode($row['title']).'"><i class="icofont-page"></i> '.$row['title'].'<br>
                                         <span class="subInfo"><i class="icofont-eraser"></i> '.get_timeFlies($row['lastEdit']).' /</span> <green class="little">'.$row['viewCount'].'</green></td></tr>';
                                     }
                                     echo '</tbody></table>';
@@ -676,7 +676,7 @@
                                 case 'abcasc':
                                     $qP = filt($_GET['bp'], '123');
 
-                                    if(empty($qP) or $qP == '0'){
+                                    if(empty($qP) and $qP != '0'){
                                         $qP = 1;
                                     }
                                     $l = $qP * 50;
@@ -690,7 +690,7 @@
 
                                     echo '<br><table class="full"><tbody>';
                                     while($row = mysqli_fetch_assoc($result)){
-                                        echo '<tr><td class="black"><a href="/wiki/'.$row['title'].'"><i class="icofont-page"></i> '.$row['title'].'<br>
+                                        echo '<tr><td class="black"><a href="/wiki/'.myUrlEncode($row['title']).'"><i class="icofont-page"></i> '.$row['title'].'<br>
                                         <span class="subInfo"><i class="icofont-eraser"></i> '.get_timeFlies($row['lastEdit']).' /</span> <green class="little">'.$row['viewCount'].'</green></td></tr>';
                                     }
                                     echo '</tbody></table>';
@@ -739,21 +739,21 @@
                                 case 'category':
                                     $qP = filt($_GET['cp'], '123');
 
-                                    if(empty($qP) or $qP == '0'){
+                                    if(empty($qP) and $qP != '0'){
                                         $qP = 1;
                                     }
                                     $l = $qP * 50;
                                     $lc = $l - 50;
                                     $l = $lc.', 50';
-                                    $sql_ = "SELECT `num` FROM `_article` WHERE `type` = 'COMMON' and `content` like '%[[분류/$catTitle]]%' ORDER BY `lastEdit` ASC";
-                                    $sql = "SELECT `title`, `viewCount`, `lastEdit` FROM `_article` WHERE `type` = 'COMMON' and `content` like '%[[분류/$catTitle]]%' ORDER BY `lastEdit` ASC LIMIT $l";
+                                    $sql_ = "SELECT `num` FROM `_article` WHERE `type` = 'COMMON' and `content` like '%[[분류/$catTitle]]%' ORDER BY `title` ASC";
+                                    $sql = "SELECT `title`, `viewCount`, `lastEdit` FROM `_article` WHERE `type` = 'COMMON' and `content` like '%[[분류/$catTitle]]%' ORDER BY `title` ASC LIMIT $l";
                                     $result = mysqli_query($conn, $sql_);
                                     $qC = mysqli_num_rows($result);
                                     $result = mysqli_query($conn, $sql);
 
                                     echo '<br><br><table class="full"><tbody>';
                                     while($row = mysqli_fetch_assoc($result)){
-                                        echo '<tr><td class="black"><a href="/wiki/'.$row['title'].'"><i class="icofont-page"></i> '.$row['title'].'<br>
+                                        echo '<tr><td class="black"><a href="/wiki/'.myUrlEncode($row['title']).'"><i class="icofont-page"></i> '.$row['title'].'<br>
                                         <span class="subInfo"><i class="icofont-eraser"></i> '.get_timeFlies($row['lastEdit']).' /</span> <green class="little">'.$row['viewCount'].'</green></td></tr>';
                                     }
                                     echo '</tbody></table><br>';
@@ -870,7 +870,7 @@
                         <?php
                         if(!$pgNum){
                             if($document['ACL'] !== 'none'){
-                                    echo '&nbsp;<button type="button" onclick="wikiEdit(\''.$fnwTitle.'\')"';
+                                    echo '&nbsp;<button type="button" onclick="wikiEdit(\''.myUrlEncode($fnwTitle).'\')"';
                                     if(!$canEdit){
                                         echo ' class="outline"';
                                         $isNew = '원본';
@@ -879,10 +879,10 @@
                                         echo ' class="outline-green"';
                                     }
                                     echo'><i class="icofont-'.$isNewIcon.'"></i> '.$isNew.'</button><br>';
-                                    echo '&nbsp;<button type="button" class="outline-blue" onclick="wikiDiscuss(\''.$fnwTitle.'\')"><i class="icofont-users-alt-2"></i> 토론</button><br>';
+                                    echo '&nbsp;<button type="button" class="outline-blue" onclick="wikiDiscuss(\''.myUrlEncode($fnwTitle).'\')"><i class="icofont-users-alt-2"></i> 토론</button><br>';
                             }
-                                    echo '&nbsp;<button type="button" class="outline" onclick="wikiHistory(\''.$fnwTitle.'\')"><i class="icofont-history"></i> 기록</button>';
-                                    echo '<br>&nbsp;<button type="button" class="outline-danger" onclick="wikiManage(\''.$fnwTitle.'\')"><i class="icofont-gears"></i> 조정</button>';
+                                    echo '&nbsp;<button type="button" class="outline" onclick="wikiHistory(\''.myUrlEncode($fnwTitle).'\')"><i class="icofont-history"></i> 기록</button>';
+                                    echo '<br>&nbsp;<button type="button" class="outline-danger" onclick="wikiManage(\''.myUrlEncode($fnwTitle).'\')"><i class="icofont-gears"></i> 조정</button>';
                         }
                         ?>
                         </div>
@@ -970,10 +970,10 @@
                     <label for="wikiFunction" class="close">&times;</label>
                     </header>
                     <footer class="lilMob">
-                        <button type="button" class="outline-blue" onclick="wikiDiscuss('<?=$fnwTitle?>')"><i class="icofont-users-alt-2"></i> 토론</button>
-                        <button type="button" class="outline" onclick="wikiHistory('<?=$fnwTitle?>')"><i class="icofont-history"></i> <h-m>편집 </h-m>기록</button>
-                        <button type="button" class="outline-danger" onclick="wikiManage('<?=$fnwTitle?>')"><i class="icofont-gears"></i> 조정</button>&nbsp;
-                        <button type="button" onclick="wikiEdit('<?=$fnwTitle?>')" class="<?php
+                        <button type="button" class="outline-blue" onclick="wikiDiscuss('<?=myUrlEncode($fnwTitle)?>')"><i class="icofont-users-alt-2"></i> 토론</button>
+                        <button type="button" class="outline" onclick="wikiHistory('<?=myUrlEncode($fnwTitle)?>')"><i class="icofont-history"></i> <h-m>편집 </h-m>기록</button>
+                        <button type="button" class="outline-danger" onclick="wikiManage('<?=myUrlEncode($fnwTitle)?>')"><i class="icofont-gears"></i> 조정</button>&nbsp;
+                        <button type="button" onclick="wikiEdit('<?=myUrlEncode($fnwTitle)?>')" class="<?php
                             if(!$canEdit){
                                 echo 'outline';
                                 $isNew = '원본';
@@ -1125,7 +1125,7 @@
         <?php $pageTitle = str_ireplace('&apos;', "\'", str_ireplace('&quot;', '\"', $fnwTitle)); ?>
         <script>
             document.title = "<?=$pageTitle.' - '.$fnTitle?>"
-            wikiTitle = "<?=$fnwTitle?>"
+            wikiTitle = "<?=myUrlEncode($fnwTitle)?>"
             window.onload = function () {
                 if(document.getElementById("mainContent")){
                     //목차
@@ -1167,11 +1167,11 @@
             </script>
         <?php
             if($_GET['on'] == 'discuss'){
-                echo '<script>wikiDiscuss(\''.$fnwTitle.'\');</script>';
+                echo '<script>wikiDiscuss(\''.myUrlEncode($fnwTitle).'\');</script>';
             }elseif($_GET['on'] == 'edit'){
-                echo '<script>wikiEdit(\''.$fnwTitle.'\');</script>';
+                echo '<script>wikiEdit(\''.myUrlEncode($fnwTitle).'\');</script>';
             }elseif($_GET['on'] == 'history'){
-                echo '<script>wikiHistory(\''.$fnwTitle.'\');</script>';
+                echo '<script>wikiHistory(\''.myUrlEncode($fnwTitle).'\');</script>';
             }
 
             $sql = "UPDATE `_article` SET `viewCount` = `viewCount` + 1 WHERE `title` = '$fnwTitle'";

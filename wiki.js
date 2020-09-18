@@ -5,6 +5,7 @@ if(screen.width <= 1024){
 }
 
 var prevHisNum = false;
+var hisPage = false;
 
 function alertWait(){
     alert('열심히 개발중입니다..\n조금만 기다려주세요.');
@@ -74,19 +75,25 @@ function wikiEdit(arg){
 }
 
 function wikiHistory(arg){
-    fetch('https://fnbase.xyz/wiki_h.php?title='+arg).then(function(response){
+    if(hisPage){
+        hisPage++
+    }else{
+        hisPage = 1
+    }
+    fetch('https://fnbase.xyz/w_history/'+hisPage+'/'+arg).then(function(response){
         response.text().then(function(text){
             document.querySelector('#mainContent').style.cssText = 'display:none';
             document.querySelector('#editPlace').style.cssText = '';
             document.querySelector("#editPlaceText").innerHTML = text;
+            if(!text){
+                hisPage = 0
+                wikiHistory(arg)
+            }
         })
         if(response.status != '200'){
             console.log('서버 통신 오류');
         }else{
             document.querySelector("#wikiModeText").innerHTML = " (기록)";
-                        if(isMobile){
-                document.querySelectorAll('#wFClose')[0].click();
-            }
         }
     })
 }
@@ -259,26 +266,20 @@ function wikiKeepWrite(){
 }
 
 function tempSave(){
-    if(document.querySelector('#mainEditor')){
-        content = document.querySelector('#mainEditor').innerHTML;
-    }
-    console.log(content)
+    const form = document.getElementById('contentForm');
+    const formattedFormData = new FormData(form);
+    postData(formattedFormData);
 
-    fetch('https://fnbase.xyz/sub/tempsave.php?content='+content).then(function(response){
-        if(response.status == '403'){
-            alert('로그인 되어있지 않음!');
-        }else if(response.status != '200'){
-            alert('서버 통신 오류');
-        }else if(response.status == '200'){
-            alert('저장 완료!')
-        }
-    })
+    async function postData(formattedFormData){
+        const response = await fetch('https://fnbase.xyz/sub/tempsave.php',{
+            method: 'POST',
+            body: formattedFormData
+        });
+        const data = await response.text();
+        alert('저장됨.');
+    }
 }
 function tempLoad(){
-    if(document.querySelector('#mainEditor')){
-        content = document.querySelector('#mainEditor').innerHTML;
-    }
-
     fetch('https://fnbase.xyz/sub/tempsave.php').then(function(response){
         response.text().then(function(text){
             document.querySelector('#mainEditor').innerHTML = text;
@@ -289,6 +290,7 @@ function tempLoad(){
             alert('서버 통신 오류');
         }else if(response.status == '200'){
             alert('불러오기 완료!')
+            console.log(text);
         }
     })
 }

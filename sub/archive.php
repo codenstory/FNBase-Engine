@@ -65,15 +65,15 @@
             $n = preg_replace('/[^0-9]/', '', $_GET['n']);
             $b = preg_replace('/[^a-z]/', '', strtolower($_GET['b']));
             include '../setting.php';
-            if(empty($l) or $l == '0'){
+            if(empty($l) and $l != '0'){
                 $l = 25;
             }elseif($l > 100){
                 $l = 100;
             }
-            if(empty($n) or $n == '0'){
+            if(empty($n) and $n != '0'){
                 $n = 0;
             }
-            if(empty($b) or $b == '0'){
+            if(empty($b) and $b != '0'){
                 $b = 'main';
             }
 

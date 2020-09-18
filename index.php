@@ -2,27 +2,29 @@
 require_once 'setting.php';
 require_once 'func.php';
 
+error_reporting(E_ERROR);
+
 $idTemp_1 = filt($_GET['b'], 'abc');
 $idTemp_2 = filt($_GET['n'], '123');
 $idTemp_3 = filt($_GET['mode'], 'abc');
 $idTemp_4 = filt($_GET['board'], 'abc');
 $idAlert = filt($_GET['alert'], 'abc');
 
-if(empty($idTemp_1) or $idTemp_1 == '0'){ #게시판 값이 비어있음
+if(empty($idTemp_1) and $idTemp_1 != '0'){ #게시판 값이 비어있음
     $isBoard = FALSE;
-}elseif(!empty($idTemp_2) or $idTemp_2 == '0'){ #글 번호 있음
+}elseif(!empty($idTemp_2) and $idTemp_2 != '0'){ #글 번호 있음
     $lsBoard = $idTemp_1;
     $pgNumber = $idTemp_2;
     $isBoard = TRUE;
     $isPage = TRUE;
-}elseif(!empty($idTemp_1) or $idTemp_1 == '0'){ #게시판 값만 있음
+}elseif(!empty($idTemp_1) and $idTemp_1 != '0'){ #게시판 값만 있음
     $lsBoard = $idTemp_1;
     $isBoard = TRUE;
     $isPage = FALSE;
 }
 
 if(!$isBoard){
-    if(!empty($idTemp_3) or $idTemp_3 == '0'){ #모드 값이 있음
+    if(!empty($idTemp_3) and $idTemp_3 != '0'){ #모드 값이 있음
         $idPage = $idTemp_3;
         if($idTemp_4){
             $lsBoard = $idTemp_4;
@@ -40,7 +42,7 @@ if(!$isBoard){
     $idPage = 'list';
 }
 
-if(!empty($id) or $id == '0'){
+if(!empty($id) and $id != '0'){
     $sql = "SELECT `siteBan`, `canUpload` FROM `_account` WHERE `id` = '$id'";
     $result = mysqli_query($conn, $sql);
     $sB = mysqli_fetch_assoc($result);
@@ -74,26 +76,11 @@ if(mysqli_num_rows($result) > 0){
     }
 }
 
-    $yn = mt_rand(0,3);
+    $yn = mt_rand(0,10);
     switch ($yn) {
+        case 0:
         case 1:
-            $sql = "SELECT COUNT(*) as `cnt` FROM `_ad` WHERE `at` > DATE_SUB(NOW(), INTERVAL 3 DAY) and `type` = 'USER_ADVER'";
-            $res = mysqli_query($conn, $sql);
-            $res = mysqli_fetch_assoc($res);
-            $cnt = $res['cnt'] - 1;
-            $n = mt_rand(0, $cnt);
-            $tnLabel = '광고';
-    
-            if($cnt < 0){
-                $isEmpty = TRUE;
-            }else{
-                $sql = "SELECT `ad`, `link` FROM `_ad` WHERE `at` > DATE_SUB(NOW(), INTERVAL 3 DAY) and `type` = 'USER_ADVER' and `ad` IS NOT NULL ORDER BY `at` DESC LIMIT $n, 1";
-                $res = mysqli_query($conn, $sql);
-                $res = mysqli_fetch_assoc($res);
-    
-                    $tnHref = $res['link'];
-                    $tnText = $res['ad'];
-            }
+            $isEmpty = TRUE;
             break;
         case 2:
             $sql = "SELECT count(*) as `cnt` FROM `_content` WHERE `rate` NOT LIKE 'R' and `staffOnly` IS NOT NULL and `voteCount_Up` > 10 and `at` > DATE_SUB(NOW(), INTERVAL 21 DAY)";
@@ -133,9 +120,24 @@ if(mysqli_num_rows($result) > 0){
                     $tnText = $res['title'];
             }
             break;
-        case 0:
-            $isEmpty = TRUE;
-            break;
+        default:
+            $sql = "SELECT COUNT(DISTINCT(`ad`)) as `cnt` FROM c180test.`_ad` WHERE `at` > DATE_SUB(NOW(), INTERVAL 3 DAY) and `type` = 'USER_ADVER'";
+            $res = mysqli_query($conn, $sql);
+            $res = mysqli_fetch_assoc($res);
+            $cnt = $res['cnt'] - 1;
+            $n = mt_rand(0, $cnt);
+            $tnLabel = '광고';
+    
+            if($cnt < 0){
+                $isEmpty = TRUE;
+            }else{
+                $sql = "SELECT `ad`, `link` FROM `_ad` WHERE `at` > DATE_SUB(NOW(), INTERVAL 3 DAY) and `type` = 'USER_ADVER' and `ad` IS NOT NULL GROUP BY `ad` ORDER BY `at` DESC LIMIT $n, 1";
+                $res = mysqli_query($conn, $sql);
+                $res = mysqli_fetch_assoc($res);
+    
+                    $tnHref = $res['link'];
+                    $tnText = $res['ad'];
+            }
     }
     if($isEmpty){
         $sql = "SELECT COUNT(*) as `cnt` FROM `_ad` WHERE `at` > DATE_SUB(NOW(), INTERVAL 30 DAY) and `type` = 'PUB_S_ADVT'";
@@ -282,7 +284,7 @@ if(mysqli_num_rows($result) > 0){
                 
                 #직접표시
                 case 'login':
-                    if(!empty($_SESSION['fnUserId']) or $_SESSION['fnUserId'] == '0'){
+                    if(!empty($_SESSION['fnUserId']) and $_SESSION['fnUserId'] != '0'){
                         echo '<script>history.back()</script>';
                     }
                     $lsPlus = '<article class="card">
@@ -314,7 +316,7 @@ if(mysqli_num_rows($result) > 0){
                     $sql = "SELECT * FROM `_board` WHERE `id` = '$id'";
                     $result = mysqli_query($conn, $sql);
                     $row = mysqli_fetch_assoc($result);
-                            if(strtolower($id) !== strtolower($row['id'])){ #채널 설정 권한 여부
+                            if(strtolower($id) !== strtolower($row['id'])){ #환경 설정 권한 여부
                                 if(!preg_match('/(^|,)'.$id.'($|,)/', $row['keeper'])){
                                     die('권한 없음.');
                                 }
@@ -325,7 +327,7 @@ if(mysqli_num_rows($result) > 0){
                     $row = mysqli_fetch_assoc($result);
                     $lsPlus = '<article class="card">
                     <header>
-                    <h3 class="muted"><i class="icofont-settings"></i> 채널 설정</h3>
+                    <h3 class="muted"><i class="icofont-settings"></i> 환경 설정</h3>
                     </header>
                     <form method="post" action="/php/maint.php">
                         <section class="content">
@@ -340,6 +342,8 @@ if(mysqli_num_rows($result) > 0){
                             <span class="subInfo">쉼표로 구분해주세요. 3개 이내를 권장합니다.</span><br>
                             <label>상단 공지<input type="text" name="nt" placeholder="30자 이내 권장" value="'.$row['notice'].'"></label><br>
                             <span class="subInfo">단기적으로 중요하거나, 알리고 싶은 이벤트가 있으시다면 입력해주세요.</span><br>
+                            <label>태그 설정<input type="text" name="tS" placeholder="60자 이내. 쉼표로 구분." value="'.$row['tagSet'].'"></label><br>
+                            <span class="subInfo">글 분류(말머리)입니다. 따로 설정하지 않아도 소유주 및 관리인은 "공지" 태그를 이용할 수 있습니다.</span><br>
                             <hr>
                             <label>보조 관리인<input type="text" name="k" placeholder="아이디를 쉼표로 구분" value="'.$row['keeper'].'"></label>
                             <span class="subInfo">게시글 블라인드 및 등급 조정, 공지 지정 권한을 가집니다.</span><br>
@@ -709,7 +713,7 @@ if(mysqli_num_rows($result) > 0){
                 case 'userInfo':
                     $uid = filt($_GET['u'], 'htm');
                     $unm = filt($_GET['u_name'], 'htm');
-                    if(empty($uid) or $uid == '0' && !empty($unm) or $unm == '0'){
+                    if(empty($uid) or $uid != '0' && !empty($unm) and $unm != '0'){
                         $sql = "SELECT `id` FROM `_account` WHERE `name` = '$unm'";
                         $result = mysqli_query($conn, $sql);
                         if(mysqli_num_rows($result) != 0){
@@ -797,7 +801,7 @@ if(mysqli_num_rows($result) > 0){
                         }
                     }
 
-                    if(!empty($_SESSION['fnUserId']) or $_SESSION['fnUserId'] == '0'){
+                    if(!empty($_SESSION['fnUserId']) and $_SESSION['fnUserId'] != '0'){
                         if($uid == $_SESSION['fnUserId']){
                             $sql = "SELECT * FROM `_userSet` WHERE `id` = '$uid'";
                             $result = mysqli_query($conn, $sql);
@@ -1101,7 +1105,7 @@ if(mysqli_num_rows($result) > 0){
                                     </thead>
                                     <tbody>';
                                     $in = $uS['subs'];
-                                    if(empty($in) or $in == '0'){
+                                    if(empty($in) and $in != '0'){
                                         echo '<tr><td></td><td>구독한 게시판이 없습니다.</td><td></td></tr>';
                                         echo '</tbody></table>';
                                     }else{
@@ -1122,7 +1126,7 @@ if(mysqli_num_rows($result) > 0){
                                             $sql = "SELECT `num` FROM `_content` WHERE `board` IN ($in_s) ORDER BY `at` DESC LIMIT 10";
                                         }
                                     }
-                                    if(empty($in) or $in == '0'){
+                                    if(empty($in) and $in != '0'){
                                         echo '<tr><td></td><td>구독한 게시판이 없습니다.</td><td></td></tr>';
                                     }else{
                                         if(count($in) == 1){
@@ -1213,7 +1217,7 @@ if(mysqli_num_rows($result) > 0){
                             &nbsp;<span class="subInfo">구독하신 게시판의 최신 글을 보여드립니다.</span><hr>
                                 <table class="list full">';
                                     $in = $uS['subs'];
-                                    if(empty($in) or $in == '0'){
+                                    if(empty($in) and $in != '0'){
                                         echo '<tr><td></td><td>구독한 게시판이 없습니다.</td><td></td></tr>';
                                     }else{
                                         $in = explode(',', $in);
@@ -1340,7 +1344,7 @@ if(mysqli_num_rows($result) > 0){
 
                 case 'emoji':
                     $id = $_SESSION['fnUserId'];
-                    if(empty($id) or $id == '0'){
+                    if(empty($id) and $id != '0'){
                         echo '</section></article></section><aside class="hidMob"></aside></div></body></html>';
                         die('<script>alert("로그인이 필요합니다.");history.back()</script>');
                     }
@@ -1370,7 +1374,7 @@ if(mysqli_num_rows($result) > 0){
                                                 <header>
                                                     <h4>'.$row['title'].'</h4> <h-d><br></h-d><span class="subInfo">'.$row['content'].'</span><br>
                                                     <span class="subInfo">';
-                                                    if(empty($row['id']) or $row['id'] == '0'){
+                                                    if(empty($row['id']) and $row['id'] != '0'){
                                                         echo '<a class="muted"><i class="icofont-user-suited"></i> ';
                                                     }else{
                                                         echo '<a class="muted" href="/u/'.$row['id'].'"><i class="icofont-user-alt-7"></i> ';
@@ -1427,7 +1431,7 @@ if(mysqli_num_rows($result) > 0){
                                         <a style="font-size:0.7em;float:right" href="https://fnbase.xyz/b%3Emaint%3E3518">등록하기</a>
                                     </header>
                                     <section>';
-                                    if(empty($id) or $id == '0'){
+                                    if(empty($id) and $id != '0'){
                                         die('<script>alert("로그인이 반드시 필요한 서비스입니다.");history.back()</script>');
                                     }
                                     $sql = "SELECT `fnbcon` FROM `_userSet` WHERE `id` = '$id'";
@@ -1452,7 +1456,7 @@ if(mysqli_num_rows($result) > 0){
                                                 <header>
                                                     <h4>'.$emCTxt.$row['title'].'</h4> <h-d><br></h-d><span class="subInfo">'.$row['content'].'</span><br>
                                                     <span class="subInfo">';
-                                                    if(empty($row['id']) or $row['id'] == '0'){
+                                                    if(empty($row['id']) and $row['id'] != '0'){
                                                         echo '<a class="muted"><i class="icofont-user-suited"></i> ';
                                                     }else{
                                                         echo '<a class="muted" href="/u/'.$row['id'].'"><i class="icofont-user-alt-7"></i> ';
@@ -1581,15 +1585,16 @@ if(mysqli_num_rows($result) > 0){
                         </section>
                         <footer>
                             <button class="button full" type="submit">3일간 등록</button>
-                            <span class="subInfo">등록시 <b>500포인트가 소모</b>되며, 100자 이내로 기재 바랍니다.<br>
-                            <b>일반 광고는 사이트 내부 사안 홍보, 좋아하는 가수 등 취미 공유만 가능합니다!</b><br>다른 광고는 <a href="/b>maint>4893">운영실</a>에 문의해주세요.</span>
+                            <span class="subInfo">등록시 <b>5000포인트가 소모</b>되며, 100자 이내로 기재 바랍니다.<br>
+                            <b>일반 광고는 사이트 내부 사안 홍보 목적으로만 가능합니다! 상업적으로 이용하거나 내용 없는 글을 작성하지 마세요.<br>
+                            광고는 일 3회만 등록 가능합니다. 다중 계정으로 등록할 경우 차단 대상입니다!</b></span>
                         </footer>
                     </form>
                     </article>';
                     include 'list.php';
                     break;
                 case 'mkBoard':
-                    if(empty($id) or $id == '0'){
+                    if(empty($id) and $id != '0'){
                         die('<script>alert("로그인이 반드시 필요한 서비스입니다.");history.back()</script>');
                     }
                     $lsPlus = '<article class="card">
@@ -1598,18 +1603,18 @@ if(mysqli_num_rows($result) > 0){
                     </header>
                     <form method="post" action="/php/mkBoard.php">
                         <section class="content">
-                            <label><input type="text" name="slug" placeholder="게시판 아이디" required></label>
+                            <label><input type="text" maxlength="50" name="slug" placeholder="게시판 아이디" required></label>
                             <span class="subInfo"><b>변경이 불가능합니다.</b> 영문 50글자 내로 겹치지 않게 적어주세요.</span><br>
                             <span class="subInfo"><b>예시)</b> maint</span><br>
-                            <label><input type="text" name="title" placeholder="게시판 이름" required></label>
+                            <label><input type="text" maxlength="50" name="title" placeholder="게시판 이름" required></label>
                             <span class="subInfo">변경이 어려우니 신중하게 적어주세요.</span><br>
                             <span class="subInfo"><b>예시)</b> 운영 게시판</span><br>
-                            <label><input type="text" name="nickTitle" placeholder="게시판 별명" required></label>
+                            <label><input type="text" maxlength="4" name="nickTitle" placeholder="게시판 별명" required></label>
                             <span class="subInfo">2~4글자 내로 적어주세요. 게시판의 별명입니다.</span><br>
                             <span class="subInfo"><b>예시)</b> 운영실</span><br>
-                            <label><input type="text" name="boardIntro" placeholder="게시판 설명" required></label>
+                            <label><input type="text" maxlength="50" name="boardIntro" placeholder="게시판 설명" required></label>
                             <span class="subInfo">필요한 내용만 간결하게 적어주세요.</span><br>
-                            <span class="subInfo">다른 기능이 필요하신가요? 개설 후 "채널 설정"을 이용해보세요.</span><br>
+                            <span class="subInfo">다른 기능이 필요하신가요? 개설 후 "환경 설정"을 이용해보세요.</span><br>
                         </section>
                         <footer>
                             <button class="button full" type="submit">게시판 개설</button>
@@ -1621,7 +1626,7 @@ if(mysqli_num_rows($result) > 0){
                     include 'list.php';
                     break;
                 case 'userDelete':
-                    if(empty($id) or $id == '0'){
+                    if(empty($id) and $id != '0'){
                         die('<script>alert("로그인이 반드시 필요한 서비스입니다.");history.back()</script>');
                     }
                     $lsPlus = '<article class="card">

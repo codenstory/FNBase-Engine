@@ -8,7 +8,7 @@
     $row = mysqli_fetch_assoc($result);
 
     if(mb_strpos($row['display_none'], $t) === FALSE){ #차단
-        if(empty($row['display_none'])){
+        if(empty($row['display_none']) and $row['display_none'] != '0'){
             $s = "'$t'";
         }else{
             $s = $row['display_none'].",'$t'";

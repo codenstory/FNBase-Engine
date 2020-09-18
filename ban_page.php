@@ -1,5 +1,5 @@
 <?php
-    if(empty($_POST['id'])){ //ip 기반
+    if(empty($_POST['id']) and $_POST['id'] != '0'){ //ip 기반
         require 'setting.php';
         $sql = "SELECT `isAdmin` FROM `_account` WHERE `id` = \"".$_SESSION['fnUserId'].'"';
         $result = mysqli_query($conn, $sql);

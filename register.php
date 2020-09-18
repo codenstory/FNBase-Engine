@@ -5,7 +5,7 @@
         </section>
         <section id="mainSec" class="half">
         <?php require_once 'alert.php'; ?>
-        <?php if(!empty($_SESSION['fnUserId']) or $_SESSION['fnUserId'] == '0'){ die('<script>alert("이미 로그인 되어있습니다!");history.back()</script>'); } ?>
+        <?php if(!empty($_SESSION['fnUserId']) and $_SESSION['fnUserId'] != '0'){ die('<script>alert("이미 로그인 되어있습니다!");history.back()</script>'); } ?>
             <div class="tabs two" style="text-align: center;">
                     <input id="tabC-1" type="radio" name="tabgroupC" checked />
                     <label class="pseudo button toggle" for="tabC-1">1</label> /

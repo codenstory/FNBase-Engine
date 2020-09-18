@@ -3,9 +3,9 @@
     include_once 'setting.php';
     include_once 'func.php';
 
-    $fnwTitle = filt($_GET['title'], 'htm');
+    $fnwTitle = filt(urldecode($_GET['title']), 'htm');
     require_once 'wiki_p.php';
-    if(empty($fnwTitle) or $fnwTitle == '0'){
+    if(empty($fnwTitle) and $fnwTitle != '0'){
         $fnwTitle = '대문';
     }
 

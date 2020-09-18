@@ -9,7 +9,7 @@ if($_SESSION['fnUserId']){
     exit;
 }
 
-if(empty($_POST['id']) or $_POST['id'] == '0'){
+if(empty($_POST['id']) and $_POST['id'] != '0'){
     echo '잘못된 접근';
     exit;
 }

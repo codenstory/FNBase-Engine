@@ -75,6 +75,9 @@ green {
 .little {
 	font-size: 0.7em;
 }
+.lite {
+	font-weight: 100;
+}
 
 a.black {
 	color: #000;
@@ -113,19 +116,6 @@ a.black {
 
 .list * tr:nth-child(odd) {
 	background-color: transparent
-}
-
-.list .infoList {
-	color: gray;
-	font-size: .9em;
-	font-weight: 100
-}
-.list .infoList green {
-	font-weight: 300;
-}
-
-.list .infoList a {
-	font-weight: 400
 }
 
 #advSec img {

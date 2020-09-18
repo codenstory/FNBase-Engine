@@ -18,7 +18,7 @@
         $sqlb = "UPDATE `_board` SET `subs` = `subs` - 1 WHERE `slug` = '$b'";
         $result = mysqli_query($conn, $sqlb);
     }else{ #구독하기
-        if(empty($row['subs']) or $row['subs'] == '0'){
+        if(empty($row['subs']) and $row['subs'] != '0'){
             $s = $b;
         }else{
             $s = $row['subs'].','.$b;

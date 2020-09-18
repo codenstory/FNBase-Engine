@@ -56,7 +56,7 @@ switch($mode){
             die('해당 게시글이 존재하지 않습니다.');
         }else{
             $row = mysqli_fetch_assoc($result);
-            if($row['board'] == 'quiz'){
+            if($row['board'] == 'quiz' && $type == 'COMMON_CMT'){
                 $sql = "SELECT `value`,`reason`,`id` FROM `_othFunc` WHERE `type` LIKE 'QUIZ_QUEST' AND `target` LIKE '$n' AND `isSuccess` = 0";
                 $result = mysqli_query($conn, $sql);
                 if(mysqli_num_rows($result) == 1){
@@ -70,6 +70,8 @@ switch($mode){
                             }
                             $c = '<span class="label success">정답</span> '.$c;
                             $sql = "UPDATE `_othFunc` SET `isSuccess` = 1 WHERE `type` = 'QUIZ_QUEST' and `target` = '$n';";
+                            $result = mysqli_query($conn, $sql);
+                            $sql = "UPDATE `_content` SET `category` = '완료' WHERE `category` = '진행' and `num` = '$n';";
                             $result = mysqli_query($conn, $sql);
                             $sql = "INSERT INTO `_ment` (`id`, `name`, `type`, `value`, `target`, `cmt_id`, `reason`, `ip`, `isSuccess`)
                             VALUES ('$id', '$name', 'QUIZ_ANSWR', 'b/quiz/$n', '".$row['id']."', '',  '퀴즈 정답', '$ip', '0')";
@@ -114,7 +116,7 @@ switch($mode){
         if(!$result){
             die($sql);
         }
-        $sql = "UPDATE `_content` SET `commentCount` = `commentCount` + 1 WHERE `num` = $n ";
+        $sql = "UPDATE `_content` SET `commentCount` = `commentCount` + 1 , `actmeter` = NOW() WHERE `num` = $n ";
         $result = mysqli_query($conn, $sql);
 
         $sql = "UPDATE `_account` SET `point` = `point` + 5 WHERE `id` = '$id';";
@@ -214,6 +216,9 @@ switch($mode){
             }
         }
 
+        $sql = "UPDATE `_content` SET `actmeter` = NOW() WHERE `num` = $n ";
+        $result = mysqli_query($conn, $sql);
+
         $sql = "UPDATE `_comment` SET `content` = '$r', `isEdited` = '$now', `whoEdited` = '$name' WHERE `num` = $n and
         `type` in ('COMMON_CMT','COMMON_REP') and `id` = \"".$_SESSION['fnUserId'].'"';
         $result = mysqli_query($conn, $sql);
@@ -242,7 +247,7 @@ switch($mode){
         }
         break;
     case 'reply': #답글 작성
-        if(empty($r) or $r == '0'){
+        if(empty($r) and $r != '0'){
             die('<script>alert("내용이 비어있습니다.");history.back()</script>');
         }elseif(strlen($r) > 1000){
             die('<script>alert("내용이 1000자를 초과했습니다.");history.back()</script>');
@@ -293,7 +298,7 @@ switch($mode){
         if(!$result){
             die($sql);
         }
-        $sql = "UPDATE `_content` SET `commentCount` = `commentCount` + 1 WHERE `num` = $n ";
+        $sql = "UPDATE `_content` SET `commentCount` = `commentCount` + 1 , `actmeter` = NOW() WHERE `num` = $n ";
         $result = mysqli_query($conn, $sql);
 
         $sql = "UPDATE `_account` SET `point` = `point` + 3 WHERE `id` = '$id';";
@@ -374,7 +379,7 @@ switch($mode){
 
         $sql = "SELECT * FROM `_comment` WHERE `type` in ('COMMON_CMT', 'FNBCON_CMT') and `from` = '$pgNum'";
         $cmtResult = mysqli_query($conn, $sql);
-            if(empty($_SESSION['fnUserId']) or $_SESSION['fnUserId'] == '0'){
+            if(empty($_SESSION['fnUserId']) and $_SESSION['fnUserId'] != '0'){
                 echo '
                 <section class="muted" style="padding:8px;font-size:0.9em">
                     댓글 열람을 위해서는 <a href="/login"><i class="icofont-sign-in"></i> 로그인</a>이 필요합니다.

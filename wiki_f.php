@@ -2,13 +2,13 @@
     $fnMultiNum = 2;
     include_once 'setting.php';
     include_once 'func.php';
-    $fnwTitle = filt($_GET['title'], 'htm');
+    $fnwTitle = filt(urldecode($_GET['title']), 'htm');
     include_once 'wiki_p.php';
-    if(empty($fnwTitle) or $fnwTitle == '0'){
+    if(empty($fnwTitle) and $fnwTitle != '0'){
         die('제목이 비어있습니다.');
     }
 
-    if(empty($id) or $id == '0'){
+    if(empty($id) and $id != '0'){
         if(strstr($ip, ':')){
             die('ipv6 대역은 익명 작성이 불가능합니다.');
         }

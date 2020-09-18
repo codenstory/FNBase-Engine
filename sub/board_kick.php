@@ -34,7 +34,7 @@ $board = $board['slug'];
             $s = "SELECT `name` FROM `_account` WHERE `id` = '".$row['target']."'";
             $res = mysqli_query($conn, $s);
             $r = mysqli_fetch_assoc($res);
-            if(empty($r['name']) or $r['name'] == '0'){
+            if(empty($r['name']) and $r['name'] != '0'){
                 break;
             }
             echo '<tr>

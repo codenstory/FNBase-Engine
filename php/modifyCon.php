@@ -12,6 +12,13 @@
     $name = $_SESSION['fnUserName'];
     $ip = get_client_ip();
 
+    if($n){
+        $sql = "SELECT `board` FROM `_content` WHERE `num` = '$n'";
+        $result = mysqli_query($conn, $sql);
+        $row = mysqli_fetch_assoc($result);
+        $b = $row['board'];
+    }
+
     //관리자 권한 확인
     $sql = "SELECT `isAdmin` FROM `_account` WHERE `id` = '$id'";
     $result = mysqli_query($conn, $sql);
@@ -86,14 +93,14 @@
                 $result = mysqli_query($conn, $sql_);
         }
     }elseif($_GET['mode'] == 'K'){ #사용자 차단
-        if(empty($kt) or $kt == '0'){
+        if(empty($kt) and $kt != '0'){
             die('시간 값 없음');
         }
         $sql = "SELECT `kicked` FROM `_board` WHERE `slug` = '$b'";
         $result = mysqli_query($conn, $sql);
         $row = mysqli_fetch_assoc($result);
         if(mb_strpos($row['kicked'], $i) === FALSE){ #추방
-            if(empty($row['kicked']) or $row['kicked'] == '0'){
+            if(empty($row['kicked']) and $row['kicked'] != '0'){
                 $s = $i;
             }else{
                 $s = $row['kicked'].','.$i;

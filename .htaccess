@@ -75,6 +75,7 @@ RewriteRule ^w/$ ./wiki.php [L]
 RewriteRule ^w/(.*)$ ./wiki.php?title=$1 [L]
 
 RewriteRule ^w_([1-9][0-9]*)_([a-z])p/(.*)$ ./wiki.php?title=$3&$2p=$1 [L]
+RewriteRule ^w_history/([1-9][0-9]*)/(.*)$ ./wiki_h.php?title=$2&p=$1 [L]
 
 RewriteRule ^d$ ./wiki.php?on=discuss [L]
 RewriteRule ^d/$ ./wiki.php?on=discuss [L]

@@ -40,12 +40,18 @@ if($_GET['yes'] == 'please'){ #에디터 변경
 
 if($_GET['e'] == 'dlt'){
     sleep(1);
-}elseif(empty($id) or $id == '0'){
+}elseif(empty($id) and $id != '0'){
     die('<script>alert("로그인이 필요합니다.");location.href="/register"</script>');
-}elseif(empty($title) or $title == '0'){
+}elseif(empty($title) and $title != '0'){
     $title = '<red>(제목 없음)</red>';
-}elseif(empty($desc) or $desc == '0'){
+}elseif(empty($desc) and $desc != '0'){
     die('<script>alert("내용이 비어있습니다.");history.back()</script>');
+}
+
+#약식 등급 심의
+$pattern = '/(((시|씨|쉬|ㅅ)[0-9]*(발|빨|펄|빨|ㅂ))|((지|쥐|ㅈ)[0-9]*(랄|럴|롤|ㄹ))|((미|ㅁ)[0-9]*(친|쳣|쳤|ㅊ))|한(녀|남)|운지|우흥|재기해|냄져|자살|담배|찐(내|따|빠)|(봊|쥬|뷰)(지|이)|(보|자)지|씹|(수|화|면|강)간|히토미|야동|(겠|맞|렸|아니)노|좆|썅|니미|느금|느개비)/mi';
+if(preg_match($pattern, $title.' '.$desc)){
+    $rate = 'R';
 }
 
 if(preg_match('/(discord\.gg|open\.kakao\.com)/m', $desc)){
@@ -59,10 +65,37 @@ if(preg_match('/(discord\.gg|open\.kakao\.com)/m', $desc)){
 }
 
 $s = $sO;
-if(empty($sO) or $sO == '0'){
+if(empty($sO) and $sO != '0'){
     $sO = 'NULL';
 }else{
     $sOq = "'";
+}
+
+if($cat == '공지'){
+    $sql = "SELECT `id`, `keeper` FROM `_board` WHERE `slug` like '$b'";
+    $result = mysqli_query($conn, $sql);
+    $row = mysqli_fetch_assoc($result);
+
+    if(strcasecmp($row['id'], $id) !== 0){
+        if(mb_strpos($row['keeper'], $id) === FALSE){
+            $sql = "SELECT `isAdmin` FROM `_account` WHERE `id` = '$id'";
+            $result = mysqli_query($conn, $sql);
+            $row = mysqli_fetch_assoc($result);
+            if(!$row['isAdmin']){
+                $cat = '기본';
+            }
+        }
+    }
+}else{
+    $sql = "SELECT `tagSet` as `t` FROM `_board` WHERE `slug` like '$b'";
+    $result = mysqli_query($conn, $sql);
+    $row = mysqli_fetch_assoc($result);
+
+    if(mb_strpos($row['t'], $cat) === FALSE){
+        if(!$row['isAdmin']){
+            $cat = '기본';
+        }
+    }
 }
 
 $ip = get_client_ip();
@@ -104,7 +137,7 @@ if($_GET['e'] == 'dit'){ #수정
     }
 
     $sql = "UPDATE `_content` SET `type` = 'COMMON', `title` = '$title', `content` = '$desc',
-    `category` = '$cat', `rate` = '$rate', `isMarkdown` = '$im', `staffOnly` =  $sOq$sO$sOq, `isEdited` = '$now', `whoEdited` = '$name', `isMedia` = $isMedia WHERE `num` = '$n';";
+    `category` = '$cat', `rate` = '$rate', `isMarkdown` = '$im', `staffOnly` =  $sOq$sO$sOq, `isEdited` = '$now', `whoEdited` = '$name', `isMedia` = $isMedia, `actmeter` = NOW() WHERE `num` = '$n';";
 
     $result = mysqli_query($conn, $sql);
     if(!$result){
@@ -197,14 +230,14 @@ if($_GET['e'] == 'dit'){ #수정
         }else{
             $ha = 1;
         }
-        if(empty($_POST['homepage']) or $_POST['homepage'] == '0'){
+        if(empty($_POST['homepage']) and $_POST['homepage'] != '0'){
             $hp = 'recent';
         }else{
             $hp = filt($_POST['homepage'], 'abc');
         }
         $sql = "UPDATE `_account` SET";
         $sql .= " `name` = '$title',";
-                if(!empty($_POST['password_old']) or $_POST['password_old'] == '0'){
+                if(!empty($_POST['password_old']) and $_POST['password_old'] != '0'){
                     $sql_ = "SELECT `password` FROM `_account` WHERE `id` = \"".$_SESSION['fnUserId'].'"';
                     $result = mysqli_query($conn, $sql_);
                     $r = mysqli_fetch_assoc($result);
@@ -274,6 +307,27 @@ if($_GET['e'] == 'dit'){ #수정
         $isMedia = 'NULL';
     }
 
+    if($b == 'quiz'){
+        $ans = filt($_POST['answer'], 'htm');
+        $prz = filt($_POST['prize'], '123');
+        if(strlen($ans) > 20){
+            $ans = mb_substr($ans, 0, 20);
+        }
+        if($prz > 100000){
+            $prz = 100000;
+        }elseif($prz < 300){
+            $prz = 300;
+        }
+        $sql = "SELECT `point` FROM `_account` WHERE `id` = '$id'";
+        $result = mysqli_query($conn, $sql);
+        $r = mysqli_fetch_assoc($result);
+        if($r['point'] > $prz){
+            $cat = '진행';
+        }else{
+            $cat = '제외';
+        }
+    }
+
     //글 저장
     $sql = "INSERT INTO `_content` (`id`, `name`, `type`, `at`, `mail`,
     `title`, `content`, `board`, `boardName`, `category`, `rate`, `staffOnly`,
@@ -328,21 +382,8 @@ if($_GET['e'] == 'dit'){ #수정
         }
 
         if($b == 'quiz'){
-            $ans = filt($_POST['answer'], 'htm');
-            $prz = filt($_POST['prize'], '123');
-            if(strlen($ans) > 20){
-                $ans = mb_substr($ans, 0, 20);
-            }
-            if($prz > 100000){
-                $prz = 100000;
-            }elseif($prz < 300){
-                $prz = 300;
-            }
-            $sql = "SELECT `point` FROM `_account` WHERE `id` = '$id'";
-            $result = mysqli_query($conn, $sql);
-            $r = mysqli_fetch_assoc($result);
             if($r['point'] > $prz){
-                if(!empty($ans) or $ans == '0' or $ans == '0'){
+                if(!empty($ans) and $ans != '0'){
                     $sql = "INSERT INTO `_othFunc` (`id`, `name`, `type`, `at`, `value`, `target`, `reason`, `isSuccess`)
                     VALUES ('$id', '$name', 'QUIZ_QUEST', '$now', '$ans', '$n', '$prz', '0')";
                     $result = mysqli_query($conn, $sql);
@@ -358,13 +399,6 @@ if($_GET['e'] == 'dit'){ #수정
             $result = mysqli_query($conn, $sql);
         }elseif($boardType['rct'] == 0){
             $sql = "UPDATE `_content` SET `hideMain` = 1 WHERE `num` = '$n'";
-            $result = mysqli_query($conn, $sql);
-        }
-
-
-        $pattern = '/(((시|씨|쉬|ㅅ)[0-9]*(발|빨|펄|빨|ㅂ))|((지|쥐|ㅈ)[0-9]*(랄|럴|롤|ㄹ))|((미|ㅁ)[0-9]*(친|쳣|쳤|ㅊ))|한(녀|남)|운지|우흥|재기해|냄져|자살|담배|찐(내|따|빠)|(봊|쥬|뷰)(지|이)|(보|자)지|씹|(수|화|면|강)간|히토미|야동|(겠|맞|렸|아니)노|좆|썅|니미|느금|느개비)/mi';
-        if(preg_match($pattern, $title.$desc)){
-            $sql = "UPDATE `_content` SET `rate` = 'R' WHERE `num` = '$n'";
             $result = mysqli_query($conn, $sql);
         }
 

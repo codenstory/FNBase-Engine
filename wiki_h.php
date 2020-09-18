@@ -2,7 +2,7 @@
     $fnMultiNum = 2;
     include_once 'setting.php';
     include_once 'func.php';
-    $fnwTitle = filt($_GET['title'], 'htm');
+    $fnwTitle = filt(urldecode($_GET['title']), 'htm');
     include_once 'wiki_p.php';
 
     $fnwTitle = documentRender($fnwTitle, TRUE);
@@ -16,7 +16,7 @@
 
 if($_GET['mode'] == 'view'){
     $num = filt($_GET['num'], 'htm');
-    if(empty($num) or $num == '0'){
+    if(empty($num) and $num != '0'){
         die('번호가 비어있습니다.');
     }
 
@@ -34,7 +34,7 @@ if($_GET['mode'] == 'view'){
     echo preg_replace('/<br( \/)*>\n<hr>/m', '<hr>', preg_replace('/(src="|<hr>)(.*)<br( \/)*>/m', '$1$2', preg_replace('/<\/h(\d)><br \/>/m', '</h$1>', $content)));
 }elseif($_GET['mode'] == 'raw'){
     $num = filt($_GET['num'], 'htm');
-    if(empty($num) or $num == '0'){
+    if(empty($num) and $num != '0'){
         die('번호가 비어있습니다.');
     }
 
@@ -42,9 +42,49 @@ if($_GET['mode'] == 'view'){
     $result = mysqli_query($conn, $sql);
     $row = mysqli_fetch_assoc($result);
 
-    echo nl2br($row['rev']);  
+    echo nl2br(htmlspecialchars($row['rev']));  
+}elseif($_GET['mode'] == 'diff'){
+    $num = filt($_GET['num'], 'htm');
+    if(empty($num) and $num != '0'){
+        die('번호가 비어있습니다.');
+    }
+
+    $sql = "SELECT `rev` FROM `_history` WHERE `num` = '$num'";
+    $result = mysqli_query($conn, $sql);
+    $row = mysqli_fetch_assoc($result);
+
+    echo '<link rel="stylesheet" type="text/css" href="/editor/jsdifflib/diffview.css"/>
+	<script type="text/javascript" src="/editor/jsdifflib/diffview.js"></script>
+    <script type="text/javascript" src="/editor/jsdifflib/difflib.js"></script>
+    <script type="text/javascript">
+        function diffUsingJS(viewType) {
+            var byId = function (id) { return document.getElementById(id); },
+                base = difflib.stringAsLines(byId("baseText").value),
+                newtxt = difflib.stringAsLines(byId("newText").value),
+                sm = new difflib.SequenceMatcher(base, newtxt),
+                opcodes = sm.get_opcodes(),
+                diffoutputdiv = byId("diffoutput"),
+                contextSize = byId("contextSize").value;
+
+            diffoutputdiv.innerHTML = "";
+            contextSize = contextSize || null;
+
+            diffoutputdiv.appendChild(diffview.buildView({
+                baseTextLines: base,
+                newTextLines: newtxt,
+                opcodes: opcodes,
+                baseTextName: "Base Text",
+                newTextName: "New Text",
+                contextSize: contextSize,
+                viewType: viewType
+            }));
+        }
+    </script>';
+    echo nl2br('<span id="baseText">'.$row['rev'].'</span>');
+    echo nl2br('<span id="newText">'.$row['rev'].'</span>');
+    echo '<div id="diffoutput"> </div>';
 }else{
-    if(empty($fnwTitle) or $fnwTitle == '0'){
+    if(empty($fnwTitle) and $fnwTitle != '0'){
         die('제목이 비어있습니다.');
     }
 
@@ -54,8 +94,22 @@ if($_GET['mode'] == 'view'){
     $i = 1;
     $c = $row['cnt'];
 
-    $sql = "SELECT * FROM `_history` WHERE `title` = '$fnwTitle' ORDER BY `num` DESC LIMIT 31";
+    $l = filt($_GET['p'], '123');
+    if($l){
+        $l = $l * 30;
+        $lc = $l - 30;
+        $c -= $lc;
+        $l = $lc.', 31';
+    }else{
+        $l = '31';
+    }
+
+    $sql = "SELECT * FROM `_history` WHERE `title` = '$fnwTitle' ORDER BY `num` DESC LIMIT $l";
     $result = mysqli_query($conn, $sql);
+
+    if(mysqli_num_rows($result) < 1){
+        exit;
+    }
 
     echo '<table class="full"><tbody>';
     while($row = mysqli_fetch_assoc($result)){

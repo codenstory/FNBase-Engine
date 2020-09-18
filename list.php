@@ -21,6 +21,7 @@
     $boardNick = $lsBoard['nickTitle'];
     $boardIntro = $lsBoard['boardIntro'];
     $subs = $lsBoard['subs'];
+    $tags = $lsBoard['tagSet'];
     $kpr = $lsBoard['keeper'];
     $kcd = $lsBoard['kicked'];
     $relate = $lsBoard['related'];
@@ -32,15 +33,15 @@
 
     echo '<script>document.title = "'.$lsBoard['title'].'";isTitCh = true</script>'; #제목 변경
 
-    if($_SESSION['fnUserId'] === $ownerId){ #채널 설정 권한 여부
-        $lsTemp = '<a class="button error" href="/b>'.$board.'>maint"><i class="icofont-settings"></i><h-m> 채널 설정</h-m></a>&nbsp;';
+    if($_SESSION['fnUserId'] === $ownerId){ #환경 설정 권한 여부
+        $lsTemp = '<a class="button error" href="/b>'.$board.'>maint"><i class="icofont-settings"></i><h-m> 환경 설정</h-m></a>&nbsp;';
         $isOwner = TRUE;
         $isStaff = TRUE;
     }elseif(mb_strpos($kpr, $_SESSION['fnUserId']) !== FALSE){
         $isStaff = TRUE;
     }
 
-    if(!empty($lsBoard['icon']) or $lsBoard['icon'] == '0'){
+    if(!empty($lsBoard['icon']) and $lsBoard['icon'] != '0'){
         $boardIcon = '<i class="icofont-'.$lsBoard['icon'].'"></i> ';
     }
 
@@ -80,19 +81,19 @@
             break;
     }
 
-    if(!empty($uS['display_none'])){
+    if(!empty($uS['display_none']) and $uS['display_none'] != '0'){
         $sad = "and `id` NOT IN (".$uS['display_none'].")";
     }else{
         $sad = NULL;
     }
 
-    if(!empty($uS['listNum'])){ #1페이지에 표시될 글 수
+    if(!empty($uS['listNum']) and $uS['listNum'] != '0'){ #1페이지에 표시될 글 수
         $lsPgN = $uS['listNum'];
     }else{
         $lsPgN = 15;
     }
 
-    if(empty($_GET['p']) or $_GET['p'] == '0'){
+    if(empty($_GET['p']) and $_GET['p'] != '0'){
         $limit = '0, '.$lsPgN;
         $lsPg = 1;
     }else{
@@ -122,7 +123,10 @@
             case 'whole':
                 $sql = "SELECT * FROM `_content` WHERE `type` IN ('COMMON', 'ANON_WRITE') and `board` NOT IN ('trash') $sad ORDER BY `num` DESC LIMIT $limit";
                 break;
-
+            case 'fresh':
+                $sql = "SELECT * FROM `_content` WHERE `actmeter` not like `at` and `actmeter` is not null ORDER BY `actmeter` DESC LIMIT $limit";
+                break;
+            
             default:
                 $sql = "SELECT * FROM `_content` WHERE `hideMain` IS NULL and `board` NOT IN $notin $sad ORDER BY `num` DESC LIMIT $limit";
                 break;
@@ -143,20 +147,20 @@
     }
 
     //검색
-    if(!empty($_GET['q']) or $_GET['q'] == '0'){
+    if(!empty($_GET['q']) and $_GET['q'] != '0'){
         $qS = filt($_GET['q'], 'oth');
         $qM = filt($_GET['qm'], 'oth');
         $qP = filt($_GET['qp'], 'oth');
         $qR = filt($_GET['qr'], 'oth');
 
-        if(empty($qP) or $qP == '0'){
+        if(empty($qP) and $qP != '0'){
             $qP = 1;
         }
         $l = $qP * 10;
         $lc = $l - 10;
         $l = $lc.', 10';
 
-        if(empty($qR) or $qR == '0'){
+        if(empty($qR) and $qR != '0'){
             $ps = '%';
         }else{
             $ps = '';
@@ -238,7 +242,7 @@
                         $lsSearch .= '<td class="hidMob muted">'.$row['category'].'</td>';
                         $lsSearch .= '<td class="black"><a href="/b/'.$row['board'].'/'.$row['num'].'-'.$lsPg.'">'.textalter($row['title'], 3).'</a>
                         <green class="little">['.$row['commentCount'].']</green>';
-                        if(!empty($row['staffOnly']) or $row['staffOnly'] == '0'){
+                        if(!empty($row['staffOnly']) and $row['staffOnly'] != '0'){
                             $lsSearch .= '<i class="icofont-lock"></i>';
                         }
                         $lsSearch .= '</td>';
@@ -255,7 +259,7 @@
                         $lsSearch .= '<td class="hidMob muted">'.$row['category'].'</td>';
                         $lsSearch .= '<td class="black"><a href="/b/'.$row['board'].'/'.$row['num'].'-'.$lsPg.'#cmt-'.$row['cn'].'">'.textalter($row['title'], 3).'</a>
                         <green class="little">['.$row['commentCount'].']</green>';
-                        if(!empty($row['staffOnly']) or $row['staffOnly'] == '0'){
+                        if(!empty($row['staffOnly']) and $row['staffOnly'] != '0'){
                             $lsSearch .= '<i class="icofont-lock"></i>';
                         }
                         if(strlen($row['cc']) > 50){
@@ -376,21 +380,16 @@
                                     $dt = "<option value=\"$dt\" selected>$dt</option>";
                                 }
                                     echo '<select name="category" id="catSel" class="pcwidth">
-                                        '.$dt.'
-                                        <option value="기본">기본</option>
-                                        <option value="잡담">잡담</option>
-                                        <option value="설명">설명</option>';
-                                        if($isOwner){
+                                        '.$dt;
+                                        $tagArr = array_map('trim', explode(',', $tags));
+                                        foreach($tagArr as $arr){
+                                            echo '<option value="'.$arr.'">'.$arr.'</option>';
+                                        }
+                                        if($isStaff){
                                         echo '<option value="공지">공지</option>';
                                         }
-                                        if($isAdmin){
-                                        echo '<option value="보고">보고</option>';
-                                        }
-                                        echo '<option value="주장">주장</option>
-                                        <option value="참여">참여</option>
-                                        <option value="조사">조사</option>
-                                    </select>';
-                                echo '</label><br><hr>
+                                    echo '</select>
+                                </label><br><hr>
                                 <label>등급 심의
                                     <select name="rate" id="ratSel" class="pcwidth">
                                         <option value="G">전 연령에 적합</option>
@@ -552,9 +551,9 @@
                     exit;
                 }
             }
-            if(!empty($lsPlus) or $lsPlus == '0'){
+            if(!empty($lsPlus) and $lsPlus != '0'){
                 echo $lsPlus;
-            }elseif(!empty($lsSearch) or $lsSearch == '0'){
+            }elseif(!empty($lsSearch) and $lsSearch != '0'){
                 echo $lsSearch;
             }
             if($lsShowPg){
@@ -566,13 +565,12 @@
                 $isQuiz = TRUE;
             }
             if(!$isEmpty){
-                    if($boardType !== 'AUTO_GENER'){ #개별 게시판
+                    if($board){ #개별 게시판
                         echo '<table class="list full">
                         <thead>
                             <tr>
-                                <th width="10%" class="hidMob">&nbsp;종류</th>
-                                <th width="50%">&nbsp;제목</th>
-                                <th width="40%">&nbsp;정보</th>
+                                <th width="80%">제목/정보</th>
+                                <th width="20%"><span class="right">태그</span></th>
                             </tr>
                         </thead>
                         <tbody>';
@@ -585,7 +583,12 @@
                             while($row = mysqli_fetch_assoc($result)){
 
                                 if($row['type'] == 'COMMON'){
-                                    $pgUser = '<i class="icofont-user-alt-7"></i> <a class="muted" href="/u/'.$row['id'].'_'.$board.'">'.$row['name'].'</a>';
+                                    if(mb_strpos($kpr.','.$ownerId, $row['id']) !== FALSE){
+                                        $u = 'suited';
+                                    }else{
+                                        $u = 'alt-7';
+                                    }
+                                    $pgUser = '<i class="icofont-user-'.$u.'"></i> <a class="muted" href="/u/'.$row['id'].'_'.$board.'">'.$row['name'].'</a>';
                                 }elseif($isAdmin){
                                     $pgUser = '<i class="icofont-invisible"></i> <a class="muted" href="/misc>manageCenter>'.$row['ip'].'">'.$row['name'].'</a>';
                                 }else{
@@ -606,10 +609,14 @@
                                     }
                                 }
                                 echo '<tr>';
-                                echo '<td class="hidMob"><b>공지</b></td>';
-                                echo '<td class="black noGray"><b><a href="/b/'.$row['board'].'/'.$row['num'].'">'.textalter(textalter($row['title'], 3), 3).'</a></b>
-                                <green class="little">['.$row['commentCount'].']</green>'.$media;
-                                if(!empty($row['staffOnly']) or $row['staffOnly'] == '0'){
+                                if($row['rate'] == 'R' && $board == 'recent'){
+                                    echo '<td><a class="subInfo" href="/b/'.$board.'/'.$row['num'].'-'.$lsPg.'">15세 관람가 게시물입니다.
+                                    <green class="little">['.$row['commentCount'].']</green></a>';
+                                }else{
+                                    echo '<td class="black noGray"><b><a href="/b/'.$board.'/'.$row['num'].'">'.textalter($row['title'], 3).'</a></b>
+                                    <green class="little">['.$row['commentCount'].']</green>'.$media;
+                                }
+                                if(!empty($row['staffOnly']) and $row['staffOnly'] != '0'){
                                     if(preg_match('/(^|,)'.$name.'($|,)/', $row['staffOnly'])){
                                         $isOpen = TRUE;
                                     }elseif($row['id'] == $id){
@@ -624,9 +631,10 @@
                                     }
                                     $isOpen = FALSE;
                                 }
+                                echo '<br><span class="little">'.$pgUser.'
+                                <i class="icofont-clock-time"></i> '.$time.' <blue>('.$row['viewCount'].')</blue></span></td>';
                                 echo '</td>';
-                                echo '<td class="infoList"> '.$pgUser.'<h-d><br></h-d>';
-                                echo ' <i class="icofont-clock-time"></i> '.$time.' <span class="little"><green>('.$row['viewCount'].')</green></span></td>';
+                                echo '<td><b class="little right">공지</b></td>';
                                 echo '</tr>';
                                 $pgUser = NULL;
                             }
@@ -658,7 +666,12 @@
                             }
 
                             if($row['type'] == 'COMMON'){
-                                $pgUser = '<i class="icofont-user-alt-7"></i> <a class="muted" href="/u/'.$row['id'].'_'.$board.'">'.$row['name'].'</a>';
+                                if($_SESSION['fnUserId'] === $row['id'] or mb_strpos($kpr, $row['id']) !== FALSE){
+                                    $u = 'suited';
+                                }else{
+                                    $u = 'alt-7';
+                                }
+                                $pgUser = '<i class="icofont-user-'.$u.'"></i> <a class="muted" href="/u/'.$row['id'].'_'.$board.'">'.$row['name'].'</a>';
                             }elseif($isAdmin){
                                 $pgUser = '<i class="icofont-invisible"></i> <a class="muted" href="/misc>manageCenter>'.$row['ip'].'">'.$row['name'].'</a>';
                             }else{
@@ -668,10 +681,14 @@
                             }
 
                             echo '<tr>';
-                            echo '<td class="hidMob muted">'.$row['category'].'</td>';
-                            echo '<td class="black"><a href="/b/'.$row['board'].'/'.$row['num'].'-'.$lsPg.'">'.textalter($row['title'], 3).$QLabel.'
-                            <green class="little">['.$row['commentCount'].']</green></a>'.$media;
-                            if(!empty($row['staffOnly']) or $row['staffOnly'] == '0'){
+                            if($row['rate'] == 'R' && $board == 'recent'){
+                                echo '<td><a class="subInfo" href="/b/'.$board.'/'.$row['num'].'-'.$lsPg.'">15세 관람가 게시물입니다.
+                                <green class="little">['.$row['commentCount'].']</green></a>';
+                            }else{
+                                echo '<td class="black"><a href="/b/'.$board.'/'.$row['num'].'-'.$lsPg.'">'.textalter($row['title'], 3).$QLabel.'
+                                <green class="little">['.$row['commentCount'].']</green></a>'.$media;
+                            }
+                            if(!empty($row['staffOnly']) and $row['staffOnly'] != '0'){
                                 if(preg_match('/(^|,)'.$name.'($|,)/', $row['staffOnly'])){
                                     $isOpen = TRUE;
                                 }elseif($row['id'] == $id){
@@ -686,79 +703,16 @@
                                 }
                                 $isOpen = FALSE;
                             }
-                            echo '</td>';
-                            echo '<td class="infoList"> '.$pgUser.'<h-d><br></h-d>';
-                            echo ' <i class="icofont-clock-time"></i> '.$time.' <span class="little" style="font-weight: normal;"><green>('.$row['viewCount'].')</green></span></td>';
-                            echo '</tr>';
+                            echo '<br><span class="little lite">'.$pgUser.'
+                            <i class="icofont-clock-time"></i> '.$time.' <blue>('.$row['viewCount'].')</blue></span></td>';
+                            if(!$isAG){
+                                echo '<td class="black"><a href="/b/'.$row['board'].'/tags_'.$row['category'].'" class="little right">'.$row['category'].'</a></td>';
+                            }else{
+                                echo '<td class="black"><a href="/b/'.$row['board'].'" class="little right">'.$row['boardName'].'</a></td>';
+                            }echo '</tr>';
                             $pgUser = NULL;
                         }
 
-                    }else{ #종합 글 목록
-                        echo '<table class="list full">
-                        <thead>
-                            <tr>
-                                <th width="15%" class="hidMob">&nbsp;출처</th>
-                                <th width="47%">&nbsp;제목</th>
-                                <th width="36%">&nbsp;정보</th>
-                            </tr>
-                        </thead>
-                        <tbody>';
-
-                        include 'siteNotice.php';
-
-                        while($row = mysqli_fetch_assoc($listResult)){ #일반 글 조회
-                            $time = get_timeFlies($row['at']);
-                            $media = NULL;
-                            if($row['isMedia'] !== NULL){
-                                if($row['isMedia'] == 2){
-                                    $media = ' <blue><i class="icofont-ui-video-play "></i></blue>';
-                                }elseif($row['isMedia'] == 3){
-                                    $media = ' <red><i class="icofont-youtube-play"></i></red>';
-                                }else{
-                                    $media = ' <blue><i class="icofont-image"></i></blue>';
-                                }
-                            }
-                            
-                            if($row['type'] == 'COMMON'){
-                                $pgUser = '<i class="icofont-user-alt-7"></i> <a class="muted" href="/u/'.$row['id'].'_'.$board.'">'.$row['name'].'</a>';
-                            }elseif($isAdmin){
-                                $pgUser = '<i class="icofont-invisible"></i> <a class="muted" href="/misc>manageCenter>'.$row['ip'].'">'.$row['name'].'</a>';
-                            }else{
-                                $ip_s = preg_replace('/([0-9]+\.[0-9]+)\.[0-9]+\.[0-9]+/i', '$1', $row['ip']);
-                                $pgUser = '<a class="muted tooltip-bottom" data-tooltip="\''.$ip_s.'\' 가입하지 않은 사용자입니다."><i class="icofont-invisible"></i>
-                                '.$row['name'].'</a>';
-                            }
-
-                            echo '<tr>';
-                            echo '<td class="hidMob black"><a href="/b/'.$row['board'].'">'.$row['boardName'].'</a></td>';
-                            if($row['rate'] == 'R' && $board == 'recent'){
-                                echo '<td><a class="subInfo" href="/b/'.$board.'/'.$row['num'].'-'.$lsPg.'">15세 관람가 게시물입니다.
-                                <green class="little">['.$row['commentCount'].']</green></a>';
-                            }else{
-                                echo '<td class="black"><a href="/b/'.$board.'/'.$row['num'].'-'.$lsPg.'">'.textalter($row['title'], 3).'
-                                <green class="little">['.$row['commentCount'].']</green></a>'.$media;
-                            }
-                                if(!empty($row['staffOnly']) or $row['staffOnly'] == '0'){
-                                    if(preg_match('/(^|,)'.$name.'($|,)/', $row['staffOnly'])){
-                                        $isOpen = TRUE;
-                                    }elseif($row['id'] == $id){
-                                        $isOpen = TRUE;
-                                    }
-                                    if($isOpen){
-                                        echo '<i class="icofont-unlock"></i>';
-                                    }elseif($row['board'] !== 'mafia'){
-                                        echo '<span class="tooltip-top" data-tooltip="'.$row['staffOnly'].'"><i class="icofont-lock"></i></span>';
-                                    }else{
-                                        echo '<span class="tooltip-top" data-tooltip="마피아 게임 채널에서는 기밀 대상이 가려집니다."><i class="icofont-lock"></i></span>';
-                                    }
-                                    $isOpen = FALSE;
-                                }
-                                echo '</td>';
-                            echo '<td class="infoList"> '.$pgUser.'<h-d><br></h-d>';
-                            echo ' <i class="icofont-clock-time"></i> '.$time.' <span class="little"><green>('.$row['viewCount'].')</green></span></td>';
-                            echo '</tr>';
-                            $pgUser = NULL;
-                        }
                     }
 
                     echo '</tbody>
@@ -837,11 +791,14 @@
                     echo '</div>
                 </div>';
             }
-                    if(!empty($boardOpt) or $boardOpt == '0'){
+                    if(!empty($boardOpt) and $boardOpt != '0'){
                         switch ($boardOpt) {
                             case 'NSTAT':
                                 echo '<hr><br><hr>';
                                 include 'sub/nstat.php';
+                                break;
+                            case 'RANDP':
+                                include 'sub/randp.php';
                                 break;
                         }
                     }
@@ -932,12 +889,14 @@
         // 연관게시판 관리
         if(strlen($relate) > 0){
             $relArr = array_map('trim', explode(',', $relate));
+            $relBoard = '<table class="full">';
             foreach($relArr as $arr){
-                $sql = "SELECT `nickTitle` FROM `_board` WHERE `slug` = '$arr'";
+                $sql = "SELECT `title` FROM `_board` WHERE `slug` = '$arr'";
                 $result = mysqli_query($conn, $sql);
                 $result = mysqli_fetch_assoc($result);
-                $relBoard .= '<a href="/b/'.$arr.'">'.$result['nickTitle'].'</a> ';
+                $relBoard .= '<tr><td><a href="/b/'.$arr.'">'.$result['title'].'</a></td></tr>';
             }
+            $relBoard .= '</table>';
         }else{
             $relBoard = '<span class="subInfo">없음</span>';
         }

@@ -1,7 +1,7 @@
 <?php
-    if(!empty($_POST['title']) or $_POST['title'] == '0'){
+    if(!empty($_POST['title']) and $_POST['title'] != '0'){
         include '../setting.php';
-        if(empty($_SESSION['fnUserId']) or $_SESSION['fnUserId'] == '0'){
+        if(empty($_SESSION['fnUserId']) and $_SESSION['fnUserId'] != '0'){
             if(date('H') >= 22 or date('H') <= 17){
                 die('어림도 없지ㅋㅋ');
             }

@@ -1,7 +1,7 @@
 <?php
     require_once '../setting.php';
 
-    if(!empty($id) or $id == '0'){
+    if(!empty($id) and $id != '0'){
         $sql = "SELECT `type` FROM `_ment` WHERE `target` = '$id' and `isSuccess` = 0";
         $result = mysqli_query($conn, $sql);
         if(mysqli_num_rows($result) > 0){

@@ -1,9 +1,17 @@
 <?php
-    if(!empty($_POST['ad']) or $_POST['ad'] == '0'){
+    if(!empty($_POST['ad']) and $_POST['ad'] != '0'){
         session_start();
-        if(!empty($_SESSION['fnUserId']) or $_SESSION['fnUserId'] == '0'){
+        if(!empty($_SESSION['fnUserId']) and $_SESSION['fnUserId'] != '0'){
             require_once '../setting.php';
             require_once '../editor/htmlpurifier/library/HTMLPurifier.auto.php';
+
+            $sql_ = "SELECT COUNT(`ad`) as `cnt` FROM `_ad` WHERE `at` > DATE_SUB(NOW(), INTERVAL 1 DAY) and `id` = '$id'";
+            $result = mysqli_query($conn, $sql_);
+            $r = mysqli_fetch_assoc($result);
+            if($r['cnt'] > 3){
+                die('<script>alert("광고는 하루에 3개만 등록 가능합니다.");history.back()</script>');
+            }
+
             function filt($arg, $opt){
                 $arg = str_ireplace('>', '%3E', $arg);
                 $arg = str_ireplace('"%3E', '">', $arg);
@@ -23,10 +31,10 @@
             $sql_ = "SELECT `point` FROM `_account` WHERE `id` = '$id'";
             $result = mysqli_query($conn, $sql_);
             $r = mysqli_fetch_assoc($result);
-            if($r['point'] < 500){
+            if($r['point'] < 5000){
                 die('<script>alert("포인트가 부족합니다.");history.back()</script>');
             }else{
-                $sql = "UPDATE `_account` SET `point` = `point` - 500 WHERE `id` = '$id'";
+                $sql = "UPDATE `_account` SET `point` = `point` - 5000 WHERE `id` = '$id'";
                 $res = mysqli_query($conn, $sql);
             }
 

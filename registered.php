@@ -2,7 +2,7 @@
 require_once 'setting.php';
 require_once 'func.php';
 
-if(empty($_POST['userid']) or $_POST['userid'] == '0'){
+if(empty($_POST['userid']) and $_POST['userid'] != '0'){
     exit;
 }
 
@@ -20,12 +20,12 @@ $mail = mb_substr($mail, 0, 320);
 
 $intro = filt($_POST['intro'], 'htm');
 
-if(empty($_POST['intro']) or $_POST['intro'] == '0'){
+if(empty($_POST['intro']) and $_POST['intro'] != '0'){
     $intro = '<span class="muted">없음.</span>';
 }
-if(empty($name) or $name == '0'){
+if(empty($name) and $name != '0'){
     exit;
-}if(empty($id) or $id == '0'){
+}if(empty($id) and $id != '0'){
     exit;
 }
 

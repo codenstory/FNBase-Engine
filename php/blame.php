@@ -27,7 +27,7 @@
         $result = mysqli_query($conn, $sql);
         $row = mysqli_fetch_assoc($result);
         if(mb_strpos($row['kicked'], $t) === FALSE){ #추방
-            if(empty($row['kicked']) or $row['kicked'] == '0'){
+            if(empty($row['kicked']) and $row['kicked'] != '0'){
                 $s = $t;
             }else{
                 $s = $row['kicked'].','.$t;

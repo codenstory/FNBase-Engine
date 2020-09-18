@@ -2,13 +2,13 @@
     $fnMultiNum = 2;
     include_once 'setting.php';
     include_once 'func.php';
-    $fnwTitle = filt($_GET['title'], 'htm');
+    $fnwTitle = filt(urldecode($_GET['title']), 'htm');
     include_once 'wiki_p.php';
-    if(empty($fnwTitle) or $fnwTitle == '0'){
+    if(empty($fnwTitle) and $fnwTitle != '0'){
         die('대상 문서 값이 비어있습니다.');
     }
 
-    if(empty($id) or $id == '0'){
+    if(empty($id) and $id != '0'){
         die('토론은 익명 작성이 불가능합니다.');
     }
 
@@ -215,7 +215,7 @@
 
                 echo '<div class="card" style="border: 2px dashed gainsboro" class="wikiDiscussCard">
                     <header style="background:'.$dC.';color:'.$dT.';border-bottom:1px solid #e6e6e6">
-                        <h4><i class="icofont-users-alt-2"></i> '.$row['discussName'].' ( '.$count['cnt'].' )</h4>
+                        <h4><i class="icofont-users-alt-2"></i> <a style="color:'.$dT.'" href="/discuss/'.$row['num'].'">'.$row['discussName'].'</a> ( '.$count['cnt'].' )</h4>
                     </header>
                     <section>';
                     $sql = "SELECT * FROM `_discussThread` WHERE `origin` = '".$row['num']."' ORDER BY `at` LIMIT 3";

@@ -1,6 +1,17 @@
 <?php
     ini_set('pcre.backtrack_limit', '3000000000000000');
     require_once 'setting.php';
+    function myUrlEncode($string) {
+        $replacements = array('%21', '%2A', '%27', '%28', '%29', '%3B', '%3A', '%40', '%26', '%3D', '%2B', '%24', '%2C', '%2F', '%3F', '%25', '%2523', '%5B', '%5D');
+        $entities = array('!', '*', "'", "(", ")", ";", ":", "@", "&", "=", "+", "$", ",", "/", "?", "%", "#", "[", "]");
+        return str_ireplace('%2F', '/', str_replace($entities, $replacements, $string));
+    }
+    function myUrlDecode($string) {
+        $replacements = array('%21', '%2A', '%27', '%28', '%29', '%3B', '%3A', '%40', '%26', '%3D', '%2B', '%24', '%2C', '%2F', '%3F', '%25', '%2523', '%5B', '%5D');
+        $entities = array('!', '*', "'", "(", ")", ";", ":", "@", "&", "=", "+", "$", ",", "/", "?", "%", "#", "[", "]");
+        return urldecode(str_ireplace('%2F', '/', str_replace($replacements, $entities, $string)));
+    }
+
     function documentRender($doc, $isTitle = FALSE, $isIncluded = FALSE){
         //매직 워드
         global $fnwTitle;
@@ -58,7 +69,7 @@
             $doc = preg_replace('/___SPECIAL___/mu', '특수', $doc);
             $doc = preg_replace('/___DISCUSS___/mu', '토론', $doc);
         }else{
-            $doc = preg_replace('/## *([^\n]+)/mu', '', $doc);
+            $doc = preg_replace('/^ ?## *([^\n]+)/mu', '', $doc);
 
             global $conn;
             if(preg_match_all('/([^\{\n]|^|<\/h[1-5]>){{([^\{\}\|]+)\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*}}/mu', $doc, $title)) {
@@ -148,25 +159,19 @@
                 if(!$isTitle){
                     $aH = 'class="aHeading"';
                 }
-            $doc = preg_replace('/([^=]|^)======([^=]+?)======(\n)?/mu', '<h5 class="muted">$2</h5>', $doc);
-            $doc = preg_replace('/([^=]|^)=====([^=]+?)=====(\n)?/mu', '<span '.$aH.'><h5>$2</h5></span>', $doc);
-            $doc = preg_replace('/([^=]|^)====([^=]+?)====(\n)?/mu', '<span '.$aH.'><h4>$2</h4></span>', $doc);
-            $doc = preg_replace('/([^=]|^)===([^=]+?)===(\n)?/mu', '<span '.$aH.'><h3>$2</h3></span>', $doc);
-            $doc = preg_replace('/([^=]|^)==([^=]+?)==(\n)?/mu', '<span '.$aH.'><h2>$2</h2></span>', $doc);
-
-            $doc = preg_replace('/(\n|^) (\*\*\*) *([^<\/>\n]+)/mu', '<ul><ul><ul><li>$3</li></ul></ul></ul>', $doc);
-            $doc = preg_replace('/(\n|^) (\*\*) *([^<\/>\n]+)/mu', '<ul><ul><li>$3</li></ul></ul>', $doc);
-            $doc = preg_replace('/(\n|^) (\*) *([^<\/>\n]+)/mu', '<ul><li>$3</li></ul>', $doc);
+            $doc = preg_replace('/(\n|^) (\*\*\*) *(.+)/mu', '<ul><ul><ul><li>$3</li></ul></ul></ul>', $doc);
+            $doc = preg_replace('/(\n|^) (\*\*) *(.+)/mu', '<ul><ul><li>$3</li></ul></ul>', $doc);
+            $doc = preg_replace('/(\n|^) (\*) *(.+)/mu', '<ul><li>$3</li></ul>', $doc);
 
             $doc = preg_replace('/(\n|^|\()({-)/mu', '<ol>', $doc);
             $doc = preg_replace('/(\n|^|\))(-})/mu', '</ol>', $doc);
             $doc = preg_replace('/(\n|^|\()({=)/mu', '<ul>', $doc);
             $doc = preg_replace('/(\n|^|\))(=})/mu', '</ul>', $doc);
-            $doc = preg_replace('/(\n|^) (-) *([^<\/>\n]+)/mu', '<li>$3</li>', $doc);
+            $doc = preg_replace('/(\n|^) (-) *(.+)/mu', '<li>$3</li>', $doc);
 
-            $doc = preg_replace('/(\n|^) *::: *([^<\/>\n]+)/mu', '<indent><indent><indent>$2</indent></indent></indent><br>', $doc);
-            $doc = preg_replace('/(\n|^) *:: *([^<\/>\n]+)/mu', '<indent><indent>$2</indent></indent><br>', $doc);
-            $doc = preg_replace('/(\n|^) *: *([^<\/>\n]+)/mu', '<indent>$2</indent><br>', $doc);
+            $doc = preg_replace('/(\n|^) *::: *(.+)/mu', '<indent><indent><indent>$2</indent></indent></indent><br>', $doc);
+            $doc = preg_replace('/(\n|^) *:: *(.+)/mu', '<indent><indent>$2</indent></indent><br>', $doc);
+            $doc = preg_replace('/(\n|^) *: *(.+)/mu', '<indent>$2</indent><br>', $doc);
 
             $doc = preg_replace('/(\n|^) *(>|&gt;) *([^\n]+)/mu', '<blockquote>$3</blockquote>', $doc);
             
@@ -252,6 +257,7 @@
                         unset($link_arr, $isAnchor);
                         $linkA = $link[0][$i];
                         $linkT = $link[1][$i];
+                            $linkT = str_replace('</td>', '', $linkT);
                         $linkS = $link[3][$i];
                         if(strpos($linkT, '#')){
                             $link_arr = explode('#', $linkT);
@@ -277,10 +283,10 @@
                             unset($bold);
                         }
 
-                        $linkT = preg_replace('/\?/', '%3F', $linkT);
+                        $linkT = myUrlEncode($linkT);
 
                         if($linkS == ''){
-                            $doc = str_ireplace($linkA, $bold.'<a '.$linkC.'href="/w/'.$linkT.'">'.$linkT.'</a>'.$bold, $doc);
+                            $doc = str_ireplace($linkA, $bold.'<a '.$linkC.'href="/w/'.$linkT.'">'.myUrlDecode($linkT).'</a>'.$bold, $doc);
                         }else{
                             $doc = str_ireplace($linkA, $bold.'<a '.$linkC.'href="/w/'.$linkT.'">'.$linkS.'</a>'.$bold, $doc);
                         }
@@ -298,6 +304,7 @@
             $doc = preg_replace("/\^\^(.+?)\^\^/mu", '<sup>$1</sup>', $doc);
             $doc = preg_replace("/,,(.+?),,/mu", '<sub>$1</sub>', $doc);
             $doc = preg_replace("/__(.+?)__/mu", '<u>$1</u>', $doc);
+            $doc = preg_replace("/\[ruby\((.+?), ?ruby=(.+?)\)\]/mu", '<ruby><rb>$1</rb><rp>(</rp><rt>$2</rt><rp>)</rp></ruby>', $doc);
 
             $doc = preg_replace('/(\n|^|<\/span>)\{\|( class=".+")?( style=".+")?/mu', '<table$2$3><tr>', $doc);
             $doc = preg_replace('/(\n|^|<\/span>)\|\-( style="[^"]+")?( class="[^"]+")?/mu', '</tr><tr$2$3>', $doc);
@@ -306,12 +313,12 @@
             $doc = preg_replace('/(\n|^|<\/span>)\|\}(\s)?/mu', '</tr></table>', $doc);
 
             //매크로
-            if(empty($_GET['redi']) or $_GET['redi'] == '0'){
+            if(empty($_GET['redi']) and $_GET['redi'] != '0'){
                 $doc = preg_replace("/#redirect (.+)/mu", '<script>location.href = "/wiki/$1?from='.$fnwTitle.'";</script>', $doc);
                 $doc = preg_replace("/#넘겨주기 (.+)/mu", '<script>location.href = "/wiki/$1?from='.$fnwTitle.'";</script>', $doc);
             }else{
-                $doc = preg_replace("/#redirect (.+)/mu", '[넘겨주기: $1]($1)', $doc);
-                $doc = preg_replace("/#넘겨주기 (.+)/mu", '[넘겨주기: $1]($1)', $doc);
+                $doc = preg_replace("/#redirect (.+)/mu", '넘겨주기: $1', $doc);
+                $doc = preg_replace("/#넘겨주기 (.+)/mu", '넘겨주기: $1', $doc);
             }
             $doc = preg_replace("/\[anchor\((.+)\)\]/mu", '<a id="$1"></a>', $doc);
             $doc = preg_replace("/\[br\]/mu", '<br>', $doc);
@@ -323,10 +330,10 @@
             for($i = 0; $i < count($notes[0]); $i++) {
                 $ntAll = $notes[0][$i];
                 $ntTitle = $notes[1][$i];
-                if(empty($ntTitle) or $ntTitle == '0'){
+                if(empty($ntTitle) and $ntTitle != '0'){
                     $ntTitle = $i+1;
                 }
-                $ntDesc = $notes[2][$i];
+                $ntDesc = str_replace("'", "\'", $notes[2][$i]);
 
                 $doc = str_ireplace($ntAll, '<a onclick="wikiNotes(\''.$ntDesc.'\')"><sup>['.$ntTitle.']</sup></a>', $doc);
 
@@ -336,7 +343,11 @@
             }
         }
 
-        $doc = preg_replace('/\*\*\/(.+?)\/\*\*/mui', '<a data-tooltip="$1" class="tooltip-top"><sup>[*]</sup></a>', $doc);
+        $doc = preg_replace('/([^=]|^)======([^=]*.+?)======(\n)?/mu', '<h5 class="muted">$2</h5>', $doc);
+        $doc = preg_replace('/([^=]|^)=====([^=]*.+?)=====(\n)?/mu', '<span '.$aH.'><h5>$2</h5></span>', $doc);
+        $doc = preg_replace('/([^=]|^)====([^=]*.+?)====(\n)?/mu', '<span '.$aH.'><h4>$2</h4></span>', $doc);
+        $doc = preg_replace('/([^=]|^)===([^=]*.+?)===(\n)?/mu', '<span '.$aH.'><h3>$2</h3></span>', $doc);
+        $doc = preg_replace('/([^=]|^)==([^=]*.+?)==(\n)?/mu', '<span '.$aH.'><h2>$2</h2></span>', $doc);
         
         $doc = preg_replace('/{{{#!folding ([^\s]+)\s([^}]+)}}}/mu', '<a onclick="foldSpan()" href="javascript:void(0)">$1</a><br><span class="foldSpan" style="display:none">$2</span>', $doc);
         $doc = preg_replace('/\(\(\(#!folding ([^\s]+)\s([^}]+)\)\)\)/mu', '<a onclick="foldSpan()" href="javascript:void(0)">$1</a><br><span class="foldSpan" style="display:none">$2</span>', $doc);

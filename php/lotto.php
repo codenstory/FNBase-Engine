@@ -1,7 +1,7 @@
 <?php
 
     include '../setting.php';
-    if(empty($_SESSION['fnUserId']) or $_SESSION['fnUserId'] == '0'){
+    if(empty($_SESSION['fnUserId']) and $_SESSION['fnUserId'] != '0'){
         die('<script>alert("로그인이 반드시 필요한 서비스입니다.");history.back()</script>');
     }
 

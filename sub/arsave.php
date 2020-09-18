@@ -8,10 +8,10 @@ $f = htmlspecialchars($_POST['from']);
 $a = preg_replace('/[^ㄱ-ㅎ가-힣0-9a-zA-Z]/', '', $_POST['name']).' ('.$idS.')';
 $n = preg_replace('/[^0-9]/', '', $_POST['num']);
 $b = preg_replace('/[^a-zA-Z]/', '', strtolower($_POST['board']));
-if(empty($n) or $n == '0'){
+if(empty($n) and $n != '0'){
     exit;
 }
-if(empty($t) or $t == '0'){
+if(empty($t) and $t != '0'){
     exit;
 }
 

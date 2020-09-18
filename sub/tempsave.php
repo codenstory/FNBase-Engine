@@ -14,8 +14,8 @@ function filt($arg){
     return $val;
 }
 
-if($_REQUEST['content']){ #저장
-    $c = filt($_REQUEST['content']);
+if($_POST['content']){ #저장
+    $c = filt($_POST['content']);
     $sql = "UPDATE `_userSet` SET `tempSave` = '$c' WHERE `id` = '$id'";
     $result = mysqli_query($conn, $sql);
     if($result){

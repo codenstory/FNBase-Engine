@@ -30,7 +30,8 @@ if($board == 'simul'){
                                 <option value="8">6기 통합 (발카리야)</option>
                                 <option value="15">7기 통합 (삼도수군통제사)</option>
                                 <option value="20">5-1기 초반 (pv)</option>
-                                <option value="21"'.$isHS.'>5-1기 중반 (pv)</option>
+                                <option value="21">5-1기 중반 (pv)</option>
+                                <option value="22"'.$isHS.'>5-1기 후반 (pv)</option>
                             </optgroup>
                             <optgroup label="국가 시뮬레이션 채널">
                                 <option value="98"'.$isVN.'>1-1기 (유카냥이)</option>

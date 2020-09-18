@@ -96,8 +96,8 @@ $headers .= 'Content-Type: text/html; charset=utf-8'."\r\n";
 
 $mail = mail($to, '=?UTF-8?B?'.base64_encode($subject).'?=', $contents, $headers);
 if($mail){
-    echo '<script>location.href = "../index.php?alert=mailsend"</script>';
+    echo '<script>alert("메일이 발송되었습니다. 메일함을 확인하여 주세요.")location.href = "../"</script>';
 }else{
-    echo '<script>location.href = "../index.php?alert=mailfail"</script>';
+    echo '<script>alert("메일이 발송되지 않았습니다.")location.href = "../"</script>';
 }
 ?>

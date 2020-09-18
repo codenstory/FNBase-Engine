@@ -1,7 +1,7 @@
 <?php
-    if(!empty($_POST['slug']) or $_POST['slug'] == '0'){
+    if(!empty($_POST['slug']) and $_POST['slug'] != '0'){
         include '../setting.php';
-        if(!empty($_SESSION['fnUserId']) or $_SESSION['fnUserId'] == '0'){
+        if(!empty($_SESSION['fnUserId']) and $_SESSION['fnUserId'] != '0'){
             require_once '../editor/htmlpurifier/library/HTMLPurifier.auto.php';
             function filt($arg){
                 $purifier = new HTMLPurifier();
@@ -11,7 +11,10 @@
             $id = $_SESSION['fnUserId'];
             $name = $_SESSION['fnUserName'];
 
-            $s = filt($_POST['slug']);
+            $s = preg_replace('/[^a-z]/', '', filt($_POST['slug']));
+            if(empty($s) and $s != '0'){
+                die('입력에 오류가 있습니다.');
+            }
             $t = filt($_POST['title']);
             $nt = filt($_POST['nickTitle']);
             $bi = filt($_POST['boardIntro']);
@@ -37,7 +40,7 @@
         }else{
             die('로그인 후 이용 바랍니다.');
         }
-    }elseif(!empty($_POST['tsfSlug']) or $_POST['tsfSlug'] == '0'){ #게시판 소유주 조정
+    }elseif(!empty($_POST['tsfSlug']) and $_POST['tsfSlug'] != '0'){ #게시판 소유주 조정
         include '../setting.php';
         $sql = "SELECT `isAdmin` FROM `_account` WHERE `id` = \"".$_SESSION['fnUserId'].'"';
         $result = mysqli_query($conn, $sql);

@@ -4,7 +4,7 @@ require_once '../setting.php';
 $ip = get_client_ip();
 $id = $_SESSION['fnUserId'];
 
-if(!empty($id) or $id == '0'){
+if(!empty($id) and $id != '0'){
     $sql = "SELECT `siteBan`, `canUpload` FROM `_account` WHERE `id` = '$id'";
     $result = mysqli_query($conn, $sql);
     $sB = mysqli_fetch_assoc($result);
@@ -19,7 +19,7 @@ if(!empty($id) or $id == '0'){
 }
 
 $date = time();
-if(!empty($_FILES['myfile']) or $_FILES['myfile'] == '0'){
+if(!empty($_FILES['myfile']) and $_FILES['myfile'] != '0'){
 // 설정
 $uploads_dir = '../upload';
 $allowed_ext = array('jpg','jpeg','png','webp', 'JPG', 'PNG');

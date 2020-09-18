@@ -129,7 +129,7 @@ if($_GET['miscmode'] !== 'board'){
                             </tr>
                         </thead>
                         <tbody>';
-                        $sql = "SELECT * FROM `_ad` WHERE `type` = 'USER_ADVER' and `at` > DATE_SUB(NOW(), INTERVAL 30 DAY) ORDER BY `at` DESC LIMIT 30";
+                        $sql = "SELECT * FROM `_ad` WHERE `type` = 'USER_ADVER' and `at` > DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY `ad` ORDER BY `at` DESC LIMIT 30";
                         $result = mysqli_query($conn, $sql);
                         while($row = mysqli_fetch_assoc($result)){
                             
@@ -153,7 +153,7 @@ if($_GET['miscmode'] !== 'board'){
                             </tr>
                         </thead>
                         <tbody>';
-                        $sql = "SELECT * FROM `_ad` WHERE `type` = 'PUB_S_ADVT' and `at` > DATE_SUB(NOW(), INTERVAL 30 DAY) ORDER BY `at` DESC LIMIT 30";
+                        $sql = "SELECT * FROM `_ad` WHERE `type` = 'PUB_S_ADVT' and `at` > DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY `ad` ORDER BY `at` DESC LIMIT 30";
                         $result = mysqli_query($conn, $sql);
                         while($row = mysqli_fetch_assoc($result)){
                             
@@ -185,7 +185,7 @@ if($_GET['miscmode'] !== 'board'){
                 if(mysqli_num_rows($results) > 0){
                     echo '부적절한 이용으로 인해 차단됨!'; break;
                 }
-                if(empty($_SESSION['fnAnonNick']) or $_SESSION['fnAnonNick'] == '0'){
+                if(empty($_SESSION['fnAnonNick']) and $_SESSION['fnAnonNick'] != '0'){
                     $nickname = '비회원_'.GenStr(5);
                     $_SESSION['fnAnonNick'] = $nickname;
                 }else{
@@ -242,7 +242,7 @@ if($_GET['miscmode'] !== 'board'){
             case 'vindicate':
                 echo '<hr>&nbsp;<a href="/misc" class="lager"><i class="icofont-file-text"></i> 차단 소명하기</a><br>
                 &nbsp;<span class="subInfo">사이트 전체 차단자만 이용 바랍니다.</span><hr>';
-                if(!empty($id) or $id == '0'){
+                if(!empty($id) and $id != '0'){
                     $sql = "SELECT `siteBan` FROM `_account` WHERE `id` = '$id'";
                     $result = mysqli_query($conn, $sql);
                     $sB = mysqli_fetch_assoc($result);
@@ -300,7 +300,7 @@ if($_GET['miscmode'] !== 'board'){
             case 'point':
                 echo '<hr>&nbsp;<a href="/misc" class="lager"><i class="icofont-rouble"></i> 포인트 주기</a><br>
                 &nbsp;<span class="subInfo">다른 이용자에게 포인트를 넘겨줄 수 있습니다.</span><hr>';
-                if(!empty($id) or $id == '0'){
+                if(!empty($id) and $id != '0'){
                     $sql = "SELECT `point` FROM `_account` WHERE `id` = '$id'";
                     $result = mysqli_query($conn, $sql);
                     $pt = mysqli_fetch_assoc($result);
@@ -344,7 +344,7 @@ if($_GET['miscmode'] !== 'board'){
             case 'rps_game':
                 echo '<hr>&nbsp;<a href="/misc" class="lager"><i class="icofont-hand-power"></i> 가위바위보</a><br>
                 &nbsp;<span class="subInfo">이길때마다 2배의 포인트를 획득할 수 있습니다.</span><hr>';
-                if(!empty($id) or $id == '0'){
+                if(!empty($id) and $id != '0'){
                     echo '<input type="checkbox" id="game_warning">
                     <article class="card" style="text-align:center;">
                         <p>과도한 도박은 심각한 부작용을 초래할 수 있습니다.</p>
@@ -400,8 +400,8 @@ if($_GET['miscmode'] !== 'board'){
             case 'ready_shoot':
                 echo '<hr>&nbsp;<a href="/misc" class="lager"><i class="icofont-penalty-card"></i> 즉석복권</a><br>
                 &nbsp;<span class="subInfo">최대 500,000ⓟ 획득 가능</span><hr>';
-                if(!empty($id) or $id == '0'){
-                    if(!empty($_COOKIE['fnGameRpsR']) or $_COOKIE['fnGameRpsR'] == '0'){
+                if(!empty($id) and $id != '0'){
+                    if(!empty($_COOKIE['fnGameRpsR']) and $_COOKIE['fnGameRpsR'] != '0'){
                         echo $_COOKIE['fnGameRpsP'];
                     }
                     echo '<input type="checkbox" id="game_warning">
@@ -469,7 +469,7 @@ if($_GET['miscmode'] !== 'board'){
             case 'tags':
                 $lsPg = filt($_GET['tagspage'], '123');
                 $lsPgN = 10; #1페이지에 표시될 글 수
-                    if(empty($lsPg) or $lsPg == '0'){
+                    if(empty($lsPg) and $lsPg != '0'){
                         $limit = '0, '.$lsPgN;
                         $lsPg = 1;
                     }else{
@@ -503,7 +503,7 @@ if($_GET['miscmode'] !== 'board'){
                 $lsNotice = $lsBoard['subIntro'];
                 $alNotice = $lsBoard['notice'];
             
-                if(!empty($lsBoard['icon']) or $lsBoard['icon'] == '0'){
+                if(!empty($lsBoard['icon']) and $lsBoard['icon'] != '0'){
                     $boardIcon = '<i class="icofont-'.$lsBoard['icon'].'"></i> ';
                 }
 
@@ -540,7 +540,7 @@ if($_GET['miscmode'] !== 'board'){
                     echo '<td class="hidMob muted">'.$row['category'].'</td>';
                     echo '<td class="black"><a href="/b/'.$row['board'].'/'.$row['num'].'-'.$lsPg.'">'.$row['title'].'</a>
                     <green class="little">['.$row['commentCount'].']</green>';
-                    if(!empty($row['staffOnly']) or $row['staffOnly'] == '0'){
+                    if(!empty($row['staffOnly']) and $row['staffOnly'] != '0'){
                         echo '<i class="icofont-lock"></i>';
                     }
                     echo '</td>';
