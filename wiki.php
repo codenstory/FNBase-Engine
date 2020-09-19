@@ -124,11 +124,11 @@
                 margin: 0;
             }
         </style>
-        <link rel="stylesheet" as="font" crossorigin="crossorigin" type="text/css" href="https://fnbase.xyz/icofont2/icofont.min.css">
-        <link rel="stylesheet" href="https://fnbase.xyz/wiki.css">
-        <link rel="stylesheet" href="https://fnbase.xyz/default.css">
-        <link rel="stylesheet" href="https://fnbase.xyz/picnic.css">
-        <link rel="shortcut icon" href="https://fnbase.xyz/wiki.png">
+        <link rel="stylesheet" as="font" crossorigin="crossorigin" type="text/css" href="/icofont/icofont.min.css">
+        <link rel="stylesheet" href="/wiki.css">
+        <link rel="stylesheet" href="/default.css">
+        <link rel="stylesheet" href="/picnic.css">
+        <link rel="shortcut icon" href="/wiki.png">
         <?=$fnPHead.$lsHead?>
     </head>
     <body style="background:<?=$fnBColor?>">
@@ -236,7 +236,7 @@
                                     $name = $wE;
                         
                                     $icon = 'invisible';
-                                    $href = 'https://fnbase.xyz/misc%3EmanageCenter%3E'.$wE;
+                                    $href = '/misc%3EmanageCenter%3E'.$wE;
                                 }else{
                                     $name = mysqli_fetch_assoc($resultn);
                                     $name = $name['name'];
@@ -307,7 +307,7 @@
                         if(document.URL.includes('?from=')){
                             rediFrom = document.URL.split('?from=')
                             document.querySelector('#wikiTitleRaw').style.display = ''
-                            document.querySelector('#wikiTitleRaw').innerHTML = '<a href="https://fnbase.xyz/wiki/'+rediFrom[1]+'">'+decodeURI(rediFrom[1])+'</a> 에서 넘어옴<hr>'
+                            document.querySelector('#wikiTitleRaw').innerHTML = '<a href="/wiki/'+rediFrom[1]+'">'+decodeURI(rediFrom[1])+'</a> 에서 넘어옴<hr>'
                         }
                     </script>
                 </div>
@@ -374,7 +374,7 @@
                                             $name = $wE;
                                 
                                             $icon = 'invisible';
-                                            $href = 'https://fnbase.xyz/misc%3EmanageCenter%3E'.$wE;
+                                            $href = '/misc%3EmanageCenter%3E'.$wE;
                                             if($isAdmin){
                                                 $href = '/misc>manageCenter>'.$name;
                                             }
@@ -423,7 +423,7 @@
                                                 $name = $wE;
                                     
                                                 $icon = 'invisible';
-                                                $href = 'https://fnbase.xyz/misc%3EmanageCenter%3E'.$wE;
+                                                $href = '/misc%3EmanageCenter%3E'.$wE;
                                             }else{
                                                 $name = mysqli_fetch_assoc($resultn);
                                                 $name = $name['name'];
@@ -455,7 +455,7 @@
                                                 $name = $wE;
                                     
                                                 $icon = 'invisible';
-                                                $href = 'https://fnbase.xyz/misc%3EmanageCenter%3E'.$wE;
+                                                $href = '/misc%3EmanageCenter%3E'.$wE;
                                             }else{
                                                 $name = mysqli_fetch_assoc($resultn);
                                                 $name = $name['name'];

@@ -21,7 +21,7 @@
                 <h3>'.$row['국명'].' <span class="muted">('.$row['원어'].')</span></h3>
             </header>
             <section class="content">
-                <p align="center"><img height="200" src="https://fnbase.xyz/hsls/'.$row['국기'].'"></p>
+                <p align="center"><img height="200" src="/hsls/'.$row['국기'].'"></p>
                 <hr>
                 <p>'.$row['설명'].'</p>
                 <hr>

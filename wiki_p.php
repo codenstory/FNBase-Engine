@@ -216,8 +216,8 @@
             $doc = preg_replace("/\[\[(남|나무|남간|나무위키):([^\[]+)(\||\[or\]|\[\])([^\[]+)\]\]/mu", '<a class="ext-link" target="_blank" href="https://namu.wiki/w/$2"><i class="icofont-link"></i> $4</a>', $doc);
             $doc = preg_replace("/\[\[(남|나무|남간|나무위키):([^\[]+)\]\]/mu", '<a class="ext-link" target="_blank" href="https://namu.wiki/w/$2"><i class="icofont-link"></i> 나무:$2</a>', $doc);
             
-            $doc = preg_replace("/\[\[(픈|안|FNBase):([^\[]+)(\||\[or\]|\[\])([^\[]+)\]\]/mu", '<a class="ext-link" target="_blank" href="https://fnbase.xyz/$2">$4</a>', $doc);
-            $doc = preg_replace("/\[\[(픈|안|FNBase):([^\[]+)\]\]/mu", '<a class="ext-link" target="_blank" href="https://fnbase.xyz/$2">FNBase:$2</a>', $doc);
+            $doc = preg_replace("/\[\[(픈|안|FNBase):([^\[]+)(\||\[or\]|\[\])([^\[]+)\]\]/mu", '<a class="ext-link" target="_blank" href="/$2">$4</a>', $doc);
+            $doc = preg_replace("/\[\[(픈|안|FNBase):([^\[]+)\]\]/mu", '<a class="ext-link" target="_blank" href="/$2">FNBase:$2</a>', $doc);
 
             $doc = preg_replace("/\[\[(분류|양식):([^\[]+)(\||\[or\]|\[\])([^\[]+)\]\]/mu", '<a href="/w/$1/$2">$4</a>', $doc);
             $doc = preg_replace("/\[\[(분류|양식):([^\[]+)\]\]/mu", '<a href="/w/$1/$2">$1/$2</a>', $doc);

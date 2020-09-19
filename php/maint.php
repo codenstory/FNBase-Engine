@@ -26,6 +26,17 @@
     $ts = filt($_POST['tS'], 'oth'); #게시판 타입
     $rct = filt($_POST['rct'], 'oth'); #노출 여부
 
+    $sql = "SELECT `isAdmin` FROM `_account` WHERE `id` = \"".$_SESSION['fnUserId'].'"';
+    $result = mysqli_query($conn, $sql);
+    $iA = mysqli_fetch_assoc($result);
+        if($iA['isAdmin']){
+            $iA = TRUE;
+        }
+    
+    if($ty == 'DIRECT_OPT' && $iA == FALSE){
+        die('권한이 없습니다.');
+    }
+
     $sql = "SELECT `id`, `num`, `slug` FROM `_board` WHERE `title` = $t";
     $result = mysqli_query($conn, $sql);
     $row = mysqli_fetch_assoc($result);

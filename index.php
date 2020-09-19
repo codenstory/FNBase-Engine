@@ -1,4 +1,8 @@
 <?php
+if(!file_exists('setting.php')){
+    require 'install/index.php';
+    exit;
+}
 require_once 'setting.php';
 require_once 'func.php';
 
@@ -203,11 +207,11 @@ if(mysqli_num_rows($result) > 0){
             }
             html { overflow-y:scroll; word-break: break-word }
         </style>
-        <link rel="stylesheet" href="https://fnbase.xyz/icofont/icofont.min.css">
-        <link rel="stylesheet" href="https://fnbase.xyz/default.css">
-        <link rel="stylesheet" href="https://fnbase.xyz/picnic.css">
-        <link rel="shortcut icon" href="https://fnbase.xyz/icon.png">
-        <link rel="manifest" href="https://fnbase.xyz/manifest.webmanifest">
+        <link rel="stylesheet" href="/icofont/icofont.min.css">
+        <link rel="stylesheet" href="/default.css">
+        <link rel="stylesheet" href="/picnic.css">
+        <link rel="shortcut icon" href="<?=$fnFab?>">
+        <link rel="manifest" href="/manifest.webmanifest">
         <?=$fnPHead.$lsHead?>
     </head>
     <body style="background:<?=$fnBColor?>">
@@ -216,7 +220,7 @@ if(mysqli_num_rows($result) > 0){
         <header>
             <nav class="nav" style="position:static;background:<?=$fnPColor?>">
                 <a href="/main" class="brand">
-                    <span style="color:#fff"><?=$fnTitle?></span>
+                    <span id="siteTitle" style="color:#fff"><?=$fnTitle?></span>
                 </a>
                 <a href="/sublist" class="brand-r">
                     <span style="color:#fff"><i class="icofont-folder"></i><h-m> 구독 게시판</h-m><h-d> 구독</h-d></span>
@@ -332,7 +336,7 @@ if(mysqli_num_rows($result) > 0){
                     <form method="post" action="/php/maint.php">
                         <section class="content">
                             <label>게시판 이름<input type="text" name="t" placeholder="게시판 이름" value="'.$row['title'].'" readonly></label><br>
-                            <span class="subInfo">게시판 이름 변경은 운영실에서 문의해주세요.</span><br>
+                            <span class="subInfo">게시판 이름 변경은 사이트 관리자에게 문의해주세요.</span><br>
                             <label>게시판 별명<input type="text" name="nn" placeholder="예) 사회 게시판 -> 사회" value="'.$row['nickTitle'].'" required></label><br>
                             <span class="subInfo">2~4 글자 이내로 입력해주세요.</span><br>
                             <label>게시판 설명<input type="text" name="i" placeholder="이 게시판은 어떻습니다." value="'.$row['boardIntro'].'" required></label><br>
@@ -359,18 +363,24 @@ if(mysqli_num_rows($result) > 0){
                             <option value="'.$row['type'].'">선택해주세요.</option>
                             <option value="PRIVAT_OPT">전체 공개</option>
                             <option value="CREAT_SOME">창작 공간</option>
-                            <option value="OWNER_ONLY">소유주 전용</option>
-                            </select></label>
+                            <option value="OWNER_ONLY">소유주 전용</option>';
+                            $sql = "SELECT `isAdmin` FROM `_account` WHERE `id` = \"".$_SESSION['fnUserId'].'"';
+                            $result = mysqli_query($conn, $sql);
+                            $iA = mysqli_fetch_assoc($result);
+                                if($iA['isAdmin']){
+                                    $lsPlus .= '<option value="DIRECT_OPT">운영진 직영</option>';
+                                }
+                            $lsPlus .= '</select></label>
                             <br>
                             <span class="subInfo">전체 공개시 누구나 글을 쓸 수 있습니다. 소유주 전용 선택시 소유주만 가능합니다.</span><br>
                             <span class="subInfo">게시판 열람이나 추천 등은 금지할 수 없는 점 알려드립니다.</span>
                             <hr>
                             <label>게시판 아이콘<input type="text" name="e" placeholder="예) favourite" value="'.$row['icon'].'"></label>
-                            <span class="subInfo"><a href="https://fnbase.xyz/icofont2/demo.html" target="_blank">여기</a>서 원하시는 아이콘을 찾아보실 수 있습니다.</span>
+                            <span class="subInfo"><a href="/icofont/demo.html" target="_blank">여기</a>서 원하시는 아이콘을 찾아보실 수 있습니다.</span>
                         </section>
                         <footer>
                             <button class="button full" type="submit">설정 저장</button>
-                            <span class="subInfo">'.$fnTitle.'의 사설 게시판 관리 서비스 이용시 <a href="https://fnbase.xyz/b%3Emaint%3E213">사설 게시판 이용수칙</a>에 동의한 것으로 간주됩니다.</span>
+                            <span class="subInfo">'.$fnTitle.'의 사설 게시판 관리 서비스 이용시 <a href="/b%3Emaint%3E213">사설 게시판 이용수칙</a>에 동의한 것으로 간주됩니다.</span>
                         </footer>';
                         if($lsBoard == 'trash'){
                             $lsPlus .= '<button class="error" formaction="/php/modifyCon.php?mode=T"><i class="icofont-bin"></i> 휴지통 비우기</button>
@@ -1359,7 +1369,7 @@ if(mysqli_num_rows($result) > 0){
                                     <header>
                                         <h3><a href="/emoticon" style="color:#218470"><i class="icofont-simple-smile">
                                         </i> FNBCon Store</a> <span class="subInfo">> <span id="tbreplace">'.$f.'</span></span></h3>
-                                        <a style="font-size:0.7em;float:right" href="https://fnbase.xyz/b%3Emaint%3E3518">등록하기</a>
+                                        <a style="font-size:0.7em;float:right" href="/b%3Emaint%3E3518">등록하기</a>
                                     </header>
                                     <section>';
                                     $sql = "SELECT * FROM `_fnbcon` WHERE `folder` = '$f' ORDER BY `use` DESC";
@@ -1428,7 +1438,7 @@ if(mysqli_num_rows($result) > 0){
                                 <article class="card">
                                     <header>
                                         <h3 style="color:#218470"><i class="icofont-simple-smile"></i> FNBCon Store</h3>
-                                        <a style="font-size:0.7em;float:right" href="https://fnbase.xyz/b%3Emaint%3E3518">등록하기</a>
+                                        <a style="font-size:0.7em;float:right" href="/b%3Emaint%3E3518">등록하기</a>
                                     </header>
                                     <section>';
                                     if(empty($id) and $id != '0'){
@@ -1619,7 +1629,7 @@ if(mysqli_num_rows($result) > 0){
                         <footer>
                             <button class="button full" type="submit">게시판 개설</button>
                             <span class="subInfo">등록시 5000 포인트가 소모되며, 게시판 이용 수칙을 등록하셔야 합니다.</span><br>
-                            <span class="subInfo">게시판 개설시, <a href="https://fnbase.xyz/b%3Emaint%3E213">사설 게시판 관리 서비스 이용 수칙</a>에 동의한 것으로 간주됩니다.</span>
+                            <span class="subInfo">게시판 개설시, <a href="/b%3Emaint%3E213">사설 게시판 관리 서비스 이용 수칙</a>에 동의한 것으로 간주됩니다.</span>
                         </footer>
                     </form>
                     </article>';
@@ -1645,7 +1655,7 @@ if(mysqli_num_rows($result) > 0){
                         <footer>
                             <button class="button error full" type="submit">계정 삭제</button>
                             <span class="subInfo">게시글은 사라지지 않으며, <b>재가입 방지를 위해 이메일 등의 정보는 보존</b>됩니다.</span><br>
-                            <span class="subInfo"><a href="https://fnbase.xyz/terms.html">이용 약관</a>에 따라 보존되는 항목 -
+                            <span class="subInfo"><a href="/terms.html">이용 약관</a>에 따라 보존되는 항목 -
                             (회원이 제공한 아이디, 이메일 주소, 닉네임, 활동 기록, ip 주소)</span>
                         </footer>
                     </form>

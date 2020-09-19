@@ -31,7 +31,7 @@ function notify() {
                     }
                     else {
                         var notification = new Notification('FNBase - 새 알림이 있습니다.', {
-                            icon: 'https://fnbase.xyz/icon.png',
+                            icon: '/icon.png',
                             body: text,
                         });
         
@@ -153,7 +153,7 @@ function FNBCON(arg){ //픈비콘 선택
 }
 
 function viewBoardKick(arg){
-    fetch('https://fnbase.xyz/sub/board_kick.php?b='+arg).then(function(response){
+    fetch('/sub/board_kick.php?b='+arg).then(function(response){
         response.text().then(function(text){
             document.querySelector("#viewBoardKick").innerHTML = text;
         })
@@ -175,7 +175,7 @@ function tempSave(){
         value = '#mainEditor';
     }
 
-    fetch('https://fnbase.xyz/sub/tempsave.php?content='+content).then(function(response){
+    fetch('/sub/tempsave.php?content='+content).then(function(response){
         if(response.status == '403'){
             alert('로그인 되어있지 않음!');
         }else if(response.status != '200'){
@@ -197,7 +197,7 @@ function tempLoad(){
         value = '#mainEditor';
     }
 
-    fetch('https://fnbase.xyz/sub/tempsave.php').then(function(response){
+    fetch('/sub/tempsave.php').then(function(response){
         response.text().then(function(text){
             document.querySelector(value).innerHTML = text;
         })
@@ -212,7 +212,7 @@ function tempLoad(){
 }
 
 if(isTitCh){
-    document.title += " - FNBase"
+    document.title += ' - '+document.getElementById('siteTitle').innerHTML;
 }
 
 if ('serviceWorker' in navigator) {

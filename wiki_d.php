@@ -230,7 +230,7 @@
                             $name = $wE;
                 
                             $icon = 'invisible';
-                            $href = 'https://fnbase.xyz/misc%3EmanageCenter%3E'.$wE;
+                            $href = '/misc%3EmanageCenter%3E'.$wE;
                         }else{
                             $name = mysqli_fetch_assoc($resultn);
                             $name = $name['name'];

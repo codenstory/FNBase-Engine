@@ -101,7 +101,7 @@ echo '<!-- FNBase Engine 2 -->
 	<ul>
 		<li>파일명: '.$date.$name.'</li>
 		<li>확장자: '.$ext.'</li>
-		<li>주소 복사: <input readonly id="imgsrc" value="https://fnbase.xyz/upload/'.$date.$name.'"></li>
+		<li>주소 복사: <input readonly id="imgsrc" value="/upload/'.$date.$name.'"></li>
 	</ul>
 	<button class="full" onclick="copy_to_clipboard()">복사</button>
 		<img style="max-width:100%" src="../upload/'.$date.$name.'">

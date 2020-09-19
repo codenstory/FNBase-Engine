@@ -34,7 +34,7 @@ function notify() {
                     }
                     else {
                         var notification = new Notification('FNBase - 새 알림이 있습니다.', {
-                            icon: 'https://fnbase.xyz/icon.png',
+                            icon: '/icon.png',
                             body: text,
                         });
         
@@ -56,7 +56,7 @@ function notify() {
 }
 
 function wikiEdit(arg){
-    fetch('https://fnbase.xyz/wiki_f.php?title='+arg).then(function(response){
+    fetch('/wiki_f.php?title='+arg).then(function(response){
         response.text().then(function(text){
             document.querySelector('#mainContent').style.cssText = 'display:none';
             document.querySelector('#editPlace').style.cssText = '';
@@ -80,7 +80,7 @@ function wikiHistory(arg){
     }else{
         hisPage = 1
     }
-    fetch('https://fnbase.xyz/w_history/'+hisPage+'/'+arg).then(function(response){
+    fetch('/w_history/'+hisPage+'/'+arg).then(function(response){
         response.text().then(function(text){
             document.querySelector('#mainContent').style.cssText = 'display:none';
             document.querySelector('#editPlace').style.cssText = '';
@@ -99,7 +99,7 @@ function wikiHistory(arg){
 }
 
 function wikiHisRev(arg){
-    fetch('https://fnbase.xyz/wiki_h.php?mode=view&num='+arg).then(function(response){
+    fetch('/wiki_h.php?mode=view&num='+arg).then(function(response){
         response.text().then(function(text){
             document.querySelector("#wHrText").innerHTML = text;
         })
@@ -113,7 +113,7 @@ function wikiHisRev(arg){
 }
 
 function wikiHisRaw(){
-    fetch('https://fnbase.xyz/wiki_h.php?mode=raw&num='+prevHisNum).then(function(response){
+    fetch('/wiki_h.php?mode=raw&num='+prevHisNum).then(function(response){
         response.text().then(function(text){
             document.querySelector("#wHrText").innerHTML = text;
         })
@@ -124,7 +124,7 @@ function wikiHisRaw(){
 }
 
 function wikiDiscuss(arg){
-    fetch('https://fnbase.xyz/wiki_d.php?title='+arg).then(function(response){
+    fetch('/wiki_d.php?title='+arg).then(function(response){
         response.text().then(function(text){
             document.querySelector('#mainContent').style.cssText = 'display:none';
             document.querySelector('#editPlace').style.cssText = '';
@@ -142,7 +142,7 @@ function wikiDiscuss(arg){
 }
 
 function wikiManage(arg){
-    fetch('https://fnbase.xyz/wiki_m.php?title='+arg).then(function(response){
+    fetch('/wiki_m.php?title='+arg).then(function(response){
         response.text().then(function(text){
             document.querySelector('#mainContent').style.cssText = 'display:none';
             document.querySelector('#editPlace').style.cssText = '';
@@ -166,7 +166,7 @@ function wikiPreview(arg){
         postData(formattedFormData);
 
     async function postData(formattedFormData){
-        const response = await fetch('https://fnbase.xyz/wiki_v.php?title='+arg,{
+        const response = await fetch('/wiki_v.php?title='+arg,{
             method: 'POST',
             body: formattedFormData
         });
@@ -185,7 +185,7 @@ function wikiSave(){
     });
 
     async function postData(formattedFormData){
-        const response = await fetch('https://fnbase.xyz/wiki_s.php',{
+        const response = await fetch('/wiki_s.php',{
             method: 'POST',
             body: formattedFormData
         });
@@ -210,7 +210,7 @@ function foldSpan(){
 }
 
 function wikiRollback(arg, num){
-    fetch('https://fnbase.xyz/wiki_v.php?mode=rollback&title='+arg+'&num='+num).then(function(response){
+    fetch('/wiki_v.php?mode=rollback&title='+arg+'&num='+num).then(function(response){
         response.text().then(function(text){
             alert(text);
             if(text.length > 10){
@@ -271,7 +271,7 @@ function tempSave(){
     postData(formattedFormData);
 
     async function postData(formattedFormData){
-        const response = await fetch('https://fnbase.xyz/sub/tempsave.php',{
+        const response = await fetch('/sub/tempsave.php',{
             method: 'POST',
             body: formattedFormData
         });
@@ -280,7 +280,7 @@ function tempSave(){
     }
 }
 function tempLoad(){
-    fetch('https://fnbase.xyz/sub/tempsave.php').then(function(response){
+    fetch('/sub/tempsave.php').then(function(response){
         response.text().then(function(text){
             document.querySelector('#mainEditor').innerHTML = text;
         })

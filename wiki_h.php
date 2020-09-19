@@ -138,7 +138,7 @@ if($_GET['mode'] == 'view'){
             $name = $wE;
 
             $icon = 'invisible';
-            $href = 'https://fnbase.xyz/misc%3EmanageCenter%3E'.$wE;
+            $href = '/misc%3EmanageCenter%3E'.$wE;
             if($isAdmin){
                 $href = '/misc>manageCenter>'.$name;
             }

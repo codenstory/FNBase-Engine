@@ -618,7 +618,7 @@ if($_GET['miscmode'] !== 'board'){
                 break;
 
             case 'attendance':
-                echo '<script>document.title = "출석 체크 - FNBase"</script>
+                echo '<script>document.title = "출석 체크"</script>
                 <hr> &nbsp;<span class="lager"><i class="icofont-checked"></i> 출석 체크</span>
                 <hr>';
                 $sql = "SELECT * FROM `_othFunc` WHERE `type` = 'ATTENDANCE' ORDER BY `at` DESC LIMIT 20";
