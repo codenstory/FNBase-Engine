@@ -397,7 +397,130 @@ if (!$conn) {
     #($P_wiki == 'yes'){
         /* 위키 생성 */
         $sql .= "INSERT INTO `_setting` (`type`, `at`, `siteTitle`, `siteDesc`, `siteFab`, `sitePath`, `siteLang`, `siteEmMail`, `pageHead`, `pageLeft`, `pageColor`, `pageSubColor`, `pageBgColor`, `pageFooter`, `siteTimezone`, `recentHide`)
-        VALUES ('wiki', NOW(), '$P_siteTitle Wiki', '$P_siteDesc', '', '$P_sitePath', '$P_siteLang', '$P_siteEmMail', '$P_pageHead', NULL, '$P_pageColor', '$P_pageSubColor', '$P_pageBgColor', '$P_pageFooter', '$P_siteTimezone', NULL);";
+        VALUES ('wiki', NOW(), '$P_siteTitle Wiki', '$P_siteDesc', '', '$P_sitePath', '$P_siteLang', '$P_siteEmMail', '$P_pageHead', NULL, '$P_pageColor', '$P_pageSubColor', '$P_pageBgColor', '$P_pageFooter', '$P_siteTimezone', NULL);
+        INSERT INTO
+          `_article`(`num`,`type`,`at`,`title`,`namespace`,`content`,`lastEdit`,`whoEdited`,`viewCount`,`ACL`,`execute`)
+        VALUES(
+          -10,
+          'SpecialDOC',
+          '2020-05-22 16:43:28',
+          '버전 정보',
+          '___SPECIAL___',
+          'FNBase Engine - Fully Non-commercial Board system. (c) 2020 FNBase Team. ---- OpenFNB는 [[밖:https://github.com/FNBase/FNBase-Engine|FNBase Engine]]의 부속 기능인 위키 부분을 테스트하고 보완해나가고자 만들어진 [[위키위키]]입니다. FNBase 개발진은 이 프로그램이 모두에게 도움이 되길 바라지만, 이 프로그램이 정상적으로 작동하거나 도움을 줄 것이라고 보증하지 않습니다. 만약 이 프로그램이 마음에 드신다면, 기여해주세요. 다국어 번역과 더 나은 작동 방식이 필요합니다. ----',
+          '2020-09-19 02:41:21',
+          'admin',
+          '0',
+          'none',
+          'version'
+        ),(
+          -9,
+          'SpecialDOC',
+          '2020-05-21 10:58:10',
+          '로그인',
+          '___SPECIAL___',
+          '___SITENAME___ 계정이 없으신가요? [[픈:/register|만들어보세요!]]',
+          '2020-05-22 12:44:02',
+          'admin',
+          '0',
+          'none',
+          'login'
+        ),(
+          -8,
+          'SpecialDOC',
+          '2020-05-21 10:58:10',
+          '특수 문서 목록',
+          '___SPECIAL___',
+          'OpenFNB의 기능들을 나열해놓았습니다.',
+          '2020-05-21 10:58:10',
+          'admin',
+          '0',
+          'none',
+          'list'
+        ),(
+          -7,
+          'SpecialDOC',
+          '2020-05-21 10:58:10',
+          '최근 바뀜',
+          '___SPECIAL___',
+          '최근 변경된 문서들의 목록입니다..',
+          '2020-05-21 10:58:10',
+          'admin',
+          '0',
+          'none',
+          'recent'
+        ),(
+          -6,
+          'SpecialDOC',
+          '2020-05-21 10:58:10',
+          '최근 토론',
+          '___SPECIAL___',
+          '최근 진행된 토론들의 목록입니다..',
+          '2020-05-30 12:41:08',
+          'admin',
+          '0',
+          'none',
+          'discussRecent'
+        ),(
+          -5,
+          'SpecialDOC',
+          '2020-05-26 07:30:38',
+          '임의 문서로',
+          '___SPECIAL___',
+          '이동중입니다..',
+          '2020-05-26 07:30:38',
+          'admin',
+          '0',
+          'none',
+          'random'
+        ),(
+          -3,
+          'SpecialDOC',
+          '2020-08-19 21:22:50',
+          '오래된 문서 목록',
+          '___SPECIAL___',
+          '마지막 편집 역순으로 정렬되며, 최대 50개씩 표시됩니다.',
+          '2020-08-19 21:56:00',
+          '0',
+          '921',
+          'none',
+          'articles'
+        ),(
+          -2,
+          'SpecialDOC',
+          '2020-08-28 17:03:57',
+          '부실한 문서 목록',
+          '___SPECIAL___',
+          '글자 수 순으로 정렬되며, 최대 50개씩 표시됩니다. 틀과 분류, 넘겨주기 문서는 제외됩니다.',
+          '2020-08-28 17:03:57',
+          'admin',
+          '0',
+          'none',
+          'insolvent'
+        ),(
+          -1,
+          'SpecialDOC',
+          '2020-08-28 17:03:57',
+          '분류되지 않은 문서 목록',
+          '___SPECIAL___',
+          '마지막 편집 역순으로 정렬되며, 최대 50개씩 표시됩니다. 넘겨주기 문서는 제외됩니다.',
+          '2020-08-28 17:03:57',
+          'admin',
+          '0',
+          'none',
+          'unctgrzd'
+        ),(
+          0,
+          'SpecialDOC',
+          '2020-08-28 17:03:57',
+          '모든 문서 목록',
+          '___SPECIAL___',
+          '가나다순으로 정렬되며, 최대 50개씩 표시됩니다. 틀과 분류, 넘겨주기 문서는 제외됩니다.',
+          '2020-08-28 17:03:57',
+          'admin',
+          '0',
+          'none',
+          'abcasc'
+        );";
     #}
     /* 게시판 생성 */
     $sql .= "INSERT INTO `_board` (`num`, `id`, `name`, `type`, `at`, `slug`, `title`, `nickTitle`, `boardIntro`, `subs`, `related`, `notice`, `keeper`, `kicked`, `icon`, `option`, `rct`, `tagSet`) VALUES
