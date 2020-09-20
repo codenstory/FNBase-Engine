@@ -5,6 +5,7 @@
     $fnwTitle = filt(urldecode($_GET['title']), 'htm');
     include_once 'wiki_p.php';
     $fnwTitle = myUrlDecode($fnwTitle);
+        $fnwTitle = myUrlDecode($fnwTitle);
     
     if(empty($fnwTitle) and $fnwTitle != '0'){
         die('<script>alert("값이 비어있습니다.");history.back()</script>');

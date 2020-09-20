@@ -4,6 +4,7 @@
     include_once 'func.php';
     $fnwTitle = filt(urldecode($_GET['title']), 'htm');
     include_once 'wiki_p.php';
+    $fnwTitle = myUrlDecode($fnwTitle);
     if(empty($fnwTitle) and $fnwTitle != '0'){
         die('제목이 비어있습니다.');
     }

@@ -6,6 +6,7 @@
     $content = filt($_POST['content'], 'oth');
     $comm = filt($_POST['comment'], 'oth');
     include_once 'wiki_p.php';
+    $fnwTitle = myUrlDecode($fnwTitle);
     
     if(empty($fnwTitle) and $fnwTitle != '0'){
         die('<script>alert("제목이 비어있습니다.");history.back()</script>');

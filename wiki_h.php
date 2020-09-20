@@ -4,6 +4,7 @@
     include_once 'func.php';
     $fnwTitle = filt(urldecode($_GET['title']), 'htm');
     include_once 'wiki_p.php';
+    $fnwTitle = myUrlDecode($fnwTitle);
 
     $fnwTitle = documentRender($fnwTitle, TRUE);
 

@@ -4,12 +4,12 @@
     function myUrlEncode($string) {
         $replacements = array('%21', '%2A', '%27', '%28', '%29', '%3B', '%3A', '%40', '%26', '%3D', '%2B', '%24', '%2C', '%2F', '%3F', '%25', '%2523', '%5B', '%5D');
         $entities = array('!', '*', "'", "(", ")", ";", ":", "@", "&", "=", "+", "$", ",", "/", "?", "%", "#", "[", "]");
-        return str_ireplace('%2F', '/', str_replace($entities, $replacements, $string));
+        return preg_replace('/(amp%253B)+(apos|quot)%253B/', "&$2;", str_ireplace('%2F', '/', str_replace($entities, $replacements, $string)));
     }
     function myUrlDecode($string) {
         $replacements = array('%21', '%2A', '%27', '%28', '%29', '%3B', '%3A', '%40', '%26', '%3D', '%2B', '%24', '%2C', '%2F', '%3F', '%25', '%2523', '%5B', '%5D');
         $entities = array('!', '*', "'", "(", ")", ";", ":", "@", "&", "=", "+", "$", ",", "/", "?", "%", "#", "[", "]");
-        return urldecode(str_ireplace('%2F', '/', str_replace($replacements, $entities, $string)));
+        return urldecode(preg_replace('/(&|%2526)(amp(%253B|;))+(apos|quot)(%253B|;)/', "&$4;", str_ireplace('%2F', '/', str_replace($replacements, $entities, $string))));
     }
 
     function documentRender($doc, $isTitle = FALSE, $isIncluded = FALSE){

@@ -301,7 +301,7 @@
                         $fnwTitle = '(토론) '.$d_title;
                 }else{ ?>
                 <div id="mainTitle">
-                    <h2 id="wikiTitleText" class="black noGray"><a href="/w/<?=myUrlEncode($url)?>"><?=$title?><span id="wikiModeText" class="muted"></span></a></h2>
+                    <h2 id="wikiTitleText" class="black noGray"><a href="/w/<?=myUrlEncode($url)?>"><?=str_ireplace('&amp;apos;', "'", myUrlDecode($title))?><span id="wikiModeText" class="muted"></span></a></h2>
                     <hr><span id="wikiTitleRaw" style="display:none"><?=$fnwTitle?></span>
                     <script>
                         if(document.URL.includes('?from=')){
@@ -363,7 +363,7 @@
                                                 $isAdmin = TRUE;
                                             }
                                     echo '<br><table class="full"><tbody>';
-                                    $sql = "SELECT * FROM `_article` WHERE `ACL` IS NULL OR `ACL` IN ('user', 'admin') ORDER BY `lastEdit` DESC LIMIT 30";
+                                    $sql = "SELECT * FROM `_article` ORDER BY `lastEdit` DESC LIMIT 30";
                                     $result = mysqli_query($conn, $sql);
                                     while($row = mysqli_fetch_assoc($result)){
                                         $wE = $row['whoEdited'];
