@@ -56,10 +56,10 @@ function get_client_ip(){
       $ipaddress = getenv('REMOTE_ADDR');
     else
       $ipaddress = '0.4.0.4';
-   
+
     return $ipaddress;
 }
-  
+
 $ip = get_client_ip();
 
 if($fnType == 'OFF'){
