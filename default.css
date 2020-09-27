@@ -79,6 +79,10 @@ green {
 	font-weight: 100;
 }
 
+.hidden {
+	display: none;
+}
+
 a.black {
 	color: #000;
 }

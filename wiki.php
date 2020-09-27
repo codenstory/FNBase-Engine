@@ -1122,6 +1122,7 @@
         </footer>
             <a id="bottom"></a>
         <script type="text/javascript" src="/wiki.js"></script>
+        <script type="text/javascript" src="/editor.js"></script>
         <?php $pageTitle = str_ireplace('&apos;', "\'", str_ireplace('&quot;', '\"', $fnwTitle)); ?>
         <script>
             document.title = "<?=$pageTitle.' - '.$fnTitle?>"
@@ -1169,7 +1170,7 @@
             if($_GET['on'] == 'discuss'){
                 echo '<script>wikiDiscuss(\''.myUrlEncode($fnwTitle).'\');</script>';
             }elseif($_GET['on'] == 'edit'){
-                echo '<script>wikiEdit(\''.myUrlEncode($fnwTitle).'\');</script><script src="/editor.js"></script>';
+                echo '<script>wikiEdit(\''.myUrlEncode($fnwTitle).'\');</script>';
             }elseif($_GET['on'] == 'history'){
                 echo '<script>wikiHistory(\''.myUrlEncode($fnwTitle).'\');</script>';
             }

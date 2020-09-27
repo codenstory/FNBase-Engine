@@ -256,7 +256,7 @@
                     echo $catLink;
                 }
 
-                if(preg_match_all('/\[\[([^\|\[]+)(\||\[or\]|\[\])?([^\[]*?)\]\]/mu', $doc, $link)) {
+                if(preg_match_all('/\[\[([^\|\]\[]+)(\||\[or\]|\[\])?([^\[]*?)\]\]/mu', $doc, $link)) {
                     for($i = 0; $i < count($link[0]); $i++) {
                         unset($link_arr, $isAnchor);
                         $linkA = $link[0][$i];
@@ -337,9 +337,9 @@
                 if(empty($ntTitle) and $ntTitle != '0'){
                     $ntTitle = $i+1;
                 }
-                $ntDesc = str_replace("'", "\'", $notes[2][$i]);
+                $ntDesc = str_replace("'", "’", $notes[2][$i]);
 
-                $doc = str_ireplace($ntAll, '<a onclick="wikiNotes(\''.$ntDesc.'\')"><sup>['.$ntTitle.']</sup></a>', $doc);
+                $doc = str_ireplace($ntAll, '<span id="fn-'.$i.'" class="hidden">'.$ntDesc.'</span><a onclick="wikiNotes(document.querySelector(\'#fn-'.$i.'\').innerHTML)"><sup>['.$ntTitle.']</sup></a>', $doc);
 
                 if ($i > 2000) {
                     die('일반 각주가 너무 많습니다!');

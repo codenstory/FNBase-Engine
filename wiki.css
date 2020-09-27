@@ -58,14 +58,26 @@
 #mainContent {
 	padding-top: 0.3em;
 	min-height: 20em;
+	font-weight: 300;
 }#mainContent table, img, div{
 	overflow-x: auto;
 }#mainContent span.aHeading {
 	display: contents;
-}#mainContent span.aHeading h2,h3,h4,h5 {
-	margin: 0px !important;
+}#mainContent span.aHeading h2,
+#mainContent span.aHeading h3,
+#mainContent span.aHeading h4,
+#mainContent span.aHeading h5 {
+	margin: 0px;
+	padding: 0px !important;
 	padding-top: 5px !important;
-	padding-bottom: 5px !important;
+	margin-bottom: 5px !important;
+	border-bottom: 2px solid #ccc;
+}#mainContent span.aHeading h2 a,
+#mainContent span.aHeading h3 a {
+	color: #333 !important;
+}#mainContent span.aHeading h4 a,
+#mainContent span.aHeading h5 a {
+	color: #444 !important;
 }#mainContent p {
 	margin: 0px;
 	padding-top: .1em;

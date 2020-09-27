@@ -55,8 +55,9 @@
                             <red>*</red> 표시는 반드시 입력해주세요.<br><br>
                             <div class="flex two">
                                 <div>
-                                    <label>아이디<red>*</red> <input maxlength="20" type="id" id="userid" class="check" placeholder="영문 소문자 또는 숫자" name="userid" required>
+                                    <label>아이디<red>*</red> <input maxlength="20" type="text" id="userid" class="check" placeholder="영문 소문자 또는 숫자" name="userid" required>
                                     <span class="subInfo">영문 소문자 또는 숫자, 최대 20자리 / </span><span class="subInfo" id="id_check">중복 확인 대기중..</span></label>
+                                    <p>주의! 개인을 특정할 수 있는 정보를 입력하면 위험합니다.</p>
                                 </div>
                                 <div>
                                     <label>닉네임<red>*</red> <input maxlength="20" type="name" id="userck" class="check" placeholder="한글/영문/숫자/_" name="nickname" required>

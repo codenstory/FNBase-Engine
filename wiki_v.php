@@ -15,7 +15,7 @@
     $iA = mysqli_fetch_assoc($resulta);
     $iA = $iA['isAdmin'];
 
-    if($_GET['discuss']){
+    if($_GET['discuss'] && $iA){
         $num = filt($_POST['num'], '123');
         if($_GET['discuss'] == 'pause'){ //PAUSE
             $sql = "INSERT INTO `_discussThread` (`origin`, `id`, `name`, `content`, `status`) VALUES ('$num', '$id', '$name', '<span style=\"color:darkorange\">토론을 비활성화함.</span>', 'ACTIVE')";
