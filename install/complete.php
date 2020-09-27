@@ -179,7 +179,8 @@ if (!$conn) {
       `rev` longtext,
       `comment` varchar(100) DEFAULT NULL,
       `at` datetime NOT NULL,
-      `modify?` varchar(10) DEFAULT NULL
+      `modify?` varchar(10) DEFAULT NULL,
+      `ACL` varchar(10) DEFAULT NULL
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='위키 편집 기록';
     
     CREATE TABLE `_ipban` (
