@@ -6,6 +6,7 @@ if(screen.width <= 1024){
 
 var prevHisNum = false;
 var hisPage = false;
+var folded = false;
 
 function alertWait(){
     alert('열심히 개발중입니다..\n조금만 기다려주세요.');
@@ -201,12 +202,14 @@ function editCancle(){
     notSubmit = false;
 }
 
-function foldSpan(){
-    if(document.querySelector('.foldSpan').style.cssText == ''){
-        document.querySelector('.foldSpan').style.cssText = 'display:none';
-    }else{
-        document.querySelector('.foldSpan').style.cssText = '';
-    }
+function foldSpan() {
+    var elems = document.querySelectorAll('.foldSpan');
+    folded ^= 1; //toggle folded
+    var text = '';
+    if (folded) text = 'display:none;'
+    elems.forEach(function(elem) {
+        elem.style.cssText = text;
+    })
 }
 
 function wikiRollback(arg, num){
