@@ -331,7 +331,7 @@
             $doc = str_ireplace('&amp;&amp;', '', $doc);
         }
 
-        if(preg_match_all('/\[\*([^\s]+)? (.+?)\]/mu', $doc, $notes)) {
+        if (!$isIncluded && preg_match_all('/\[\*([^\s]+)? (.+?)\]/mu', $doc, $notes)) {
             for($i = 0; $i < count($notes[0]); $i++) {
                 $ntAll = $notes[0][$i];
                 $ntTitle = $notes[1][$i];
