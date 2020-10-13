@@ -49,7 +49,7 @@
             $resulta = mysqli_query($conn, $sqla);
             $rev = mysqli_fetch_assoc($resulta);
             $content = filt($rev['rev'], 'oth');
-            if ($rev['ACL'] = 'admin' && !$iA) die('권한 부족!');
+            if ($rev['ACL'] == 'admin' && !$iA) die('권한 부족!');
 
             if($document['ACL'] === 'all'){
                 $canEdit = TRUE;
