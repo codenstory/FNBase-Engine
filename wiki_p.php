@@ -99,7 +99,7 @@
                 }
               }
             }
-            
+
             if($isIncluded){
                 $doc = preg_replace('/\[noinclude\](.|\n)*\[\/noinclude\]/mu', '', $doc);
             }else{
