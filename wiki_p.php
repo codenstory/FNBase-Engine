@@ -73,7 +73,33 @@
             $doc = preg_replace('/^ ?## *([^\n]+)/mu', '', $doc);
 
             global $conn;
-            if(preg_match_all('/([^\{\n]|^|<\/h[1-5]>){{([^\{\}\|]+)\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*}}/mu', $doc, $title)) {
+            if (preg_match_all('/[^{]{{([^{|}]+)((\|[^{|}]*){0,20})}}/mu', $doc, $title) {
+              for ($i = 0; $i < count($title[0]); $i++) {
+                $incT = '틀/'.$title[1][$i];
+                $incA = $title[0][$i];
+                $paramT = explode('|', $title[2][$i]);
+                $sql = "SELECT `content` FROM `_article` WHERE `title` = '$incT'";
+                $result = mysqli_query($conn, $sql);
+                if(mysqli_num_rows($result) !== 1){
+                    echo '<strong>끼워넣은 문서가 존재하지 않습니다!</strong><br><a href="/e/'.myUrlEncode($incT).'">'.$incT.'</a><br>';
+                    continue;
+                }
+                $row = mysqli_fetch_assoc($result);
+                $incCon = documentRender($row['content'], FALSE, TRUE, $depth+1);
+                if (count($paramT)) {
+                  for ($j = 0; $j < count($paramT); $j++) {
+                    $incCon = str_ireplace('$'.$j, $paramT[$j]);
+                  }
+                }
+                $incCon = preg_replace("/\[\[분류\/([^\[]+)\]\]/mu", '', $incCon);
+                $doc = str_ireplace($incA, $incCon, $doc);
+
+                if ($i > 300) {
+                    die('첨부한 끼워넣기가 너무 많습니다!');
+                }
+              }
+            }
+            /*if(preg_match_all('/([^\{\n]|^|<\/h[1-5]>){{([^\{\}\|]+)\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*}}/mu', $doc, $title)) {
                 for($i = 0; $i < count($title[0]); $i++) {
                     $incT = '틀/'.$title[2][$i];
                     $inc1 = $title[3][$i];
@@ -146,7 +172,7 @@
                         die('첨부한 끼워넣기가 너무 많습니다!');
                     }
                 }
-            }
+            }*/
 
             if($isIncluded){
                 $doc = preg_replace('/\[noinclude\](.|\n)*\[\/noinclude\]/mu', '', $doc);
