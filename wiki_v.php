@@ -45,10 +45,11 @@
         $document = mysqli_fetch_assoc($result);
 
             $num = filt($_GET['num'], '123');
-            $sqla = "SELECT `rev` FROM `_history` WHERE `num` = '$num'";
+            $sqla = "SELECT `rev`, `ACL` FROM `_history` WHERE `num` = '$num'";
             $resulta = mysqli_query($conn, $sqla);
             $rev = mysqli_fetch_assoc($resulta);
             $content = filt($rev['rev'], 'oth');
+            if ($rev['ACL'] == 'admin' && !$iA) die('권한 부족!');
 
             if($document['ACL'] === 'all'){
                 $canEdit = TRUE;
@@ -94,21 +95,16 @@
             }
         }
         if ($_GET['mode'] == 'hide') {
-          if ($iA) {
-            $num = $_GET['num'];
-            if ($_GET['hidden'] == 'true') {
-              $sql = "UPDATE `_history` SET `ACL` = 'all' WHERE `num` = '$num'";
-              mysqli_query($conn, $sql);
-              die('#'.$num.' 판을 복구하는 데 성공했습니다.');
-            }
-            else {
-              $sql = "UPDATE `_history` SET `ACL` = 'admin' WHERE `num` = '$num'";
-              mysqli_query($conn, $sql);
-              die('#'.$num.' 판을 숨기는 데 성공했습니다.');
-            }
+          $num = $_GET['num'];
+          if ($_GET['hidden'] == 'true') {
+            $sql = "UPDATE `_history` SET `ACL` = 'all' WHERE `num` = '$num'";
+            mysqli_query($conn, $sql);
+            die('#'.$num.' 판을 복구하는 데 성공했습니다.');
           }
           else {
-            die("권한 부족");
+            $sql = "UPDATE `_history` SET `ACL` = 'admin' WHERE `num` = '$num'";
+            mysqli_query($conn, $sql);
+            die('#'.$num.' 판을 숨기는 데 성공했습니다.');
           }
         }
     }
