@@ -74,7 +74,7 @@
 
             global $conn;
             if (preg_match_all('/[^{]{{([^{|}]+)((\|[^{|}]*){0,20})}}/mu', $doc, $title) {
-              for ($i = 0; $i < count($title[0]); $i++) {
+              for ($i = count($title[0]); $i >= 0; $i++) {
                 $incT = '틀/'.$title[1][$i];
                 $incA = $title[0][$i];
                 $paramT = explode('|', $title[2][$i]);
