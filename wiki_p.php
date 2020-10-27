@@ -73,31 +73,79 @@
             $doc = preg_replace('/^ ?## *([^\n]+)/mu', '', $doc);
 
             global $conn;
-            if (preg_match_all('/[^{]{{([^{|}]+)((\|[^{|}]*){0,20})}}/mu', $doc, $title) {
-              for ($i = count($title[0]); $i >= 0; $i++) {
-                $incT = '틀/'.$title[1][$i];
-                $incA = $title[0][$i];
-                $paramT = explode('|', $title[2][$i]);
-                $sql = "SELECT `content` FROM `_article` WHERE `title` = '$incT'";
-                $result = mysqli_query($conn, $sql);
-                if(mysqli_num_rows($result) !== 1){
-                    echo '<strong>끼워넣은 문서가 존재하지 않습니다:</strong><br><a href="/e/'.myUrlEncode($incT).'"><red>'.$incT.'</red></a><br>';
-                    continue;
-                }
-                $row = mysqli_fetch_assoc($result);
-                $incCon = documentRender($row['content'], FALSE, TRUE, $depth+1);
-                if (count($paramT)) {
-                  for ($j = 0; $j < count($paramT); $j++) {
-                    $incCon = str_ireplace('$'.$j, $paramT[$j]);
-                  }
-                }
-                $incCon = preg_replace("/\[\[분류\/([^\[]+)\]\]/mu", '', $incCon);
-                $doc = str_ireplace($incA, $incCon, $doc);
+            if(preg_match_all('/([^\{\n]|^|<\/h[1-5]>){{([^\{\}\|]+)\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*\|*([^\}\|]+)*}}/mu', $doc, $title)) {
+                for($i = 0; $i < count($title[0]); $i++) {
+                    $incT = '틀/'.$title[2][$i];
+                    $inc1 = $title[3][$i];
+                    $inc2 = $title[4][$i];
+                    $inc3 = $title[5][$i];
+                    $inc4 = $title[6][$i];
+                    $inc5 = $title[7][$i];
+                    $inc6 = $title[8][$i];
+                    $inc7 = $title[9][$i];
+                    $inc8 = $title[10][$i];
+                    $inc9 = $title[11][$i];
+                    if($title[12][$i]){
+                        $inc10 = $title[12][$i];
+                        $inc11 = $title[13][$i];
+                        $inc12 = $title[14][$i];
+                        $inc13 = $title[15][$i];
+                        $inc14 = $title[16][$i];
+                        $inc15 = $title[17][$i];
+                        $inc16 = $title[18][$i];
+                        if($title[19][$i]){
+                            $inc17 = $title[19][$i];
+                            $inc18 = $title[20][$i];
+                            $inc19 = $title[21][$i];
+                            $inc20 = $title[22][$i];
+                        }
+                    }
+                    if ($incT == $document['title']) {
+                        continue;
+                    }
 
-                if ($i > 300) {
-                    die('첨부한 끼워넣기가 너무 많습니다!');
+                    $incA = $title[0][$i];
+
+                    $sql = "SELECT `content` FROM `_article` WHERE `title` = '$incT'";
+                    $result = mysqli_query($conn, $sql);
+                    if(mysqli_num_rows($result) !== 1){
+                        echo '<strong>끼워넣은 문서가 존재하지 않습니다!</strong><br><a href="/e/'.myUrlEncode($incT).'">'.$incT.'</a><br>';
+                        continue;
+                    }
+                    $row = mysqli_fetch_assoc($result);
+                    $incCon = documentRender($row['content'], FALSE, TRUE, $depth+1);
+                    if($inc10){
+                        $incCon = str_ireplace('$10', $inc10, $incCon);
+                        $incCon = str_ireplace('$11', $inc11, $incCon);
+                        $incCon = str_ireplace('$12', $inc12, $incCon);
+                        $incCon = str_ireplace('$13', $inc13, $incCon);
+                        $incCon = str_ireplace('$14', $inc14, $incCon);
+                        $incCon = str_ireplace('$15', $inc15, $incCon);
+                        $incCon = str_ireplace('$16', $inc16, $incCon);
+                        if($inc17){
+                            $incCon = str_ireplace('$17', $inc17, $incCon);
+                            $incCon = str_ireplace('$18', $inc18, $incCon);
+                            $incCon = str_ireplace('$19', $inc19, $incCon);
+                            $incCon = str_ireplace('$20', $inc20, $incCon);
+                        }
+                    }
+                    $incCon = str_ireplace('$1', $inc1, $incCon);
+                    $incCon = str_ireplace('$2', $inc2, $incCon);
+                    $incCon = str_ireplace('$3', $inc3, $incCon);
+                    $incCon = str_ireplace('$4', $inc4, $incCon);
+                    $incCon = str_ireplace('$5', $inc5, $incCon);
+                    $incCon = str_ireplace('$6', $inc6, $incCon);
+                    $incCon = str_ireplace('$7', $inc7, $incCon);
+                    $incCon = str_ireplace('$8', $inc8, $incCon);
+                    $incCon = str_ireplace('$9', $inc9, $incCon);
+
+                    $incCon = preg_replace("/\[\[분류\/([^\[]+)\]\]/mu", '', $incCon);
+                    $doc = str_ireplace($incA, $incCon, $doc);
+
+                    if ($i > 300) {
+                        die('첨부한 끼워넣기가 너무 많습니다!');
+                    }
                 }
-              }
             }
 
             if($isIncluded){
