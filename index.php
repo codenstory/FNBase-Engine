@@ -440,6 +440,7 @@ if(mysqli_num_rows($result) > 0){
                                 ['do', ['undo', 'redo']]
                             ]
                         });
+                        document.querySelector('.note-editable').innerText += '​';
                         </script>
                         </span>";
                         $lsEditorPlusV = "document.querySelector('.note-editable').innerHTML += '<img src=\"'+data+'\" style=\"width:50%\"><br>';document.querySelector('.note-editable').click()";
