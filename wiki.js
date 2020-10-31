@@ -202,16 +202,6 @@ function editCancle(){
     notSubmit = false;
 }
 
-function foldSpan() {
-    elems = document.querySelectorAll('.foldSpan');
-    folded ^= 1; //toggle folded(boolean)
-    var text = '';
-    if (folded) text = 'display: none';
-    elems.forEach(function(elem) {
-        elem.style.cssText = text;
-    });
-}
-
 function wikiRollback(arg, num){
     fetch('/wiki_v.php?mode=rollback&title='+arg+'&num='+num).then(function(response){
         response.text().then(function(text){
