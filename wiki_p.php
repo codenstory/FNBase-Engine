@@ -353,9 +353,8 @@
         $doc = preg_replace('/([^=]|^)====([^=]*.+?)====(\n)?/mu', '<span '.$aH.'><h4>$2</h4></span>', $doc);
         $doc = preg_replace('/([^=]|^)===([^=]*.+?)===(\n)?/mu', '<span '.$aH.'><h3>$2</h3></span>', $doc);
         $doc = preg_replace('/([^=]|^)==([^=]*.+?)==(\n)?/mu', '<span '.$aH.'><h2>$2</h2></span>', $doc);
-
-        $doc = preg_replace('/{{{#!folding ([^\s]+)\s([^}]+)}}}/mu', '<a onclick="foldSpan()" href="javascript:void(0)">$1</a><br><span class="foldSpan" style="display:none">$2</span>', $doc);
-        $doc = preg_replace('/\(\(\(#!folding ([^\s]+)\s([^}]+)\)\)\)/mu', '<a onclick="foldSpan()" href="javascript:void(0)">$1</a><br><span class="foldSpan" style="display:none">$2</span>', $doc);
+        $doc = preg_replace('/{{{#!folding ([^\s]+)\s([^}]+)}}}/mu', '<details><summary style="color:#0074d9">$1</summary>$2</details>', $doc);
+        $doc = preg_replace('/\(\(\(#!folding ([^\s]+)\s([^}]+)\)\)\)/mu', '<details><summary style="color:#0074d9">$1</summary>$2</details>', $doc);
 
         return $doc;
     }
