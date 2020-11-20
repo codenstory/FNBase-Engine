@@ -6,6 +6,7 @@ if(screen.width <= 1024){
 
 var prevHisNum = false;
 var hisPage = false;
+var folded = false;
 
 function alertWait(){
     alert('열심히 개발중입니다..\n조금만 기다려주세요.');
@@ -199,14 +200,6 @@ function editCancle(){
     document.querySelector('#editPlace').style.cssText = 'display:none';
     document.querySelector("#wikiModeText").innerHTML = '';
     notSubmit = false;
-}
-
-function foldSpan(){
-    if(document.querySelector('.foldSpan').style.cssText == ''){
-        document.querySelector('.foldSpan').style.cssText = 'display:none';
-    }else{
-        document.querySelector('.foldSpan').style.cssText = '';
-    }
 }
 
 function wikiRollback(arg, num){
