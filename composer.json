@@ -14,7 +14,7 @@
       }
   ],
   "require": {
-      "MariaDB/server": "mariadb-10.x.x"
+      "MariaDB/server": "mariadb-10.*.*"
   },
   "minimum-stability": "stable",
   "target-dir": "FNBase/FNBase-Engine"
