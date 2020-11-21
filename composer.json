@@ -1,6 +1,6 @@
 
 {
-  "name": "FNBase/FNBase-Engine",
+  "name": "fnbase/fnbase-engine",
   "description": "기본적인 한국형 게시판을 제공합니다. 비교적 가벼우며, 소규모 커뮤니티에 좋은 대안이 될 수 있습니다. (개발이 완료되지 않았습니다.)",
   "version": "2.2",
   "license": "MIT License",
@@ -14,7 +14,7 @@
       }
   ],
   "require": {
-      "MariaDB/server": "mariadb-10.*.*"
+      "MariaDB/server": "10.*.*"
   },
   "minimum-stability": "stable",
   "target-dir": "FNBase/FNBase-Engine"
